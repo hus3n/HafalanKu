@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: hafalanku-frontend
+    ports:
+      - '3000:3000'
+    environment:
+      - 'NEXT_PUBLIC_API_URL=https://api.hafalanku.com/v1'
+    depends_on:
+      - backend
+    restart: always
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: hafalanku-backend
+    ports:
+      - '4000:4000'
+    environment:
+      - 'DATABASE_URL=postgresql://hafalanku_user:Rahas1a_PG_Coolify2026@postgres:5432/hafalanku?schema=public'
+      - 'MONGODB_URL=mongodb://mongo:27017/hafalanku'
+      - 'REDIS_URL=redis://redis:6379'
+      - JWT_SECRET=sangat_rahasia_jwt_secret_coolify_2026_auto
+      - APP_SECRET=sangat_rahasia_app_secret_coolify_2026_auto
+      - 'TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}'
+      - 'TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}'
+      - 'FRONTEND_URL=https://hafalanku.com'
+      - NODE_ENV=production
+      - BACKEND_PORT=4000
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+    restart: always
+  postgres:
+    image: 'postgres:16-alpine'
+    container_name: hafalanku-postgres
+    volumes:
+      - 'pg_coolify_data:/var/lib/postgresql/data'
+    environment:
+      - POSTGRES_DB=hafalanku
+      - POSTGRES_USER=hafalanku_user
+      - POSTGRES_PASSWORD=Rahas1a_PG_Coolify2026
+    restart: always
+  mongo:
+    image: 'mongo:7'
+    container_name: hafalanku-mongo
+    volumes:
+      - 'mongo_coolify_data:/data/db'
+    restart: always
+  redis:
+    image: 'redis:7-alpine'
+    container_name: hafalanku-redis
+    volumes:
+      - 'redis_coolify_data:/data'
+    restart: always
+volumes:
+  pg_coolify_data:
+    name: hafalanku_pg_coolify_data
+  mongo_coolify_data:
+    name: hafalanku_mongo_coolify_data
+  redis_coolify_data:
+    name: hafalanku_redis_coolify_data
