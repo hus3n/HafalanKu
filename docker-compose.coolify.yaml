@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  hafalanku-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hafalanku}
+      POSTGRES_USER: ${POSTGRES_USER:-hafalanku_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-P@ssw0rdHafalanKu2026!}
+    volumes:
+      - hafalanku-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hafalanku_user} -d ${POSTGRES_DB:-hafalanku}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  hafalanku-mongo:
+    image: mongo:7
+    volumes:
+      - hafalanku-mongo-data:/data/db
+    restart: always
+
+  hafalanku-redis:
+    image: redis:7-alpine
+    volumes:
+      - hafalanku-redis-data:/data
+    restart: always
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://hafalanku_user:P@ssw0rdHafalanKu2026!@hafalanku-postgres:5432/hafalanku?schema=public}
+      MONGODB_URL: ${MONGODB_URL:-mongodb://hafalanku-mongo:27017/hafalanku}
+      REDIS_URL: ${REDIS_URL:-redis://hafalanku-redis:6379}
+      PORT: ${BACKEND_PORT:-4000}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_SECRET: ${APP_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    ports:
+      - "4000:4000"
+    depends_on:
+      hafalanku-postgres:
+        condition: service_healthy
+      hafalanku-mongo:
+        condition: service_started
+      hafalanku-redis:
+        condition: service_started
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  hafalanku-pg-data:
+  hafalanku-mongo-data:
+  hafalanku-redis-data:
