@@ -6,12 +6,12 @@ services:
       context: .
       dockerfile: ./frontend/Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.hafalanku.com/v1}
+        - NEXT_PUBLIC_API_URL=https://api.vipsin.my.id/api/v1
     container_name: hafalanku-frontend
     expose:
       - '3000'
     environment:
-      - 'NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}'
+      - 'NEXT_PUBLIC_API_URL=https://api.vipsin.my.id/api/v1'
     depends_on:
       - backend
     restart: always
@@ -28,9 +28,9 @@ services:
       - 'REDIS_URL=redis://redis:6379'
       - JWT_SECRET=sangat_rahasia_jwt_secret_coolify_2026_auto
       - APP_SECRET=sangat_rahasia_app_secret_coolify_2026_auto
-      - 'TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}'
-      - 'TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}'
-      - 'FRONTEND_URL=${FRONTEND_URL}'
+      - TELEGRAM_BOT_TOKEN=6466712584:AAFwk2POEOY7pDzUpEXwf2kZUHnoufTkPYo
+      - TELEGRAM_CHAT_ID=
+      - 'FRONTEND_URL=https://hafalanku.vipsin.my.id'
       - NODE_ENV=production
       - BACKEND_PORT=4000
     depends_on:
