@@ -8,9 +8,10 @@ services:
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.hafalanku.com/v1}
     container_name: hafalanku-frontend
+    expose:
+      - '3000'
     environment:
       - 'NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}'
-      - PORT=80
     depends_on:
       - backend
     restart: always
@@ -19,6 +20,8 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
     container_name: hafalanku-backend
+    expose:
+      - '4000'
     environment:
       - 'DATABASE_URL=postgresql://hafalanku_user:Rahas1a_PG_Coolify2026@postgres:5432/hafalanku?schema=public'
       - 'MONGODB_URL=mongodb://mongo:27017/hafalanku'
@@ -29,7 +32,7 @@ services:
       - 'TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}'
       - 'FRONTEND_URL=${FRONTEND_URL}'
       - NODE_ENV=production
-      - BACKEND_PORT=80
+      - BACKEND_PORT=4000
     depends_on:
       postgres:
         condition: service_healthy
