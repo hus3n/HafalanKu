@@ -19,6 +19,7 @@ COPY backend ./backend
 RUN npx prisma generate --schema=backend/prisma/schema.prisma
 RUN npm run build --workspace=shared
 RUN npm run build --workspace=backend
+RUN npx tsc backend/prisma/seed.ts --esModuleInterop --skipLibCheck || true
 
 # Stage 2: Production Runner
 FROM node:20-alpine AS runner
@@ -45,4 +46,4 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npx prisma db push --schema=backend/prisma/schema.prisma && node backend/dist/index.js"]
+CMD ["sh", "-c", "npx prisma db push --schema=backend/prisma/schema.prisma && node backend/prisma/seed.js && node backend/dist/index.js"]
