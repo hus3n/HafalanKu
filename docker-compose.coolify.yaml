@@ -11,7 +11,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      - 'NEXT_PUBLIC_API_URL=https://api.hafalanku.com/v1'
+      - 'NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}'
     depends_on:
       - backend
     restart: always
@@ -30,7 +30,7 @@ services:
       - APP_SECRET=sangat_rahasia_app_secret_coolify_2026_auto
       - 'TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}'
       - 'TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}'
-      - 'FRONTEND_URL=https://hafalanku.com'
+      - 'FRONTEND_URL=${FRONTEND_URL}'
       - NODE_ENV=production
       - BACKEND_PORT=4000
     depends_on:
