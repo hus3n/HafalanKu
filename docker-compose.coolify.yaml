@@ -7,71 +7,58 @@ services:
       dockerfile: ./frontend/Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://api.vipsin.my.id/api/v1
-    container_name: hafalanku-frontend
+    container_name: hafalanku-frontend-v2
     expose:
       - '3000'
     environment:
-      - 'NEXT_PUBLIC_API_URL=https://api.vipsin.my.id/api/v1'
-    depends_on:
-      - backend
+      - NEXT_PUBLIC_API_URL=https://api.vipsin.my.id/api/v1
     restart: always
+
   backend:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
-    container_name: hafalanku-backend
+    container_name: hafalanku-backend-v2
     expose:
       - '4000'
     environment:
-      - 'DATABASE_URL=postgresql://hafalanku_user:Rahas1a_PG_Coolify2026@postgres:5432/hafalanku?schema=public'
-      - 'MONGODB_URL=mongodb://mongo:27017/hafalanku'
-      - 'REDIS_URL=redis://redis:6379'
+      - DATABASE_URL=postgresql://hafalanku_user:Rahas1a_PG_Coolify2026@postgres:5432/hafalanku?schema=public
+      - MONGODB_URL=mongodb://mongo:27017/hafalanku
+      - REDIS_URL=redis://redis:6379
       - JWT_SECRET=sangat_rahasia_jwt_secret_coolify_2026_auto
       - APP_SECRET=sangat_rahasia_app_secret_coolify_2026_auto
       - TELEGRAM_BOT_TOKEN=6466712584:AAFwk2POEOY7pDzUpEXwf2kZUHnoufTkPYo
-      - TELEGRAM_CHAT_ID=
-      - 'FRONTEND_URL=https://hafalanku.vipsin.my.id'
+      - FRONTEND_URL=https://hafalanku.vipsin.my.id
       - NODE_ENV=production
       - BACKEND_PORT=4000
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongo:
-        condition: service_started
-      redis:
-        condition: service_started
     restart: always
+
   postgres:
-    image: 'postgres:16-alpine'
-    container_name: hafalanku-postgres
+    image: postgres:16-alpine
+    container_name: hafalanku-postgres-v2
     volumes:
-      - 'pg_coolify_data_v2:/var/lib/postgresql/data'
+      - pg_data_new:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=hafalanku
       - POSTGRES_USER=hafalanku_user
       - POSTGRES_PASSWORD=Rahas1a_PG_Coolify2026
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hafalanku_user -d hafalanku"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     restart: always
+
   mongo:
-    image: 'mongo:7'
-    container_name: hafalanku-mongo
+    image: mongo:7
+    container_name: hafalanku-mongo-v2
     volumes:
-      - 'mongo_coolify_data:/data/db'
+      - mongo_data_new:/data/db
     restart: always
+
   redis:
-    image: 'redis:7-alpine'
-    container_name: hafalanku-redis
+    image: redis:7-alpine
+    container_name: hafalanku-redis-v2
     volumes:
-      - 'redis_coolify_data:/data'
+      - redis_data_new:/data
     restart: always
+
 volumes:
-  pg_coolify_data_v2:
-    name: hafalanku_pg_coolify_data_v2
-  mongo_coolify_data:
-    name: hafalanku_mongo_coolify_data
-  redis_coolify_data:
-    name: hafalanku_redis_coolify_data
+  pg_data_new:
+  mongo_data_new:
+  redis_data_new:
