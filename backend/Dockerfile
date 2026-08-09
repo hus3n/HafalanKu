@@ -41,6 +41,7 @@ COPY --from=builder /app/shared ./shared
 COPY --from=builder /app/backend/package.json ./backend/
 COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/prisma ./backend/prisma
+COPY --from=builder /app/backend/tsconfig.json ./backend/
 
 # Set production environment
 ENV NODE_ENV=production
