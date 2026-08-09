@@ -1,0 +1,66 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: hafalanku-frontend
+    # Note: No ports mapped here because Coolify handles the routing/reverse proxy automatically.
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.domainanda.com/v1}
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: hafalanku-backend
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      - MONGODB_URL=mongodb://mongo:27017/hafalanku
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - APP_SECRET=${APP_SECRET}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - NODE_ENV=production
+      - BACKEND_PORT=4000
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+    restart: always
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: hafalanku-postgres
+    volumes:
+      - pg_coolify_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-hafalanku}
+      - POSTGRES_USER=${POSTGRES_USER:-hafalanku_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    restart: always
+
+  mongo:
+    image: mongo:7
+    container_name: hafalanku-mongo
+    volumes:
+      - mongo_coolify_data:/data/db
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: hafalanku-redis
+    volumes:
+      - redis_coolify_data:/data
+    restart: always
+
+volumes:
+  pg_coolify_data:
+    name: hafalanku_pg_coolify_data
+  mongo_coolify_data:
+    name: hafalanku_mongo_coolify_data
+  redis_coolify_data:
+    name: hafalanku_redis_coolify_data
