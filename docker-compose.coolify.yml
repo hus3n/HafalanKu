@@ -4,7 +4,8 @@ services:
       context: .
       dockerfile: ./frontend/Dockerfile
     container_name: hafalanku-frontend
-    # Note: No ports mapped here because Coolify handles the routing/reverse proxy automatically.
+    ports:
+      - "3000:3000"
     # Environment default otomatis (langsung jalan tanpa setting manual)
     environment:
       - NEXT_PUBLIC_API_URL=https://api.hafalanku.com/v1
@@ -17,6 +18,8 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
     container_name: hafalanku-backend
+    ports:
+      - "4000:4000"
     environment:
       - DATABASE_URL=postgresql://hafalanku_user:Rahas1a_PG_Coolify2026@postgres:5432/hafalanku?schema=public
       - MONGODB_URL=mongodb://mongo:27017/hafalanku
