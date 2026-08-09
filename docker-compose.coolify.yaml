@@ -7,7 +7,7 @@ services:
       dockerfile: ./frontend/Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://api.vipsin.my.id/api/v1
-    container_name: hafalanku-frontend-v2
+    container_name: hafalanku-frontend
     expose:
       - '3000'
     environment:
@@ -18,7 +18,7 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
-    container_name: hafalanku-backend-v2
+    container_name: hafalanku-backend
     expose:
       - '4000'
     environment:
@@ -35,9 +35,9 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: hafalanku-postgres-v2
+    container_name: hafalanku-postgres
     volumes:
-      - pg_data_new:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=hafalanku
       - POSTGRES_USER=hafalanku_user
@@ -46,19 +46,19 @@ services:
 
   mongo:
     image: mongo:7
-    container_name: hafalanku-mongo-v2
+    container_name: hafalanku-mongo
     volumes:
-      - mongo_data_new:/data/db
+      - mongo_data:/data/db
     restart: always
 
   redis:
     image: redis:7-alpine
-    container_name: hafalanku-redis-v2
+    container_name: hafalanku-redis
     volumes:
-      - redis_data_new:/data
+      - redis_data:/data
     restart: always
 
 volumes:
-  pg_data_new:
-  mongo_data_new:
-  redis_data_new:
+  postgres_data:
+  mongo_data:
+  redis_data:
