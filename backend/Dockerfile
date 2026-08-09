@@ -11,6 +11,7 @@ COPY package*.json ./
 # Copy workspace packages package.json
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
 
 # Install dependencies (using npm install for workspaces)
 RUN npm install
