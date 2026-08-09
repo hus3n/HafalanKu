@@ -5,8 +5,9 @@ services:
       dockerfile: ./frontend/Dockerfile
     container_name: hafalanku-frontend
     # Note: No ports mapped here because Coolify handles the routing/reverse proxy automatically.
+    # Environment default otomatis (langsung jalan tanpa setting manual)
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.domainanda.com/v1}
+      - NEXT_PUBLIC_API_URL=https://api.hafalanku.com/v1
     depends_on:
       - backend
     restart: always
@@ -17,13 +18,13 @@ services:
       dockerfile: ./backend/Dockerfile
     container_name: hafalanku-backend
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      - DATABASE_URL=postgresql://hafalanku_user:Rahas1a_PG_Coolify2026@postgres:5432/hafalanku?schema=public
       - MONGODB_URL=mongodb://mongo:27017/hafalanku
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=${JWT_SECRET}
-      - APP_SECRET=${APP_SECRET}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - FRONTEND_URL=${FRONTEND_URL}
+      - JWT_SECRET=sangat_rahasia_jwt_secret_coolify_2026_auto
+      - APP_SECRET=sangat_rahasia_app_secret_coolify_2026_auto
+      - TELEGRAM_BOT_TOKEN=
+      - FRONTEND_URL=https://hafalanku.com
       - NODE_ENV=production
       - BACKEND_PORT=4000
     depends_on:
@@ -38,9 +39,9 @@ services:
     volumes:
       - pg_coolify_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-hafalanku}
-      - POSTGRES_USER=${POSTGRES_USER:-hafalanku_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=hafalanku
+      - POSTGRES_USER=hafalanku_user
+      - POSTGRES_PASSWORD=Rahas1a_PG_Coolify2026
     restart: always
 
   mongo:
