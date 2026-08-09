@@ -102,6 +102,15 @@ export class UserService {
       }
     }
 
+    let activeUntil: Date | undefined = undefined;
+    let isTrial = input.isTrial || false;
+
+    if (isTrial && input.trialDays) {
+      const now = new Date();
+      now.setDate(now.getDate() + input.trialDays);
+      activeUntil = now;
+    }
+
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_SALT_ROUNDS);
 
     const user = await prisma.user.create({
@@ -112,6 +121,8 @@ export class UserService {
         role: input.role,
         phone: input.phone,
         organizationId,
+        isTrial,
+        activeUntil,
       },
       select: {
         id: true,

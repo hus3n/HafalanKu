@@ -18,10 +18,10 @@ export class KelasController {
   }
 
   static async getList(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { search } = req.query as { search?: string };
 
-    const kelases = await kelasService.getKelasList(userId, search);
+    const kelases = await kelasService.getKelasList(user, search);
 
     return reply.send({
       success: true,
@@ -30,10 +30,10 @@ export class KelasController {
   }
 
   static async getById(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id } = req.params as { id: string };
 
-    const kelas = await kelasService.getKelasById(userId, id);
+    const kelas = await kelasService.getKelasById(user, id);
 
     return reply.send({
       success: true,
@@ -42,11 +42,11 @@ export class KelasController {
   }
 
   static async update(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id } = req.params as { id: string };
     const data = req.body as any;
 
-    const kelas = await kelasService.updateKelas(userId, id, data);
+    const kelas = await kelasService.updateKelas(user, id, data);
 
     return reply.send({
       success: true,
@@ -56,29 +56,29 @@ export class KelasController {
   }
 
   static async delete(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id } = req.params as { id: string };
 
-    const result = await kelasService.deleteKelas(userId, id);
+    const result = await kelasService.deleteKelas(user, id);
 
     return reply.send(result);
   }
 
   static async assignSantri(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id: kelasId } = req.params as { id: string };
     const { santriId } = req.body as { santriId: string };
 
-    const result = await kelasService.assignSantri(userId, kelasId, santriId);
+    const result = await kelasService.assignSantri(user, kelasId, santriId);
 
     return reply.send(result);
   }
 
   static async unassignSantri(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id: kelasId, santriId } = req.params as { id: string; santriId: string };
 
-    const result = await kelasService.unassignSantri(userId, kelasId, santriId);
+    const result = await kelasService.unassignSantri(user, kelasId, santriId);
 
     return reply.send(result);
   }

@@ -5,10 +5,10 @@ const hafalanService = new HafalanService();
 
 export class HafalanController {
   static async create(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const data = req.body as any;
 
-    const hafalan = await hafalanService.createHafalan(userId, data);
+    const hafalan = await hafalanService.createHafalan(user, data);
 
     return reply.status(201).send({
       success: true,
@@ -18,11 +18,11 @@ export class HafalanController {
   }
 
   static async getList(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { page = 1, limit = 10, santriId, surahNumber, predikat } = req.query as any;
 
     const result = await hafalanService.getHafalanList(
-      userId,
+      user,
       Number(page),
       Number(limit),
       santriId,
@@ -38,10 +38,10 @@ export class HafalanController {
   }
 
   static async getById(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id } = req.params as { id: string };
 
-    const hafalan = await hafalanService.getHafalanById(userId, id);
+    const hafalan = await hafalanService.getHafalanById(user, id);
 
     return reply.send({
       success: true,
@@ -50,11 +50,11 @@ export class HafalanController {
   }
 
   static async update(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id } = req.params as { id: string };
     const data = req.body as any;
 
-    const hafalan = await hafalanService.updateHafalan(userId, id, data);
+    const hafalan = await hafalanService.updateHafalan(user, id, data);
 
     return reply.send({
       success: true,
@@ -64,19 +64,19 @@ export class HafalanController {
   }
 
   static async delete(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { id } = req.params as { id: string };
 
-    const result = await hafalanService.deleteHafalan(userId, id);
+    const result = await hafalanService.deleteHafalan(user, id);
 
     return reply.send(result);
   }
 
   static async createBulk(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const data = req.body as { santriId: string, surahs: number[] };
 
-    const result = await hafalanService.createBulkHafalan(userId, data);
+    const result = await hafalanService.createBulkHafalan(user, data);
 
     return reply.status(201).send({
       success: true,

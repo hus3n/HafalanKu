@@ -3,12 +3,16 @@
 import React, { useState } from 'react';
 import { useNotificationHistory } from '../../../hooks/useNotification';
 import { NotificationTable } from '../../../components/tables/NotificationTable';
-import { ChevronLeft, ChevronRight, MessageSquare, Filter } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { useAuthStore } from '../../../stores/authStore';
 
 export default function NotificationHistoryPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
+
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPERADMIN';
 
   const { data, isLoading } = useNotificationHistory({ page, limit: 10, status, type });
 
@@ -17,10 +21,12 @@ export default function NotificationHistoryPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold font-outfit text-foreground tracking-tight flex items-center gap-2">
-          Riwayat Notifikasi
+          {isSuperAdmin ? 'Riwayat Notifikasi Sistem' : 'Riwayat Notifikasi'}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Log pengiriman notifikasi WhatsApp ke wali murid santri.
+          {isSuperAdmin
+            ? 'Log pengiriman pesan otomatis ke Admin dan Pengguna perorangan (seputar pendaftaran, langganan, dan sistem).'
+            : 'Log pengiriman notifikasi WhatsApp ke wali murid santri.'}
         </p>
       </div>
 
@@ -54,8 +60,18 @@ export default function NotificationHistoryPage() {
             className="w-full h-11 pl-10 pr-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all appearance-none cursor-pointer"
           >
             <option value="">Semua Jenis Notifikasi</option>
-            <option value="HAFALAN_NEW">Setoran Hafalan Baru</option>
-            <option value="MURAJAAH_SCHEDULE">Jadwal Murajaah</option>
+            {isSuperAdmin ? (
+              <>
+                <option value="REGISTRATION">Pendaftaran (REGISTRATION)</option>
+                <option value="SYSTEM_ALERT">Info Sistem (SYSTEM_ALERT)</option>
+                <option value="SUBSCRIPTION_ALERT">Info Langganan (SUBSCRIPTION_ALERT)</option>
+              </>
+            ) : (
+              <>
+                <option value="HAFALAN_NEW">Setoran Hafalan Baru</option>
+                <option value="MURAJAAH_SCHEDULE">Jadwal Murajaah</option>
+              </>
+            )}
           </select>
         </div>
       </div>

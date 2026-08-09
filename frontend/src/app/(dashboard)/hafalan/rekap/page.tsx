@@ -59,9 +59,11 @@ export default function HafalanAwalPage() {
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-2xl p-6 shadow-sm relative overflow-hidden"
+        className="bg-card border border-border rounded-2xl p-6 shadow-sm relative overflow-visible"
       >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -z-10 translate-x-1/3 -translate-y-1/3" />
+        <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none -z-10">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+        </div>
         
         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Plus className="w-5 h-5 text-emerald-500" />

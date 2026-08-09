@@ -1,4 +1,4 @@
-export type MessageType = 'HAFALAN' | 'MURAJAAH' | 'REGISTRASI';
+export type MessageType = 'HAFALAN' | 'MURAJAAH' | 'HAFALAN_NEW' | 'MURAJAAH_SCHEDULE' | 'REGISTRASI' | 'SYSTEM_ALERT' | 'REGISTRATION' | 'SUBSCRIPTION_ALERT';
 export type NotificationStatus = 'SENT' | 'FAILED' | 'PENDING';
 
 export interface NotificationLog {

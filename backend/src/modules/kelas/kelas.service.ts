@@ -25,8 +25,19 @@ export class KelasService {
     return kelas;
   }
 
-  async getKelasList(userId: string, search?: string) {
-    const where: any = { userId };
+  private buildAccessWhere(user: { userId: string; role: string; orgId?: string | null }) {
+    if (user.role === 'SUPERADMIN') return {};
+    if (user.orgId) {
+      return {
+        user: { organizationId: user.orgId }
+      };
+    }
+    return { userId: user.userId };
+  }
+
+  async getKelasList(user: { userId: string; role: string; orgId?: string | null }, search?: string) {
+    const accessWhere = this.buildAccessWhere(user);
+    const where: any = { ...accessWhere };
 
     if (search) {
       where.name = { contains: search, mode: 'insensitive' };
@@ -56,9 +67,10 @@ export class KelasService {
     }));
   }
 
-  async getKelasById(userId: string, id: string) {
+  async getKelasById(user: { userId: string; role: string; orgId?: string | null }, id: string) {
+    const accessWhere = this.buildAccessWhere(user);
     const kelas = await prisma.kelas.findFirst({
-      where: { id, userId },
+      where: { id, ...accessWhere },
       include: {
         santri: {
           where: { deletedAt: null },
@@ -79,9 +91,10 @@ export class KelasService {
     return kelas;
   }
 
-  async updateKelas(userId: string, id: string, data: Partial<CreateKelasInput>) {
+  async updateKelas(user: { userId: string; role: string; orgId?: string | null }, id: string, data: Partial<CreateKelasInput>) {
+    const accessWhere = this.buildAccessWhere(user);
     const existing = await prisma.kelas.findFirst({
-      where: { id, userId },
+      where: { id, ...accessWhere },
     });
 
     if (!existing) {
@@ -99,9 +112,10 @@ export class KelasService {
     return updated;
   }
 
-  async deleteKelas(userId: string, id: string) {
+  async deleteKelas(user: { userId: string; role: string; orgId?: string | null }, id: string) {
+    const accessWhere = this.buildAccessWhere(user);
     const existing = await prisma.kelas.findFirst({
-      where: { id, userId },
+      where: { id, ...accessWhere },
     });
 
     if (!existing) {
@@ -121,10 +135,12 @@ export class KelasService {
     return { success: true, message: 'Kelas berhasil dihapus' };
   }
 
-  async assignSantri(userId: string, kelasId: string, santriId: string) {
+  async assignSantri(user: { userId: string; role: string; orgId?: string | null }, kelasId: string, santriId: string) {
+    const accessWhere = this.buildAccessWhere(user);
+    
     // Check kelas ownership
     const kelas = await prisma.kelas.findFirst({
-      where: { id: kelasId, userId },
+      where: { id: kelasId, ...accessWhere },
     });
 
     if (!kelas) {
@@ -133,7 +149,7 @@ export class KelasService {
 
     // Check santri ownership
     const santri = await prisma.santri.findFirst({
-      where: { id: santriId, userId, deletedAt: null },
+      where: { id: santriId, ...accessWhere, deletedAt: null },
     });
 
     if (!santri) {
@@ -153,9 +169,11 @@ export class KelasService {
     };
   }
 
-  async unassignSantri(userId: string, kelasId: string, santriId: string) {
+  async unassignSantri(user: { userId: string; role: string; orgId?: string | null }, kelasId: string, santriId: string) {
+    const accessWhere = this.buildAccessWhere(user);
+    
     const santri = await prisma.santri.findFirst({
-      where: { id: santriId, kelasId, userId, deletedAt: null },
+      where: { id: santriId, kelasId, ...accessWhere, deletedAt: null },
     });
 
     if (!santri) {

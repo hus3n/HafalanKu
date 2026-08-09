@@ -36,12 +36,9 @@ export class SantriService {
 
   private buildAccessWhere(user: { userId: string; role: string; orgId?: string | null }) {
     if (user.role === 'SUPERADMIN') return {};
-    if (user.role === 'ADMIN' && user.orgId) {
+    if (user.orgId) {
       return {
-        OR: [
-          { userId: user.userId },
-          { user: { organizationId: user.orgId } }
-        ]
+        user: { organizationId: user.orgId }
       };
     }
     return { userId: user.userId };

@@ -35,6 +35,8 @@ model User {
   organizationId  String?   @map("organization_id")
   loginAttempts   Int       @default(0) @map("login_attempts")
   lockedUntil     DateTime? @map("locked_until")
+  activeUntil     DateTime? @map("active_until")
+  isTrial         Boolean   @default(false) @map("is_trial")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
@@ -74,7 +76,7 @@ model Santri {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at") 
 
-  user     User              @relation(fields: [userId], references: [id])
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   kelas    Kelas?            @relation(fields: [kelasId], references: [id])
   hafalan  Hafalan[]
   murajaah MurajaahSchedule[]
@@ -93,7 +95,7 @@ model Kelas {
   userId      String   @map("user_id")
   createdAt   DateTime @default(now()) @map("created_at")
 
-  user   User     @relation(fields: [userId], references: [id])
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   santri Santri[]
 
   @@index([userId])
@@ -113,8 +115,8 @@ model Hafalan {
   userId      String   @map("user_id") 
   createdAt   DateTime @default(now()) @map("created_at")
 
-  santri Santri @relation(fields: [santriId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([santriId])
   @@index([userId])
@@ -135,8 +137,8 @@ model MurajaahSchedule {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  santri Santri @relation(fields: [santriId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([santriId, surahNumber])
   @@index([userId])
@@ -154,8 +156,8 @@ model MurajaahHistory {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  santri Santri @relation(fields: [santriId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([santriId])
   @@index([userId])
@@ -169,7 +171,7 @@ model PasswordHistory {
   passwordHash String   @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("password_history")

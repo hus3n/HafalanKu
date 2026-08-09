@@ -32,6 +32,7 @@ export class AuthService {
           email: input.email,
           passwordHash,
           role,
+          isActive: false, // User is pending activation by admin
         },
       });
 
@@ -74,21 +75,12 @@ export class AuthService {
       userAgent,
     });
 
-    const tokenPayload = {
-      userId: user.id,
-      role: user.role,
-      orgId: user.organizationId,
-    };
-
-    const token = generateAccessToken(tokenPayload);
-    const refreshToken = generateRefreshToken(user.id);
-
     const { passwordHash: _, ...userWithoutPassword } = user;
 
+    // Do not return tokens; user needs to be activated by superadmin first
     return {
       user: userWithoutPassword,
-      token,
-      refreshToken,
+      message: 'Akun berhasil didaftarkan dan sedang menunggu persetujuan Admin.',
     };
   }
 
@@ -108,7 +100,7 @@ export class AuthService {
     }
 
     if (!user.isActive) {
-      throw new AppError('Akun Anda telah dinonaktifkan', 403);
+      throw new AppError('Akun Anda sedang diverifikasi / belum diaktifkan oleh Superadmin.', 403);
     }
 
     // Check account lockout (BR-03: 5x failed = 15 mins lock)

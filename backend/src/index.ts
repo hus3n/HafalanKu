@@ -22,7 +22,10 @@ import { notificationRoutes } from './modules/notification/notification.routes';
 import { reportRoutes } from './modules/report/report.routes';
 import { backupRoutes } from './modules/backup/backup.routes';
 import { masterRoutes } from './modules/master/master.routes';
+import { settingsRoutes } from './modules/settings/settings.route';
 import { startAutoBackupJob } from './jobs/autoBackup';
+import { startSubscriptionNotifierJob } from './jobs/subscriptionNotifier';
+import { startTrialCleanerJob } from './jobs/trialCleaner';
 
 const fastify = Fastify({
   logger: loggerConfig,
@@ -68,6 +71,7 @@ async function main() {
     await fastify.register(reportRoutes, { prefix: '/api/v1/reports' });
     await fastify.register(backupRoutes, { prefix: '/api/v1/backup' });
     await fastify.register(masterRoutes, { prefix: '/api/v1/master' });
+    await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
     // Start Fastify server
     const address = await fastify.listen({
       port: env.BACKEND_PORT,
@@ -83,6 +87,12 @@ async function main() {
 
     // Start Auto Backup Cron Job
     startAutoBackupJob();
+
+    // Start Subscription Expiration Notifier Cron Job
+    startSubscriptionNotifierJob();
+
+    // Start Trial Cleaner Cron Job
+    startTrialCleanerJob();
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

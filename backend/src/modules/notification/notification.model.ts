@@ -5,7 +5,7 @@ export interface INotificationLog extends Document {
   santriId?: string | null;
   recipientPhone: string;
   recipientName: string;
-  type: 'HAFALAN_NEW' | 'MURAJAAH_SCHEDULE' | 'SYSTEM_ALERT' | 'REGISTRATION';
+  type: 'HAFALAN_NEW' | 'MURAJAAH_SCHEDULE' | 'SYSTEM_ALERT' | 'REGISTRATION' | 'SUBSCRIPTION_ALERT';
   message: string;
   status: 'SENT' | 'FAILED' | 'PENDING';
   errorMessage?: string | null;
@@ -21,7 +21,7 @@ const NotificationLogSchema: Schema = new Schema(
     recipientName: { type: String, required: true },
     type: {
       type: String,
-      enum: ['HAFALAN_NEW', 'MURAJAAH_SCHEDULE', 'SYSTEM_ALERT', 'REGISTRATION'],
+      enum: ['HAFALAN_NEW', 'MURAJAAH_SCHEDULE', 'SYSTEM_ALERT', 'REGISTRATION', 'SUBSCRIPTION_ALERT'],
       required: true,
     },
     message: { type: String, required: true },

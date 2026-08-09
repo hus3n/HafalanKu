@@ -64,6 +64,12 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
         return <span className="text-xs font-semibold text-primary">Setoran Hafalan Baru</span>;
       case 'MURAJAAH_SCHEDULE':
         return <span className="text-xs font-semibold text-accent">Jadwal Murajaah</span>;
+      case 'SYSTEM_ALERT':
+        return <span className="text-xs font-semibold text-rose-500">Info Sistem</span>;
+      case 'REGISTRATION':
+        return <span className="text-xs font-semibold text-sky-500">Pendaftaran</span>;
+      case 'SUBSCRIPTION_ALERT':
+        return <span className="text-xs font-semibold text-amber-500">Info Langganan</span>;
       default:
         return <span className="text-xs text-muted-foreground">{type}</span>;
     }

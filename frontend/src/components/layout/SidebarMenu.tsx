@@ -14,7 +14,8 @@ import {
   HardDrive,
   Building,
   QrCode,
-  Bell
+  Bell,
+  Server
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
@@ -52,13 +53,13 @@ export function SidebarMenu({ isCollapsed = false }: SidebarMenuProps) {
       title: 'Hafalan (Riwayat)',
       href: '/hafalan',
       icon: <BookOpen className="w-5 h-5" />,
-      roles: ['ADMIN', 'USER'],
+      roles: ['USER'],
     },
     {
       title: 'Hafalan Awal',
       href: '/hafalan/rekap',
       icon: <BookOpen className="w-5 h-5" />,
-      roles: ['ADMIN', 'USER'],
+      roles: ['USER'],
     },
     {
       title: 'Murajaah',
@@ -94,6 +95,12 @@ export function SidebarMenu({ isCollapsed = false }: SidebarMenuProps) {
       title: 'Superadmin Panel',
       href: '/superadmin',
       icon: <ShieldAlert className="w-5 h-5" />,
+      roles: ['SUPERADMIN'],
+    },
+    {
+      title: 'Pengaturan Sistem',
+      href: '/settings/system',
+      icon: <Server className="w-5 h-5" />,
       roles: ['SUPERADMIN'],
     },
     {

@@ -14,9 +14,10 @@ const createUserFormSchema = z.object({
   email: z.string().email('Format email tidak valid'),
   password: z.string().min(8, 'Password minimal 8 karakter'),
   role: z.enum(['ADMIN', 'USER']),
-  phone: z.string().optional(),
+  phone: z.string().min(10, 'Nomor WhatsApp / HP tidak valid (minimal 10 digit)'),
   organizationName: z.string().optional(),
   organizationId: z.string().nullable().optional(),
+  trialOption: z.string().optional(),
 });
 
 const updateUserFormSchema = z.object({
@@ -24,7 +25,7 @@ const updateUserFormSchema = z.object({
   email: z.string().email('Format email tidak valid'),
   role: z.enum(['SUPERADMIN', 'ADMIN', 'USER']),
   isActive: z.boolean(),
-  phone: z.string().optional(),
+  phone: z.string().optional(), // Di update, phone opsional jika hanya update sebagian, tapi kalau update profile disarankan ada
   organizationName: z.string().optional(),
   organizationId: z.string().nullable().optional(),
 });
@@ -55,6 +56,7 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
       phone: initialData?.phone || '',
       organizationName: initialData?.organization?.name || currentUser?.organization?.name || '',
       organizationId: initialData?.organizationId || currentUser?.organizationId || null,
+      trialOption: 'none',
     },
   });
 
@@ -72,7 +74,15 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
   });
 
   const handleCreateSubmit = createForm.handleSubmit((data) => {
-    onSubmitCreate?.(data);
+    let isTrial = false;
+    let trialDays = 0;
+    
+    if (data.trialOption === '2') { isTrial = true; trialDays = 2; }
+    else if (data.trialOption === '3') { isTrial = true; trialDays = 3; }
+    else if (data.trialOption === '7') { isTrial = true; trialDays = 7; }
+
+    const { trialOption, ...submitData } = data;
+    onSubmitCreate?.({ ...submitData, isTrial, trialDays });
   });
 
   const handleUpdateSubmit = updateForm.handleSubmit((data) => {
@@ -167,10 +177,28 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
           </select>
         </div>
 
+        {/* Trial Account Dropdown (Only for Create Mode) */}
+        {!isEdit && (
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Jenis Akun
+            </label>
+            <select
+              {...createForm.register('trialOption')}
+              className="w-full h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all cursor-pointer font-medium"
+            >
+              <option value="none">Tidak (Akun Permanen)</option>
+              <option value="2">Trial 2 Hari</option>
+              <option value="3">Trial 3 Hari</option>
+              <option value="7">Trial 7 Hari</option>
+            </select>
+          </div>
+        )}
+
         {/* Phone Input */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-            <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Nomor WhatsApp / HP
+            <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Nomor WhatsApp / HP {(!isEdit) && <span className="text-rose-500">*</span>}
           </label>
           <input
             type="text"
@@ -178,6 +206,12 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
             {...(isEdit ? updateForm.register('phone') : createForm.register('phone'))}
             className="w-full h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
           />
+          {(!isEdit && createForm.formState.errors.phone) && (
+            <p className="text-xs text-rose-500 flex items-center gap-1 mt-1">
+              <AlertCircle className="w-3 h-3" />
+              {createForm.formState.errors.phone.message}
+            </p>
+          )}
         </div>
       </div>
 

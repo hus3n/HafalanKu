@@ -38,6 +38,8 @@ export interface CreateUserInput {
   phone?: string;
   organizationId?: string | null;
   organizationName?: string;
+  isTrial?: boolean;
+  trialDays?: number;
 }
 
 export interface UpdateUserInput {

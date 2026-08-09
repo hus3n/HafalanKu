@@ -11,11 +11,15 @@ import { LoginInput, loginSchema } from 'shared';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { User } from 'shared';
 
 export function LoginForm() {
   const router = useRouter();
   const { setAuth } = useAuth();
+  const searchParams = useSearchParams();
+  const isPending = searchParams.get('pending') === 'true';
+
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -79,6 +83,15 @@ export function LoginForm() {
               className="p-3 text-sm text-destructive-foreground bg-destructive/90 rounded-md border border-destructive/20 text-center"
             >
               {errorMsg}
+            </motion.div>
+          )}
+          {isPending && !errorMsg && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="p-3 text-sm text-emerald-700 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-center"
+            >
+              Pendaftaran berhasil! Akun Anda sedang diverifikasi. Silakan hubungi Admin via WhatsApp.
             </motion.div>
           )}
         </AnimatePresence>

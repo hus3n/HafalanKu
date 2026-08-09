@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Lock, Mail, User as UserIcon, Building2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Lock, Mail, User as UserIcon, Building2, Eye, EyeOff, Phone } from 'lucide-react';
 import { RegisterInput, registerSchema } from 'shared';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -38,19 +38,27 @@ export function RegisterForm() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterInput) => {
-      const res = await api.post<{ user: User; token: string; refreshToken: string }>('/auth/register', data);
-      return res;
+      // Perhatikan token dan refreshToken dihapus dari response yang diharapkan
+      const res = await api.post<{ user: User; message?: string }>('/auth/register', data);
+      return { res, originalData: data };
     },
-    onSuccess: (response) => {
-      if (response.success && response.data) {
+    onSuccess: ({ res, originalData }) => {
+      if (res.success && res.data) {
         setIsSuccess(true);
-        setAuth(response.data.user, response.data.token);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+        // Susun pesan WhatsApp
+        const waNumber = '6285229925593';
+        const waText = `Assalamu'alaikum Admin,\n\nSaya ingin mengaktifkan akun HafalanKu saya dengan detail berikut:\n\nNama: ${originalData.name}\nEmail: ${originalData.email}\nTipe Akun: ${originalData.accountType === 'organization' ? 'Admin Organisasi' : 'Pengajar/User'}\n\nMohon untuk segera diaktifkan. Terima kasih.`;
+        const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
+        
+        // Buka WA di tab baru
+        window.open(waUrl, '_blank');
+
+        // Arahkan kembali ke halaman login
         setTimeout(() => {
-          router.push('/dashboard');
-        }, 500);
+          router.push('/login?pending=true');
+        }, 1000);
       } else {
-        setErrorMsg(response.message || 'Gagal mendaftar. Silakan coba lagi.');
+        setErrorMsg(res.message || 'Gagal mendaftar. Silakan coba lagi.');
       }
     },
     onError: (error: any) => {
@@ -190,6 +198,25 @@ export function RegisterForm() {
             />
           </div>
           {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className="space-y-2"
+        >
+          <label className="text-sm font-medium leading-none">Nomor WhatsApp / HP <span className="text-rose-500">*</span></label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="081234567890"
+              {...register('phone')}
+              className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pl-10 transition-colors"
+            />
+          </div>
+          {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
         </motion.div>
 
         <motion.div

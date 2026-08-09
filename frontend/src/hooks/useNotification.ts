@@ -7,7 +7,7 @@ export interface NotificationLogItem {
   santriId?: string | null;
   recipientPhone: string;
   recipientName: string;
-  type: 'HAFALAN_NEW' | 'MURAJAAH_SCHEDULE' | 'SYSTEM_ALERT' | 'REGISTRATION';
+  type: 'HAFALAN_NEW' | 'MURAJAAH_SCHEDULE' | 'SYSTEM_ALERT' | 'REGISTRATION' | 'SUBSCRIPTION_ALERT';
   message: string;
   status: 'SENT' | 'FAILED' | 'PENDING';
   errorMessage?: string | null;

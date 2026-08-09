@@ -5,9 +5,11 @@ export const createUserSchema = z.object({
   email: z.string().email('Format email tidak valid'),
   password: z.string().min(8, 'Password minimal 8 karakter'),
   role: z.enum(['SUPERADMIN', 'ADMIN', 'USER']).default('USER'),
-  phone: z.string().optional(),
+  phone: z.string().min(10, 'Nomor WhatsApp / HP tidak valid (minimal 10 digit)'),
   organizationId: z.string().nullable().optional(),
   organizationName: z.string().optional(),
+  isTrial: z.boolean().optional(),
+  trialDays: z.number().optional(),
 });
 
 export const updateUserSchema = z.object({

@@ -48,11 +48,18 @@ export class DashboardService {
       };
     } else {
       // Default USER stats
+      let accessWhere: any = {};
+      if (orgId) {
+        accessWhere = { user: { organizationId: orgId } };
+      } else {
+        accessWhere = { userId };
+      }
+
       const [totalSantri, totalKelas, totalHafalan, totalMurajaah] = await Promise.all([
-        prisma.santri.count({ where: { userId, deletedAt: null } }),
-        prisma.kelas.count({ where: { userId } }),
-        prisma.hafalan.count({ where: { userId } }),
-        prisma.murajaahSchedule.count({ where: { userId, isSelected: true } }),
+        prisma.santri.count({ where: { ...accessWhere, deletedAt: null } }),
+        prisma.kelas.count({ where: { ...accessWhere } }),
+        prisma.hafalan.count({ where: { ...accessWhere } }),
+        prisma.murajaahSchedule.count({ where: { ...accessWhere, isSelected: true } }),
       ]);
 
       result = {
