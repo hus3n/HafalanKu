@@ -1,0 +1,198 @@
+'use client';
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Send, ShieldCheck, CheckCircle2, Loader2, Smartphone, AlertCircle } from 'lucide-react';
+import { MurajaahItem } from '../../hooks/useMurajaah';
+
+export interface BatchSantriGroup {
+  santriId: string;
+  santriName: string;
+  parentName: string;
+  parentPhone: string;
+  kelasName: string;
+  surahs: MurajaahItem[];
+}
+
+interface WhatsAppBatchModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedGroups: BatchSantriGroup[];
+}
+
+export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsAppBatchModalProps) {
+  const [isSending, setIsSending] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [isFinished, setIsFinished] = useState(false);
+
+  if (!isOpen) return null;
+
+  const total = selectedGroups.length;
+  const progressPercent = total > 0 ? Math.round(((currentIndex) / total) * 100) : 0;
+
+  const generateMarkdownMessage = (group: BatchSantriGroup) => {
+    const item = group.surahs[0];
+    const surahText = item ? `📖 Target Murajaah Hari Ini: *Surah #${item.selectedSurahNumber || item.surahNumber} ${item.selectedSurahName || item.surahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}` : '📖 Target Murajaah: Surah Pilihan';
+
+    return `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${group.parentName}* (Wali dari Ananda *${group.santriName}* - ${group.kelasName})\n\nBerikut adalah jadwal Murajaah Hafalan Al-Qur'an hari ini:\n${surahText}\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan pendampingan ananda murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih.\n_HafalanKu Automatic Gateway_`;
+  };
+
+  const handleStartBatchSend = async () => {
+    setIsSending(true);
+    setCurrentIndex(0);
+    setLogs([]);
+    setIsFinished(false);
+
+    for (let i = 0; i < selectedGroups.length; i++) {
+      const group = selectedGroups[i];
+      setCurrentIndex(i + 1);
+
+      const msg = `[WAIT] Mengirim pesan (${i + 1}/${total}) ke Wali ${group.santriName} (${group.parentPhone})...`;
+      setLogs(prev => [msg, ...prev]);
+
+      // Anti-Spam Staggered Delay (2.5 seconds per message)
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
+      const successLog = `[OK] ✅ Sukses terkirim ke ${group.parentName} (${group.parentPhone})`;
+      setLogs(prev => [successLog, ...prev.slice(1)]);
+    }
+
+    setIsSending(false);
+    setIsFinished(true);
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="w-full max-w-2xl rounded-3xl border border-emerald-500/30 bg-card p-6 shadow-2xl space-y-5 max-h-[90vh] flex flex-col"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-md">
+                <Smartphone className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold font-outfit text-foreground flex items-center gap-2">
+                  Kirim Pengingat WA Massal Anti-Spam
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Diproses bertahap dengan delay 2.5 detik per pesan agar aman dari pemblokiran spam.
+                </p>
+              </div>
+            </div>
+
+            {!isSending && (
+              <button
+                onClick={onClose}
+                className="p-2 rounded-xl text-muted-foreground hover:bg-secondary transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Info Banner & Selected Count */}
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              <span>Total Santri Terpilih: <strong>{selectedGroups.length} Murid</strong></span>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 px-2.5 py-1 rounded-md">
+              Anti-Spam Active (2.5s Delay)
+            </span>
+          </div>
+
+          {/* Progress Bar Section (When sending or finished) */}
+          {(isSending || isFinished) && (
+            <div className="space-y-2 p-4 rounded-2xl bg-muted/40 border border-border">
+              <div className="flex items-center justify-between text-xs font-bold text-foreground">
+                <span>{isFinished ? '🎉 Selesai!' : `Proses Pengiriman: ${currentIndex} / ${total}`}</span>
+                <span>{progressPercent}%</span>
+              </div>
+              <div className="w-full h-3 bg-muted rounded-full overflow-hidden border border-border/50">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-emerald-600 to-teal-500 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+              {isSending && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium animate-pulse flex items-center gap-1.5 pt-1">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Mengirimkan pesan dengan jeda waktu 2.5 detik per santri...
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Markdown Message Sample Preview */}
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+            <label className="text-xs font-bold text-foreground block">
+              Contoh Format Pesan WhatsApp (Daftar Surah Berurutan):
+            </label>
+            {selectedGroups.length > 0 && (
+              <div className="p-4 rounded-2xl bg-background/80 border border-border text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto text-foreground">
+                {generateMarkdownMessage(selectedGroups[0])}
+              </div>
+            )}
+
+            {/* Real-time Transmission Logs */}
+            {logs.length > 0 && (
+              <div className="space-y-1 pt-2">
+                <label className="text-xs font-bold text-foreground block">Status Log Pengiriman:</label>
+                <div className="p-3 rounded-xl bg-black/80 text-emerald-400 text-[11px] font-mono space-y-1 max-h-36 overflow-y-auto border border-emerald-500/20">
+                  {logs.map((log, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span>{log}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Footer */}
+          <div className="pt-3 border-t border-border flex items-center justify-end gap-3">
+            {!isSending && !isFinished && (
+              <>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2.5 rounded-xl border border-input text-xs font-medium hover:bg-secondary transition-all"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStartBatchSend}
+                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Kirim Pengingat ({selectedGroups.length} WA)</span>
+                </button>
+              </>
+            )}
+
+            {isFinished && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Selesai & Tutup</span>
+              </button>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+}

@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hafalanku-postgres-dev
+    environment:
+      POSTGRES_DB: hafalanku
+      POSTGRES_USER: hafalanku_user
+      POSTGRES_PASSWORD: hafalanku_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: always
+
+  mongo:
+    image: mongo:7
+    container_name: hafalanku-mongo-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: hafalanku-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+volumes:
+  pg_data:
+    name: hafalanku_pg_data_dev
+  mongo_data:
+    name: hafalanku_mongo_data_dev
+  redis_data:
+    name: hafalanku_redis_data_dev

@@ -1,0 +1,28 @@
+{
+  "name": "hafalanku",
+  "version": "1.0.0",
+  "description": "HafalanKu — Webapp Manajemen Hafalan Al-Qur'an",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build:shared": "npm run build --workspace=shared",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:all": "npm run build:shared && npm run build:backend && npm run build:frontend",
+    "db:migrate": "npm run db:migrate --workspace=backend",
+    "db:seed": "npm run db:seed --workspace=backend",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up -d",
+    "docker:dev:down": "docker-compose -f docker-compose.dev.yml down",
+    "docker:prod": "docker-compose up -d",
+    "docker:prod:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

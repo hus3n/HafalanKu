@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* shadcn/ui base colors */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  :root {
+    --background: 150 20% 98%; /* Crisp Mint Cream / White */
+    --foreground: 160 50% 10%; /* Solid Dark Emerald Slate #062017 */
+    --card: 0 0% 100%; /* Solid Pure White #ffffff */
+    --card-foreground: 160 50% 10%; /* Solid Dark Text #062017 */
+    --popover: 0 0% 100%; /* Solid White Popover */
+    --popover-foreground: 160 50% 10%;
+    --primary: 162 85% 15%; /* Solid Deep Emerald #064e3b for Navbar & Sidebar */
+    --primary-foreground: 0 0% 100%; /* Solid White */
+    --secondary: 160 84% 39%; /* Vibrant Emerald Green #059669 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 150 15% 94%; /* Solid Clean Mint Gray */
+    --muted-foreground: 160 25% 35%; /* Solid Dark Muted Green */
+    --accent: 160 84% 39%; /* Vibrant Emerald */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 20% 88%; /* Solid Crisp Border */
+    --input: 150 20% 88%;
+    --ring: 160 84% 39%;
+    --radius: 0.85rem;
+  }
+
+  .dark {
+    --background: 160 30% 7%; /* Solid Deep Dark Emerald #091812 */
+    --foreground: 150 20% 96%; /* Solid Light Text #f0f7f4 */
+    --card: 160 25% 12%; /* Solid Dark Emerald Container #13261e */
+    --card-foreground: 150 20% 96%;
+    --popover: 160 25% 12%; /* Solid Dark Popover */
+    --popover-foreground: 150 20% 96%;
+    --primary: 160 65% 18%; /* Solid Dark Emerald Navbar/Sidebar #0a2e22 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 70% 35%; /* Vibrant Emerald #10b981 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 160 20% 18%; /* Solid Dark Muted */
+    --muted-foreground: 150 15% 70%; /* Solid Muted Light */
+    --accent: 160 70% 35%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 20% 20%; /* Solid Dark Border #1d3b2e */
+    --input: 160 20% 20%;
+    --ring: 160 70% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  /* Solid elevated cards with high contrast and smooth shadow */
+  .glass {
+    @apply bg-card border border-border shadow-md dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)];
+  }
+  
+  .glass-card {
+    @apply bg-card border border-border shadow-[0_4px_20px_rgba(0,0,0,0.06)] rounded-2xl dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)];
+  }
+  
+  /* Solid primary text - strictly no gradient text */
+  .text-gradient {
+    @apply text-foreground font-bold;
+  }
+
+  .animated-bg {
+    @apply bg-background;
+  }
+}
+
+/* Smooth scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+

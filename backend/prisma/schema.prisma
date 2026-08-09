@@ -1,0 +1,176 @@
+// File: backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+enum Predikat {
+  MUMTAZ
+  JAYYID_JIDDAN
+  JAYYID
+  MAQBUL
+  ULANG
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String
+  passwordHash    String    @map("password_hash")
+  role            Role      @default(USER)
+  phone           String?   
+  avatarUrl       String?   @map("avatar_url")
+  isActive        Boolean   @default(true) @map("is_active")
+  organizationId  String?   @map("organization_id")
+  loginAttempts   Int       @default(0) @map("login_attempts")
+  lockedUntil     DateTime? @map("locked_until")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization    Organization? @relation("OrgMembers", fields: [organizationId], references: [id])
+  ownedOrg        Organization? @relation("OrgAdmin")
+  santri          Santri[]
+  kelas           Kelas[]
+  hafalan         Hafalan[]
+  murajaah        MurajaahSchedule[]
+  murajaahHistory MurajaahHistory[]
+  passwordHistory PasswordHistory[]
+
+  @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  adminId   String   @unique @map("admin_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  admin   User   @relation("OrgAdmin", fields: [adminId], references: [id])
+  members User[] @relation("OrgMembers")
+
+  @@map("organizations")
+}
+
+model Santri {
+  id          String    @id @default(uuid())
+  name        String
+  parentName  String    @map("parent_name")
+  parentPhone String    @map("parent_phone") 
+  kelasId     String?   @map("kelas_id")
+  userId      String    @map("user_id")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at") 
+
+  user     User              @relation(fields: [userId], references: [id])
+  kelas    Kelas?            @relation(fields: [kelasId], references: [id])
+  hafalan  Hafalan[]
+  murajaah MurajaahSchedule[]
+  murajaahHistory MurajaahHistory[]
+
+  @@index([userId])
+  @@index([kelasId])
+  @@index([deletedAt]) 
+  @@map("santri")
+}
+
+model Kelas {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user   User     @relation(fields: [userId], references: [id])
+  santri Santri[]
+
+  @@index([userId])
+  @@map("kelas")
+}
+
+model Hafalan {
+  id          String   @id @default(uuid())
+  santriId    String   @map("santri_id")
+  surahNumber Int      @map("surah_number") 
+  surahName   String   @map("surah_name")   
+  ayatStart   Int      @map("ayat_start")
+  ayatEnd     Int      @map("ayat_end")
+  predikat    Predikat
+  date        DateTime
+  notes       String?
+  userId      String   @map("user_id") 
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  santri Santri @relation(fields: [santriId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([santriId])
+  @@index([userId])
+  @@index([surahNumber])
+  @@index([date])
+  @@map("hafalan")
+}
+
+model MurajaahSchedule {
+  id             String   @id @default(uuid())
+  santriId       String   @map("santri_id")
+  surahNumber    Int      @map("surah_number")
+  surahName      String   @map("surah_name")
+  isSelected     Boolean  @default(true) @map("is_selected")
+  lastReviewDate DateTime? @map("last_review_date")
+  priorityScore  Float    @default(0) @map("priority_score") 
+  userId         String   @map("user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  santri Santri @relation(fields: [santriId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([santriId, surahNumber])
+  @@index([userId])
+  @@map("murajaah_schedules")
+}
+
+model MurajaahHistory {
+  id             String   @id @default(uuid())
+  santriId       String   @map("santri_id")
+  surahNumber    Int      @map("surah_number")
+  surahName      String   @map("surah_name")
+  status         String   @default("BELUM") 
+  date           DateTime @default(now())
+  userId         String   @map("user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  santri Santri @relation(fields: [santriId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([santriId])
+  @@index([userId])
+  @@index([date])
+  @@map("murajaah_histories")
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("password_history")
+}
