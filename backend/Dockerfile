@@ -27,6 +27,9 @@ RUN npm run build:shared
 RUN cd backend && npx prisma generate
 RUN npm run build:backend
 
+# Compile seed.ts to seed.js so we can run it with plain node in production
+RUN cd backend && npx tsc --esModuleInterop --module commonjs --target ES2022 --outDir prisma prisma/seed.ts --skipLibCheck
+
 FROM node:20-alpine AS runner
 
 # Install OpenSSL for Prisma
@@ -41,11 +44,10 @@ COPY --from=builder /app/shared ./shared
 COPY --from=builder /app/backend/package.json ./backend/
 COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/prisma ./backend/prisma
-COPY --from=builder /app/backend/tsconfig.json ./backend/
 
 # Set production environment
 ENV NODE_ENV=production
 EXPOSE 4000
 
 # Run database migration, seed data, and start backend workspace
-CMD ["sh", "-c", "cd backend && while ! npx prisma migrate deploy; do echo 'Waiting for Database to be ready...'; sleep 3; done && npx prisma db seed && cd .. && npm run start --workspace=backend"]
+CMD ["sh", "-c", "cd backend && while ! npx prisma migrate deploy; do echo 'Waiting for Database to be ready...'; sleep 3; done && node prisma/seed.js && cd .. && npm run start --workspace=backend"]
