@@ -32,9 +32,12 @@ services:
       - NODE_ENV=production
       - BACKEND_PORT=4000
     depends_on:
-      - postgres
-      - mongo
-      - redis
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_started
     restart: always
   postgres:
     image: 'postgres:16-alpine'
@@ -45,6 +48,11 @@ services:
       - POSTGRES_DB=hafalanku
       - POSTGRES_USER=hafalanku_user
       - POSTGRES_PASSWORD=Rahas1a_PG_Coolify2026
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hafalanku_user -d hafalanku"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
   mongo:
     image: 'mongo:7'
