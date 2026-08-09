@@ -45,7 +45,7 @@ services:
     image: 'postgres:16-alpine'
     container_name: hafalanku-postgres
     volumes:
-      - 'pg_coolify_data:/var/lib/postgresql/data'
+      - 'pg_coolify_data_v2:/var/lib/postgresql/data'
     environment:
       - POSTGRES_DB=hafalanku
       - POSTGRES_USER=hafalanku_user
@@ -69,8 +69,8 @@ services:
       - 'redis_coolify_data:/data'
     restart: always
 volumes:
-  pg_coolify_data:
-    name: hafalanku_pg_coolify_data
+  pg_coolify_data_v2:
+    name: hafalanku_pg_coolify_data_v2
   mongo_coolify_data:
     name: hafalanku_mongo_coolify_data
   redis_coolify_data:
