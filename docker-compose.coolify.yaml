@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.hafalanku.com/v1}
     container_name: hafalanku-frontend
     ports:
       - '3000:3000'
