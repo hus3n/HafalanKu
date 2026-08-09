@@ -26,7 +26,8 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=sangat_rahasia_jwt_secret_coolify_2026_auto
       - APP_SECRET=sangat_rahasia_app_secret_coolify_2026_auto
-      - TELEGRAM_BOT_TOKEN=
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
       - FRONTEND_URL=https://hafalanku.com
       - NODE_ENV=production
       - BACKEND_PORT=4000
