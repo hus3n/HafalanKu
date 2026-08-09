@@ -50,6 +50,7 @@ COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/prisma ./backend/prisma
 
 COPY --from=builder /app/backend/start.sh ./start.sh
+RUN sed -i 's/\r$//' ./start.sh
 RUN chmod +x ./start.sh
 
 WORKDIR /app/backend
