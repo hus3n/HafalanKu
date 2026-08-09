@@ -45,5 +45,5 @@ COPY --from=builder /app/backend/prisma ./backend/prisma
 ENV NODE_ENV=production
 EXPOSE 4000
 
-# Start backend workspace
-CMD ["npm", "run", "start", "--workspace=backend"]
+# Run database migration and start backend workspace
+CMD ["sh", "-c", "cd backend && npx prisma migrate deploy && cd .. && npm run start --workspace=backend"]
