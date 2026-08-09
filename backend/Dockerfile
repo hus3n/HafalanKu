@@ -27,9 +27,6 @@ RUN npm run build:shared
 RUN cd backend && npx prisma generate
 RUN npm run build:backend
 
-# Compile seed.ts to seed.js so we can run it with plain node in production
-RUN cd backend && npx tsc --esModuleInterop --module commonjs --target ES2022 --outDir prisma prisma/seed.ts --skipLibCheck
-
 FROM node:20-alpine AS runner
 
 # Install OpenSSL for Prisma
