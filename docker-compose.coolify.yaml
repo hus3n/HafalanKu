@@ -32,6 +32,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    command: sh -c "npx prisma db push && node prisma/seed.js && npm run start"
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:-postgresql://hafalanku_user:P@ssw0rdHafalanKu2026!@hafalanku-postgres:5432/hafalanku?schema=public}
