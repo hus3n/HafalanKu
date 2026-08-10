@@ -11,12 +11,14 @@ export class BackupService {
   }
 
   async createBackup(userId: string) {
-    // 1. Export User Data
+    // 1. Export Data (if userId === 'system-auto-backup' or empty, export all)
+    const whereClause = (userId && userId !== 'system-auto-backup') ? { userId } : {};
+
     const [santris, kelases, hafalans, murajaahs] = await Promise.all([
-      prisma.santri.findMany({ where: { userId } }),
-      prisma.kelas.findMany({ where: { userId } }),
-      prisma.hafalan.findMany({ where: { userId } }),
-      prisma.murajaahSchedule.findMany({ where: { userId } }),
+      prisma.santri.findMany({ where: whereClause }),
+      prisma.kelas.findMany({ where: whereClause }),
+      prisma.hafalan.findMany({ where: whereClause }),
+      prisma.murajaahSchedule.findMany({ where: whereClause }),
     ]);
 
     const backupPayload = {

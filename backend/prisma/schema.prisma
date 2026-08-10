@@ -112,6 +112,7 @@ model Hafalan {
   predikat    Predikat
   date        DateTime
   notes       String?
+  isHafalanAwal Boolean  @default(false) @map("is_hafalan_awal")
   userId      String   @map("user_id") 
   createdAt   DateTime @default(now()) @map("created_at")
 

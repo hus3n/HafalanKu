@@ -20,6 +20,8 @@ export const updateUserSchema = z.object({
   phone: z.string().optional(),
   organizationId: z.string().nullable().optional(),
   organizationName: z.string().optional(),
+  activeUntil: z.string().nullable().optional(),
+  isTrial: z.boolean().optional(),
 });
 
 export const updateProfileSchema = z.object({

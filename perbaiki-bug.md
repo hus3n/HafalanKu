@@ -5,50 +5,41 @@ dan memanggil skill berikut
 - `C:\Users\M S I\.gemini\config\skills\antigravity-design-expert\SKILL.md`
 - `C:\Users\M S I\.gemini\config\skills\motion-framer\SKILL.md` untuk memperbaiki frontend
 
-berikan tanda pada task yang sudah dikerjakan. berhenti setelah mengerjakan 1 task tanpa menjalankan deploy ulang. 
+berikan tanda pada task yang sudah dikerjakan. berhenti setelah mengerjakan 1 task tanpa menjalankan deploy ulang. dilarang push perbaikan/permbaharuan ke github sampai diperbolehkan, larang AI untuk mendiskripsikan ulang task.
 
-# Task-01 [SELESAI]
-tujuan : memperbaiki logika riwayat khusus superadmin.
-perbaikan : Halaman riwayat notifikasi dashboard admin bukan riwayat wa ke wali murid tapi riwayat wa ke admin/user perorangan seputar langganan aplikasi, info pembaruan dll.
+# Task-01 
+tujuan : memperbaiki bug tampilan
+perbaikan : dalam tampilan ponsel terdapat bug ketika berpindah kehalaman yang lain terdapat bug freeze halaman. ketika halaman di refresh freeze hilang. coba berpindah kehalaman lain lagi kembali freeze, refresh normal kembali. perbaiki juga soal tampilan yang terpotong (jika ada)
 
-# Task-02 [SELESAI]
-tujuan : menambah fitur notifikasi masa aktif otomatis ke admin dan user perorangan
-perbaikan : Buatkan pesan yang akan dikirim secara otomatis ketika masa aktif user/admin akan habis H-1 untuk mengingatkan mereka agar melakukan perpanjangan ke superadmin.
 
-# Task-03 [SELESAI]
-Tujuan : logika daftar akun dan direk pesan otomatis ke aplikasi whatsapp
-perbaikan : Daftar akun ketika user memencet tombol daftar otomatis direct informasi akun ke WA admin untuk diaktifkan (membuka aplikasi wa dengan chat ke superadmin 6285229925593), simpan akun dalam keadaan pending (jangan langsung diaktifkan). admin akan mengaktifkan akun user lewat dashboard admin di halaman superadmin panel (buat agar admin bisa mengubah status akun aktif/tidak).
+# Task-02 
+tujuan : tambah fitur masa aktif
+perbaikan : logika masa aktif akun belum dibuat, buat juga agar admin bisa menyetel masa aktif akun di management user guna trial dan menetapkan masa aktif dari akun yang didaftarkan. buat juga pilihan di halaman pendaftaran masa aktif yang diinginkan/ingin mencoba trial dahulu.
 
-# Task-04 [SELESAI]
-Tujuan : membuat akun trial untuk admin
-fitur baru : Buat agar admin bisa membuat akun trial yang aktif selama 2/3/7 hari dan otomatis dihapus ketika akun sudah tidak aktif.
+# Task-03 
+Tujuan : Perubahan dan ajust system backup
+perbaikan : Buat backup otomatis ke telegram adalah setiap 1 jam lakukan backup sekali. juga buat agar tombol backup manual juga otomatis mengirimkan backup ke telagram juga ketika di klik, jadi sekali di klik mengirimkan 2 backup : mendonwload ke divice user dan mengirim ke telgram bot.
 
-# Task-05 [SELESAI]
-Tujuan : wajib mencantumkan nomor whatsapp ketika mendaftar atau didaftarkan.
-perbaikan : Buat agar semua user harus mencantumkan nomor whatsapp ketika mendaftar/didaftarkan. dan simpan juga tampilkan di dashboard superadmin di kolom no wa user agar admin bisa memberikan pesan baik blast/otomatis ketika masa aktif user sudah hampir habis (seperti yang disebutkan di task 2.)
 
-# Task-06 [SELESAI]
-Tujuan : berbaikan bug
-update : Ada error pada dropdown surat yang dihafal dihalaman awal santri, dropdown tidak terlihat dan tidak bisa dipilih.
+# Task-04 
+Tujuan : bug nomor
+fitur baru : ada bug pada penyimpanan nomor whatsapp ketika mendaftar, karena yang ditampilkan di halaman management user pada tabel nomor whatsapp kosong padahal ketika mendaftar sudah diisi.
 
-# Task-07 [SELESAI]
-Tujuan : perbaikan bug dan logika keterikan data antar user (organisai/perorangan), admin, dan superadmin.
-update : Ada error pada tampilan data santri dari user yang didaftarkan oleh admin organisasi. data santri tidak ditampilkan padahal sudah ada, untuk mempermudah logika pemisahan data gunakan parameter ini :
-- data hafalan selalu terikat dengan santri
-- data santri terikat dengan admin organisasi dan user/ustadz sesuai kelas/kelompok yang dipilih
-- data user yang didaftarkan admin organisasi terikat dengan organisasi dari admin yang mendaftarkan.
-- data yang boleh ditampilkan kepada ustadz terikat dengan data kelas/kelompok dan begitu sebaliknya kelas terikat dengan ustadz.
-- sedangkan data yang terikat dengan superadmin hanya data admin dan user non 
-khusus untuk user perorangan datanya santri, hafalan, dan kelas hanya terimat oleh user itu sendiri.
-- dengan keterikatan yang jelas, tidak boleh ada kebocoran data antar user, admin, dan superadmin. dan juga tidak ada data yang tidak ditampilkan padahal terikat dengan user yang membutuhkan
+# Task-05 
+Tujuan : pembaruan halaman hafalan awal dan update isian tabel, ubah fungsi kolom cari santri menjadi filter nama santri.
+perbaikan : Penulisan surat yang telah dihafal buat dengan filter nama (rubah kolom cari santri menjadi filter untuk menampilkan hafalan santri), jika filter nama di isi nama santri tabel menampilkan daftar hafalan dari nama yang ditulis di filter nama. jika filter kosong maka tabel juga kosong. tambah data ayat yang udah dihafal dari suatu surat (hanya berlaku untuk surat yang diupdate dari catatan hafalan baru) misal "An Naziat 1-35" padahal An Naziat ada 46 ayat update datanya sesuai dengan data hafalan baru yang terbaru.
 
-# Task-08 [SELESAI]
-Tujuan : nomor superadmin default
-perbaiki : Buat nomor 085229925593 sebagai nomor superadmin dan bisa diedit jika ingin dirubah dienv docker.
+# Task-06 
+Tujuan : perbaikan logika murajaah, pengahapusan fungsi murajaah otomatis, penambahan fitur edit pada tabel data murajaah hari ini.
+update : Pada halaman murajaah 1 nama santri hanya boleh memiliki 1 jadwal murajaah pada hari yang sama. buat tombol hapus pada tabel murajaah hari ini agar jika ustadz keliru untuk membuat jadwal, jadwal bisa dihapus dan diganti dengan jadwal baru. dan jangan memasukkan hafalan yang tidak dipilih oleh ustadz (karena ketika tes fitur saya menemukan bahwa hafalan yang disimpan dihalaman hafalan awal otomatis ditambahkan ke jadwal murajaah, padahal fitur murajaah otomatis sudah kita hilangkan) sekarang seluruh jadwal murajaah hanya boleh di jadwalkan oleh user menggunakan fitur tambah data murajaah, sehingga fitur murajaah otomatis tidak dibutuhkan, hapus/hilangkan fitur.
 
-# Task-09 [SELESAI]
-Tujuan : perbaikan bug
-perbaikan : Sidebar admin masih menampilkan hafalan (riwayat) padahal akses ditolak. perbaiki tampilannya saja.
+# Task-07 
+Tujuan : pembaharuan pada logika simpan hafalan dan update data tabel.
+update : pada halaman hafalan riwayat tidak perlu menampilkan hafalan yang dimasukkan di halaman hafalan awal, halaman hafalan (riwayat hanya menampilkan riwayat hafalan baru saja.) sedangkan hafalan lama semua tersimpan dan akan ditampilkan jika ada nama yang ditulis dikolom filter nama (lihat task 5), pada halaman riwayat hafalan juga tabel menampilkan hafalan yang disimpan dari halaman hafalan awal padahal itu tidak diperlukan. halaman riwayat hafalan hanya menampilkan hafalan yang di catat dari halaman riwayat hafalan.
+
+# Task-08 
+Tujuan : update keterikatan antar data dan penampilan data
+perbaiki : buat agar santri yang diinput oleh admin organisasi harus terikat dengan kelas yang ada, dan kelas yang ada terikat dengan ustadz/user yang didaftarkan lewat admin organisasi. jadi ketika ingin input kelas baru admin harus memilih kepada user mana dari organisasinya akan di tautkan. dan ketika ingin input nama siswa baru maka siswa tersebut harus di masukkan kesalah satu kelas yang terdaftar. sehingga nantinya user dari kelas lain tidak bisa melihat siswa dari kelas yang bukan tanggung jawabnya. misal user "nisa" di tautkan ke "kelas/kelompok A" maka ketika user "nisa" membuka halaman riwayat hafalan, yang ditampilkan hanya nama santri yang tergabung dalam" kelas A" begitupun user organisasi yang lain.
 
 # Task Terakhir [SELESAI]
 Tujuan : Memverifikasi ulang kode yang sudah diperbaiki agar tidak ada bug. dan cek apakah penulisan seluruh kode yang ada sudah sesuai dengan skill cc-skill-coding-standards 

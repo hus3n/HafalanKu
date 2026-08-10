@@ -7,6 +7,8 @@ export async function murajaahRoutes(fastify: FastifyInstance) {
 
   fastify.get('/', MurajaahController.getSchedules);
   fastify.post('/', MurajaahController.createSchedule);
+  fastify.put('/:id', MurajaahController.updateSchedule);
+  fastify.delete('/:id', MurajaahController.deleteSchedule);
   fastify.get('/history', MurajaahController.getHistory);
   fastify.put('/:id/toggle', MurajaahController.toggle);
   fastify.post('/send/:santriId', MurajaahController.sendWhatsApp);

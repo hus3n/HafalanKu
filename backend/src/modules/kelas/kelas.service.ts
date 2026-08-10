@@ -18,7 +18,7 @@ export class KelasService {
       data: {
         name: data.name,
         description: data.description || null,
-        userId: currentUser.userId,
+        userId: data.userId || currentUser.userId,
       },
     });
 
@@ -27,6 +27,9 @@ export class KelasService {
 
   private buildAccessWhere(user: { userId: string; role: string; orgId?: string | null }) {
     if (user.role === 'SUPERADMIN') return {};
+    if (user.role === 'USER') {
+      return { userId: user.userId };
+    }
     if (user.orgId) {
       return {
         user: { organizationId: user.orgId }
@@ -47,6 +50,7 @@ export class KelasService {
       where,
       orderBy: { name: 'asc' },
       include: {
+        user: { select: { id: true, name: true } },
         _count: {
           select: {
             santri: {
@@ -62,6 +66,7 @@ export class KelasService {
       name: k.name,
       description: k.description,
       userId: k.userId,
+      ustadzName: k.user?.name || '-',
       createdAt: k.createdAt,
       totalSantri: k._count.santri,
     }));
@@ -72,6 +77,7 @@ export class KelasService {
     const kelas = await prisma.kelas.findFirst({
       where: { id, ...accessWhere },
       include: {
+        user: { select: { id: true, name: true } },
         santri: {
           where: { deletedAt: null },
           select: {
@@ -106,6 +112,7 @@ export class KelasService {
       data: {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
+        ...(data.userId && { userId: data.userId }),
       },
     });
 

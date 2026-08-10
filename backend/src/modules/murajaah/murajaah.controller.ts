@@ -47,6 +47,23 @@ export class MurajaahController {
     return reply.send({ success: true, data: result });
   }
 
+  static async updateSchedule(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user!.userId;
+    const { id } = req.params as { id: string };
+    const { surahNumber, surahName } = req.body as { surahNumber: number; surahName: string };
+
+    const result = await murajaahService.updateScheduleSurah(userId, id, surahNumber, surahName);
+    return reply.send({ success: true, message: 'Jadwal murajaah berhasil diperbarui', data: result });
+  }
+
+  static async deleteSchedule(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user!.userId;
+    const { id } = req.params as { id: string };
+
+    const result = await murajaahService.deleteSchedule(userId, id);
+    return reply.send({ success: true, message: 'Jadwal murajaah berhasil dihapus', data: result });
+  }
+
   static async sendWhatsApp(req: FastifyRequest, reply: FastifyReply) {
     const userId = req.user!.userId;
     const { santriId } = req.params as { santriId: string };

@@ -6,6 +6,8 @@ export interface KelasItem {
   id: string;
   name: string;
   description?: string | null;
+  userId?: string;
+  ustadzName?: string;
   totalSantri?: number;
   createdAt?: string;
   santri?: Array<{

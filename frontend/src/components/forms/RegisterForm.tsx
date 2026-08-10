@@ -222,6 +222,25 @@ export function RegisterForm() {
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.24 }}
+          className="space-y-2"
+        >
+          <label className="text-sm font-medium leading-none">Masa Aktif Akun yang Diinginkan</label>
+          <select
+            {...register('trialPeriod')}
+            className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors cursor-pointer font-medium"
+          >
+            <option value="7_DAYS">Trial Gratis (7 Hari)</option>
+            <option value="14_DAYS">Trial Gratis (14 Hari)</option>
+            <option value="30_DAYS">Trial Gratis (30 Hari)</option>
+            <option value="1_MONTH">Paket 1 Bulan</option>
+            <option value="1_YEAR">Paket 1 Tahun</option>
+          </select>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
           className="space-y-2"
         >

@@ -25,9 +25,11 @@ const updateUserFormSchema = z.object({
   email: z.string().email('Format email tidak valid'),
   role: z.enum(['SUPERADMIN', 'ADMIN', 'USER']),
   isActive: z.boolean(),
-  phone: z.string().optional(), // Di update, phone opsional jika hanya update sebagian, tapi kalau update profile disarankan ada
+  phone: z.string().optional(),
   organizationName: z.string().optional(),
   organizationId: z.string().nullable().optional(),
+  activeUntil: z.string().nullable().optional(),
+  isTrial: z.boolean().optional(),
 });
 
 type CreateFormData = z.infer<typeof createUserFormSchema>;
@@ -60,6 +62,10 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
     },
   });
 
+  const formattedActiveUntil = initialData?.activeUntil 
+    ? new Date(initialData.activeUntil).toISOString().split('T')[0]
+    : '';
+
   const updateForm = useForm<UpdateFormData>({
     resolver: zodResolver(updateUserFormSchema),
     defaultValues: {
@@ -70,6 +76,8 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
       phone: initialData?.phone || '',
       organizationName: initialData?.organization?.name || '',
       organizationId: initialData?.organizationId || null,
+      activeUntil: formattedActiveUntil,
+      isTrial: initialData?.isTrial || false,
     },
   });
 
@@ -269,18 +277,44 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
         </p>
       </div>
 
-      {/* Active Toggle (Only for Edit Mode) */}
+      {/* Active & Masa Aktif Toggle (Only for Edit Mode) */}
       {isEdit && (
-        <div className="pt-2 flex items-center justify-between p-3.5 rounded-xl border border-border/40 bg-secondary/30">
-          <div>
-            <label className="text-xs font-semibold text-foreground block">Status Akun Pengguna</label>
-            <p className="text-[11px] text-muted-foreground">Aktifkan untuk memberikan hak akses masuk sistem.</p>
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/40 bg-secondary/30">
+            <div>
+              <label className="text-xs font-semibold text-foreground block">Status Akun Pengguna</label>
+              <p className="text-[11px] text-muted-foreground">Aktifkan untuk memberikan hak akses masuk sistem.</p>
+            </div>
+            <input
+              type="checkbox"
+              {...updateForm.register('isActive')}
+              className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
+            />
           </div>
-          <input
-            type="checkbox"
-            {...updateForm.register('isActive')}
-            className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
-          />
+
+          {currentUser?.role === 'SUPERADMIN' && (
+            <div className="p-3.5 rounded-xl border border-border/40 bg-secondary/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-xs font-semibold text-foreground block">Masa Aktif Akun (Active Until)</label>
+                  <p className="text-[11px] text-muted-foreground">Kosongkan jika akun berlaku selamanya (Permanen).</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium text-muted-foreground">Trial?</label>
+                  <input
+                    type="checkbox"
+                    {...updateForm.register('isTrial')}
+                    className="w-4 h-4 accent-amber-600 rounded cursor-pointer"
+                  />
+                </div>
+              </div>
+              <input
+                type="date"
+                {...updateForm.register('activeUntil')}
+                className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+          )}
         </div>
       )}
 

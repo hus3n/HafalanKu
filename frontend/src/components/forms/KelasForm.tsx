@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createKelasSchema, CreateKelasInput } from 'shared';
 import { motion } from 'motion/react';
-import { Building, FileText, Loader2 } from 'lucide-react';
+import { useUsers } from '../../hooks/useUsers';
+import { Building, FileText, Loader2, User as UserIcon } from 'lucide-react';
 
 interface KelasFormProps {
   initialValues?: Partial<CreateKelasInput>;
@@ -20,6 +21,9 @@ export function KelasForm({
   isLoading = false,
   submitText = 'Simpan Kelas',
 }: KelasFormProps) {
+  const { data: usersData } = useUsers({ limit: 100 });
+  const ustadzList = usersData?.data?.filter((u) => u.role === 'USER') || [];
+
   const {
     register,
     handleSubmit,
@@ -29,6 +33,7 @@ export function KelasForm({
     defaultValues: {
       name: initialValues?.name || '',
       description: initialValues?.description || '',
+      userId: (initialValues as any)?.userId || '',
     },
   });
 
@@ -47,6 +52,26 @@ export function KelasForm({
           className="flex h-11 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
         />
         {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+      </div>
+
+      {/* Ustadz Pengampu */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium leading-none flex items-center gap-2">
+          <UserIcon className="w-4 h-4 text-primary" />
+          Ustadz Pengampu / Pencatat
+        </label>
+        <select
+          {...register('userId')}
+          className="flex h-11 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all cursor-pointer"
+        >
+          <option value="">-- Pilih Ustadz Pengampu --</option>
+          {ustadzList.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.name} ({u.email})
+            </option>
+          ))}
+        </select>
+        {errors.userId && <p className="text-xs text-destructive mt-1">{errors.userId.message}</p>}
       </div>
 
       {/* Deskripsi Kelas */}

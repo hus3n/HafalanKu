@@ -172,3 +172,20 @@ export function useSendWhatsAppMurajaah() {
     },
   });
 }
+
+export function useDeleteMurajaah() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.delete(`/murajaah/${id}`);
+      if (!res.success) {
+        throw new Error(res.message || 'Gagal menghapus jadwal murajaah');
+      }
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
+    },
+  });
+}

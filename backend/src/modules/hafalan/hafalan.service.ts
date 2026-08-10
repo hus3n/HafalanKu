@@ -6,6 +6,15 @@ import { DashboardService } from '../dashboard/dashboard.service';
 export class HafalanService {
   private buildAccessWhere(user: { userId: string; role: string; orgId?: string | null }) {
     if (user.role === 'SUPERADMIN') return {};
+    if (user.role === 'USER') {
+      return {
+        OR: [
+          { userId: user.userId },
+          { santri: { kelas: { userId: user.userId } } },
+          { santri: { userId: user.userId } }
+        ]
+      };
+    }
     if (user.orgId) {
       return {
         user: { organizationId: user.orgId }
@@ -61,31 +70,6 @@ export class HafalanService {
       },
     });
 
-    // 4. Auto-Update / Upsert MurajaahSchedule (BR-02)
-    const priorityScore = this.calculatePriorityScore(data.predikat, hafalanDate);
-
-    await prisma.murajaahSchedule.upsert({
-      where: {
-        santriId_surahNumber: {
-          santriId: data.santriId,
-          surahNumber: data.surahNumber,
-        },
-      },
-      create: {
-        santriId: data.santriId,
-        surahNumber: data.surahNumber,
-        surahName,
-        isSelected: true,
-        lastReviewDate: hafalanDate,
-        priorityScore,
-        userId: user.userId,
-      },
-      update: {
-        lastReviewDate: hafalanDate,
-        priorityScore,
-      },
-    });
-
     // Invalidate Redis dashboard cache
     await DashboardService.invalidateCache(user.userId);
 
@@ -98,13 +82,21 @@ export class HafalanService {
     limit: number = 10,
     santriId?: string,
     surahNumber?: number,
-    predikat?: string
+    predikat?: string,
+    isHafalanAwal?: boolean
   ) {
     const skip = (page - 1) * limit;
     const accessWhere = this.buildAccessWhere(user);
     
     // For Hafalan, we check if the Hafalan belongs to the user, or if its Santri belongs to the user's org
     const where: any = { ...accessWhere };
+
+    if (typeof isHafalanAwal === 'boolean') {
+      where.isHafalanAwal = isHafalanAwal;
+    } else {
+      // Default: Riwayat Hafalan page strictly excludes initial bulk hafalan records (isHafalanAwal = false)
+      where.isHafalanAwal = false;
+    }
 
     if (santriId) where.santriId = santriId;
     if (surahNumber) where.surahNumber = surahNumber;
@@ -179,23 +171,6 @@ export class HafalanService {
       data: updateData,
     });
 
-    // Update MurajaahSchedule if date/predikat changed
-    if (data.predikat || data.date) {
-      const hafalanDate = updated.date;
-      const priorityScore = this.calculatePriorityScore(updated.predikat, hafalanDate);
-
-      await prisma.murajaahSchedule.updateMany({
-        where: {
-          santriId: updated.santriId,
-          surahNumber: updated.surahNumber,
-        },
-        data: {
-          lastReviewDate: hafalanDate,
-          priorityScore,
-        },
-      });
-    }
-
     return updated;
   }
 
@@ -241,6 +216,7 @@ export class HafalanService {
         ayatEnd: surah.numberOfAyah,
         predikat: 'JAYYID',
         date: hafalanDate,
+        isHafalanAwal: true,
         userId: user.userId,
       });
     }
@@ -249,31 +225,6 @@ export class HafalanService {
       await prisma.hafalan.createMany({
         data: records as any, // Cast to any to avoid strict Prisma typing issues with Enum if needed
       });
-
-      // Also upsert Murajaah schedules for these
-      for (const r of records) {
-        await prisma.murajaahSchedule.upsert({
-          where: {
-            santriId_surahNumber: {
-              santriId: r.santriId,
-              surahNumber: r.surahNumber,
-            },
-          },
-          create: {
-            santriId: r.santriId,
-            surahNumber: r.surahNumber,
-            surahName: r.surahName,
-            isSelected: true,
-            lastReviewDate: hafalanDate,
-            priorityScore: this.calculatePriorityScore(r.predikat, hafalanDate),
-            userId: user.userId,
-          },
-          update: {
-            lastReviewDate: hafalanDate,
-            priorityScore: this.calculatePriorityScore(r.predikat, hafalanDate),
-          },
-        });
-      }
 
       await DashboardService.invalidateCache(user.userId);
     }
@@ -307,7 +258,17 @@ export class HafalanService {
         orderBy: { name: 'asc' },
         include: {
           kelas: { select: { name: true } },
-          hafalan: { select: { surahName: true, surahNumber: true, predikat: true } }
+          hafalan: { 
+            select: { 
+              surahName: true, 
+              surahNumber: true, 
+              ayatStart: true, 
+              ayatEnd: true, 
+              predikat: true,
+              date: true 
+            },
+            orderBy: { date: 'asc' }
+          }
         }
       })
     ]);
@@ -325,9 +286,30 @@ export class HafalanService {
       const totalScore = hafalan.reduce((sum: number, h: any) => sum + (gradeWeights[h.predikat] || 80), 0);
       const avgScore = hafalan.length > 0 ? Math.round(totalScore / hafalan.length) : 0;
       
-      const uniqueSurahs = Array.from(new Map(hafalan.map((h: any) => [h.surahNumber, h.surahName])).values());
-      const surahNames = uniqueSurahs.slice(0, 5);
-      const remainingCount = uniqueSurahs.length - 5;
+      // Group by surahNumber, taking the latest range / formatting ayat
+      const surahMap = new Map<number, { name: string; number: number; ayatStart: number; ayatEnd: number }>();
+      
+      hafalan.forEach((h: any) => {
+        surahMap.set(h.surahNumber, {
+          name: h.surahName,
+          number: h.surahNumber,
+          ayatStart: h.ayatStart,
+          ayatEnd: h.ayatEnd,
+        });
+      });
+
+      const uniqueSurahEntries = Array.from(surahMap.values());
+      const formattedSurahList = uniqueSurahEntries.map((item) => {
+        const surahInfo = surahList.find((surah) => surah.number === item.number);
+        const isFullSurah = surahInfo ? (item.ayatStart === 1 && item.ayatEnd === surahInfo.numberOfAyah) : false;
+        if (isFullSurah) {
+          return item.name;
+        }
+        return `${item.name} ${item.ayatStart}-${item.ayatEnd}`;
+      });
+
+      const surahNames = formattedSurahList.slice(0, 5);
+      const remainingCount = formattedSurahList.length - 5;
       
       let surahText = surahNames.join(', ');
       if (remainingCount > 0) {
@@ -338,7 +320,7 @@ export class HafalanService {
         santriId: s.id,
         santriName: s.name,
         kelasName: s.kelas?.name || '-',
-        totalSurah: uniqueSurahs.length,
+        totalSurah: uniqueSurahEntries.length,
         surahText: surahText || 'Belum ada hafalan',
         avgScore
       };

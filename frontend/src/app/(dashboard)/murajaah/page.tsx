@@ -8,6 +8,7 @@ import {
   useChangeSurahMurajaah,
   useSimulateWaReply,
   useMarkNotificationSent,
+  useDeleteMurajaah,
   MurajaahItem, 
   MurajaahStatusType 
 } from '../../../hooks/useMurajaah';
@@ -35,7 +36,8 @@ import {
   Calendar,
   Smartphone,
   Info,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 export default function MurajaahPage() {
@@ -101,6 +103,7 @@ export default function MurajaahPage() {
   const simulateWaReplyMutation = useSimulateWaReply();
   const markNotificationSentMutation = useMarkNotificationSent();
   const createMurajaahMutation = useCreateMurajaah();
+  const deleteMurajaahMutation = useDeleteMurajaah();
 
   // Filtered schedules by search query
   const filteredSchedules = useMemo(() => {
@@ -600,6 +603,17 @@ export default function MurajaahPage() {
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
                               <span>Terima Balasan WA: "sudah"</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Apakah Anda yakin ingin menghapus jadwal murajaah untuk ${item.santriName}?`)) {
+                                  deleteMurajaahMutation.mutate(item.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer shadow-sm"
+                              title="Hapus Jadwal Murajaah Ini"
+                            >
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </td>

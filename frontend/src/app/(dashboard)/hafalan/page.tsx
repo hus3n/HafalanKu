@@ -18,7 +18,7 @@ export default function HafalanHistoryPage() {
   const [itemToDelete, setItemToDelete] = useState<HafalanItem | null>(null);
   const [editingHafalan, setEditingHafalan] = useState<HafalanItem | null>(null);
 
-  const { data, isLoading } = useHafalanList({ page, limit: 10, santriId, surahNumber, predikat });
+  const { data, isLoading } = useHafalanList({ page, limit: 10, santriId, surahNumber, predikat, isHafalanAwal: false });
   const { data: santriData } = useSantriList({ limit: 100 });
   const santriOptions = santriData?.santri || [];
   const deleteMutation = useDeleteHafalan();

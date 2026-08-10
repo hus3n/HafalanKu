@@ -10,6 +10,8 @@ export interface UserItem {
   phone?: string | null;
   avatarUrl?: string | null;
   isActive: boolean;
+  activeUntil?: string | null;
+  isTrial?: boolean;
   organizationId?: string | null;
   organization?: {
     id: string;
@@ -50,6 +52,8 @@ export interface UpdateUserInput {
   phone?: string;
   organizationId?: string | null;
   organizationName?: string;
+  activeUntil?: string | null;
+  isTrial?: boolean;
 }
 
 export function useUsers(params: UserQueryParams = {}) {

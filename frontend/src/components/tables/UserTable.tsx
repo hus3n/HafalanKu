@@ -74,6 +74,7 @@ export function UserTable({ users, isLoading, onEditUser }: UserTableProps) {
               <th className="py-3.5 px-4">Role</th>
               <th className="py-3.5 px-4">Organisasi</th>
               <th className="py-3.5 px-4">Status</th>
+              <th className="py-3.5 px-4">Masa Aktif</th>
               <th className="py-3.5 px-4">Tanggal Buat</th>
               <th className="py-3.5 px-4 text-right">Aksi</th>
             </tr>
@@ -209,6 +210,21 @@ export function UserTable({ users, isLoading, onEditUser }: UserTableProps) {
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                           <XCircle className="w-3 h-3" /> Nonaktif
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Masa Aktif / Active Until */}
+                    <td className="py-3.5 px-4 text-xs whitespace-nowrap">
+                      {!user.activeUntil ? (
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">Permanen</span>
+                      ) : new Date(user.activeUntil) < new Date() ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                          Kadaluarsa ({formatDate(user.activeUntil)})
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          {user.isTrial ? 'Trial ' : ''}s/d {formatDate(user.activeUntil)}
                         </span>
                       )}
                     </td>

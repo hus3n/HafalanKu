@@ -170,14 +170,20 @@ export class MurajaahService {
   }
 
   async createSchedule(userId: string, santriId: string, surahNumber: number, surahName: string) {
-    const existing = await prisma.murajaahSchedule.findFirst({
-      where: { santriId, surahNumber },
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const existingToday = await prisma.murajaahSchedule.findFirst({
+      where: {
+        santriId,
+        createdAt: { gte: startOfDay },
+      },
     });
-    
-    if (existing) {
-       throw new AppError('Santri ini sudah memiliki jadwal murajaah untuk surah tersebut hari ini.', 400);
+
+    if (existingToday) {
+      throw new AppError('Santri ini sudah memiliki 1 jadwal murajaah pada hari ini. Silakan hapus jadwal sebelumnya jika ingin mengganti.', 400);
     }
-    
+
     const schedule = await prisma.murajaahSchedule.create({
       data: {
         userId,
@@ -187,8 +193,24 @@ export class MurajaahService {
         isSelected: false,
       }
     });
-    
+
     return schedule;
+  }
+
+  async deleteSchedule(userId: string, id: string) {
+    const existing = await prisma.murajaahSchedule.findFirst({
+      where: { id, userId },
+    });
+
+    if (!existing) {
+      throw new AppError('Jadwal murajaah tidak ditemukan', 404);
+    }
+
+    await prisma.murajaahSchedule.delete({
+      where: { id },
+    });
+
+    return { success: true, message: 'Jadwal murajaah berhasil dihapus' };
   }
 
   async getHistory(userId: string, santriId?: string, kelasId?: string) {

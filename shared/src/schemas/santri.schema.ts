@@ -18,6 +18,7 @@ export const updateSantriSchema = z.object({
 export const createKelasSchema = z.object({
   name: z.string().min(2, 'Nama kelas minimal 2 karakter'),
   description: z.string().max(200, 'Deskripsi maksimal 200 karakter').optional().nullable(),
+  userId: z.string().uuid('Format ID Ustadz tidak valid').optional().nullable(),
 });
 
 export type CreateSantriInput = z.infer<typeof createSantriSchema>;

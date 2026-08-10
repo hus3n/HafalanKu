@@ -102,7 +102,7 @@ export default function BackupPage() {
           >
             <CheckCircle2 className="w-5 h-5 shrink-0" />
             <div className="flex-1">
-              Backup <code className="font-mono font-bold">{createdBackupData.filename}</code> telah berhasil dibuat dan otomatis terunduh ke perangkat Anda!
+              Backup <code className="font-mono font-bold">{createdBackupData.filename}</code> berhasil diproses! Berkas cadangan otomatis terunduh ke perangkat Anda dan terkirim ke Telegram Bot.
             </div>
           </motion.div>
         )}

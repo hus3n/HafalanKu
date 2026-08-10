@@ -25,6 +25,7 @@ export interface HafalanListParams {
   santriId?: string;
   surahNumber?: number;
   predikat?: string;
+  isHafalanAwal?: boolean;
 }
 
 export interface HafalanListMeta {
@@ -35,10 +36,10 @@ export interface HafalanListMeta {
 }
 
 export function useHafalanList(params: HafalanListParams = {}) {
-  const { page = 1, limit = 10, santriId = '', surahNumber, predikat = '' } = params;
+  const { page = 1, limit = 10, santriId = '', surahNumber, predikat = '', isHafalanAwal } = params;
 
   return useQuery({
-    queryKey: ['hafalan-list', { page, limit, santriId, surahNumber, predikat }],
+    queryKey: ['hafalan-list', { page, limit, santriId, surahNumber, predikat, isHafalanAwal }],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
       queryParams.append('page', page.toString());
@@ -46,6 +47,7 @@ export function useHafalanList(params: HafalanListParams = {}) {
       if (santriId) queryParams.append('santriId', santriId);
       if (surahNumber) queryParams.append('surahNumber', surahNumber.toString());
       if (predikat) queryParams.append('predikat', predikat);
+      if (typeof isHafalanAwal === 'boolean') queryParams.append('isHafalanAwal', isHafalanAwal.toString());
 
       const res = await api.get<HafalanItem[]>(`/hafalan?${queryParams.toString()}`);
       if (!res.success) {

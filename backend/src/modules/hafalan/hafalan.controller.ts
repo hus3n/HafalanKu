@@ -19,7 +19,11 @@ export class HafalanController {
 
   static async getList(req: FastifyRequest, reply: FastifyReply) {
     const user = req.user!;
-    const { page = 1, limit = 10, santriId, surahNumber, predikat } = req.query as any;
+    const { page = 1, limit = 10, santriId, surahNumber, predikat, isHafalanAwal } = req.query as any;
+
+    let parsedIsHafalanAwal: boolean | undefined = undefined;
+    if (isHafalanAwal === 'true' || isHafalanAwal === true) parsedIsHafalanAwal = true;
+    if (isHafalanAwal === 'false' || isHafalanAwal === false) parsedIsHafalanAwal = false;
 
     const result = await hafalanService.getHafalanList(
       user,
@@ -27,7 +31,8 @@ export class HafalanController {
       Number(limit),
       santriId,
       surahNumber ? Number(surahNumber) : undefined,
-      predikat
+      predikat,
+      parsedIsHafalanAwal
     );
 
     return reply.send({

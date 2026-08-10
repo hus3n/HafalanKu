@@ -25,6 +25,33 @@ export class AuthService {
       role = Role.ADMIN;
     }
 
+    let activeUntil: Date | null = null;
+    let isTrial = false;
+
+    const period = (input as any).trialPeriod || '14_DAYS';
+    const now = new Date();
+    if (period === '7_DAYS') {
+      now.setDate(now.getDate() + 7);
+      activeUntil = now;
+      isTrial = true;
+    } else if (period === '14_DAYS') {
+      now.setDate(now.getDate() + 14);
+      activeUntil = now;
+      isTrial = true;
+    } else if (period === '30_DAYS') {
+      now.setDate(now.getDate() + 30);
+      activeUntil = now;
+      isTrial = true;
+    } else if (period === '1_MONTH') {
+      now.setMonth(now.getMonth() + 1);
+      activeUntil = now;
+      isTrial = false;
+    } else if (period === '1_YEAR') {
+      now.setFullYear(now.getFullYear() + 1);
+      activeUntil = now;
+      isTrial = false;
+    }
+
     const user = await prisma.$transaction(async (tx: any) => {
       const newUser = await tx.user.create({
         data: {
@@ -32,6 +59,9 @@ export class AuthService {
           email: input.email,
           passwordHash,
           role,
+          phone: input.phone,
+          activeUntil,
+          isTrial,
           isActive: false, // User is pending activation by admin
         },
       });
@@ -89,7 +119,11 @@ export class AuthService {
     try {
       user = await prisma.user.findUnique({
         where: { email: input.email },
-        include: { organization: true },
+        include: { 
+          organization: {
+            include: { admin: true }
+          } 
+        },
       });
     } catch (err) {
       console.warn('DB lookup fallback:', err);
@@ -101,6 +135,17 @@ export class AuthService {
 
     if (!user.isActive) {
       throw new AppError('Akun Anda sedang diverifikasi / belum diaktifkan oleh Superadmin.', 403);
+    }
+
+    // Checking active period:
+    // If user is part of an organization and role is USER, active period follows the Organization Admin
+    if (user.role === 'USER' && user.organizationId && user.organization?.admin) {
+      const orgAdmin = user.organization.admin;
+      if (orgAdmin.activeUntil && new Date(orgAdmin.activeUntil) < new Date()) {
+        throw new AppError('Masa aktif organisasi/lembaga Anda telah berakhir (Kadaluarsa). Silakan hubungi Superadmin.', 403);
+      }
+    } else if (user.activeUntil && new Date(user.activeUntil) < new Date()) {
+      throw new AppError('Masa aktif akun Anda telah berakhir (Kadaluarsa). Silakan hubungi Superadmin.', 403);
     }
 
     // Check account lockout (BR-03: 5x failed = 15 mins lock)

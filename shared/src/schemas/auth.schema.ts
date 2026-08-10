@@ -14,6 +14,7 @@ export const registerSchema = z.object({
   }),
   phone: z.string().min(10, 'Nomor WhatsApp / HP tidak valid (minimal 10 digit)'),
   organizationName: z.string().optional(),
+  trialPeriod: z.string().optional(),
 }).refine((data) => {
   if (data.accountType === 'organization' && (!data.organizationName || data.organizationName.trim() === '')) {
     return false;

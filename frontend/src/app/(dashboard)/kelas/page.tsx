@@ -144,6 +144,9 @@ export default function KelasListPage() {
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                       {kelas.description || 'Tidak ada deskripsi.'}
                     </p>
+                    <div className="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg inline-block">
+                      Ustadz: {kelas.ustadzName || '-'}
+                    </div>
                   </div>
                 </div>
 
@@ -250,6 +253,7 @@ export default function KelasListPage() {
                   initialValues={{
                     name: editingKelas.name,
                     description: editingKelas.description || '',
+                    userId: editingKelas.userId || '',
                   }}
                   onSubmit={handleUpdateSubmit}
                   isLoading={updateMutation.isPending}
