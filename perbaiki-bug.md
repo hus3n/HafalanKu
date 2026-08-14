@@ -7,7 +7,7 @@ dan memanggil skill berikut
 
 berikan tanda pada task yang sudah dikerjakan. berhenti setelah mengerjakan 1 task tanpa menjalankan deploy ulang. dilarang push perbaikan/permbaharuan ke github sampai diperbolehkan, larang AI untuk mendiskripsikan ulang task.
 
-# Task-01 
+# Task-01 [SELESAI]
 tujuan : memperbaiki bug tampilan
 perbaikan : dalam tampilan ponsel terdapat bug ketika berpindah kehalaman yang lain terdapat bug freeze halaman. ketika halaman di refresh freeze hilang. coba berpindah kehalaman lain lagi kembali freeze, refresh normal kembali. perbaiki juga soal tampilan yang terpotong (jika ada)
 

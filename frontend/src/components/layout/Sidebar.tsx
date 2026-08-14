@@ -55,7 +55,7 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
 
         {/* Sidebar Navigation */}
         <div className="flex-1 overflow-y-auto no-scrollbar py-1">
-          <SidebarMenu isCollapsed={isCollapsed} />
+          <SidebarMenu isCollapsed={isCollapsed} isMobile={false} />
         </div>
 
         {/* Collapse Toggle Footer & Version */}

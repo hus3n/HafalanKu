@@ -22,9 +22,10 @@ import { cn } from '../../lib/utils';
 
 interface SidebarMenuProps {
   isCollapsed?: boolean;
+  isMobile?: boolean;
 }
 
-export function SidebarMenu({ isCollapsed = false }: SidebarMenuProps) {
+export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMenuProps) {
   const pathname = usePathname();
   const { user } = useAuth();
 
@@ -158,7 +159,7 @@ export function SidebarMenu({ isCollapsed = false }: SidebarMenuProps) {
             {/* Solid Active Indicator Background */}
             {isActive && (
               <motion.div
-                layoutId="active-nav-bg"
+                layoutId={isMobile ? "active-nav-bg-mobile" : "active-nav-bg-desktop"}
                 className={cn(
                   "absolute bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl z-0 shadow-md border border-emerald-400/30",
                   isCollapsed ? "inset-y-0 left-2 right-2" : "inset-0"

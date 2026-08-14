@@ -1,17 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import { SidebarMenu } from './SidebarMenu';
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = React.useState(false);
+  const pathname = usePathname();
 
-  // Close nav when path changes (optional but good UX for mobile navs)
-  // we can use useEffect with pathname but for simplicity we rely on the link tap inside Menu
+  // Close nav automatically whenever pathname changes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   return (
     <div className="md:hidden">
@@ -62,7 +66,7 @@ export function MobileNav() {
               </div>
 
               <div className="flex-1 overflow-y-auto" onClick={() => setIsOpen(false)}>
-                <SidebarMenu />
+                <SidebarMenu isMobile={true} />
               </div>
             </motion.div>
           </>
