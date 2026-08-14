@@ -15,6 +15,10 @@ RUN npm ci
 COPY shared ./shared
 COPY frontend ./frontend
 
+# Build argument for Next.js client-side public environment variables
+ARG NEXT_PUBLIC_API_URL=https://backend-hafalanku.forapp.id/api/v1
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 # Build workspaces
 WORKDIR /app
 RUN npm run build:shared
