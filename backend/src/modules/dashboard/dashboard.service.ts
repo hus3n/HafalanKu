@@ -22,7 +22,7 @@ export class DashboardService {
         prisma.user.count({ where: { isActive: true } }),
         prisma.organization.count(),
         prisma.santri.count({ where: { deletedAt: null } }),
-        prisma.hafalan.count(),
+        prisma.hafalan.count({ where: { isHafalanAwal: false } }),
       ]);
 
       result = {
@@ -31,16 +31,19 @@ export class DashboardService {
           { label: 'Total Santri Aktif', value: totalSantri, icon: 'users', color: 'from-emerald-500 to-teal-500' },
           { label: 'Total Organisasi/TPA', value: totalOrg, icon: 'shield', color: 'from-rose-500 to-red-500' },
           { label: 'Total User & Pengajar', value: totalUsers, icon: 'shield', color: 'from-blue-500 to-indigo-500' },
-          { label: 'Total Setoran Hafalan', value: totalHafalan, icon: 'book-open', color: 'from-amber-500 to-orange-500' },
+          { label: 'Total Setoran Baru', value: totalHafalan, icon: 'book-open', color: 'from-amber-500 to-orange-500' },
         ]
       };
     } else if (role === 'ADMIN') {
-      const accessWhere = orgId ? { user: { organizationId: orgId } } : { userId };
+      const santriWhere = orgId ? { user: { organizationId: orgId }, deletedAt: null } : { userId, deletedAt: null };
+      const kelasWhere = orgId ? { user: { organizationId: orgId } } : { userId };
+      const hafalanWhere = orgId ? { santri: { user: { organizationId: orgId } }, isHafalanAwal: false } : { userId, isHafalanAwal: false };
+
       const [totalSantri, totalKelas, totalGuru, totalHafalan] = await Promise.all([
-        prisma.santri.count({ where: { ...accessWhere, deletedAt: null } }),
-        prisma.kelas.count({ where: { ...accessWhere } }),
+        prisma.santri.count({ where: santriWhere }),
+        prisma.kelas.count({ where: kelasWhere }),
         orgId ? prisma.user.count({ where: { organizationId: orgId, role: 'USER', isActive: true } }) : 0,
-        prisma.hafalan.count({ where: { ...accessWhere } }),
+        prisma.hafalan.count({ where: hafalanWhere }),
       ]);
 
       result = {
@@ -53,19 +56,36 @@ export class DashboardService {
         ]
       };
     } else {
-      // Default USER stats
-      let accessWhere: any = {};
-      if (orgId) {
-        accessWhere = { user: { organizationId: orgId } };
-      } else {
-        accessWhere = { userId };
-      }
+      // Role USER (Ustadz) - Absolute binding: strictly ustadz's own assigned santri and classes
+      const santriWhere = {
+        deletedAt: null,
+        OR: [
+          { userId },
+          { kelas: { userId } }
+        ]
+      };
+      const kelasWhere = { userId };
+      const hafalanWhere = {
+        isHafalanAwal: false,
+        OR: [
+          { userId },
+          { santri: { kelas: { userId } } },
+          { santri: { userId } }
+        ]
+      };
+      const murajaahWhere = {
+        isSelected: true,
+        OR: [
+          { userId },
+          { santri: { kelas: { userId } } }
+        ]
+      };
 
       const [totalSantri, totalKelas, totalHafalan, totalMurajaah] = await Promise.all([
-        prisma.santri.count({ where: { ...accessWhere, deletedAt: null } }),
-        prisma.kelas.count({ where: { ...accessWhere } }),
-        prisma.hafalan.count({ where: { ...accessWhere } }),
-        prisma.murajaahSchedule.count({ where: { ...accessWhere, isSelected: true } }),
+        prisma.santri.count({ where: santriWhere }),
+        prisma.kelas.count({ where: kelasWhere }),
+        prisma.hafalan.count({ where: hafalanWhere }),
+        prisma.murajaahSchedule.count({ where: murajaahWhere }),
       ]);
 
       result = {

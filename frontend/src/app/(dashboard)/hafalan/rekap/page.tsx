@@ -121,7 +121,7 @@ export default function HafalanAwalPage() {
             <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Filter Nama Santri..."
+              placeholder="Cari atau filter santri..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -143,14 +143,7 @@ export default function HafalanAwalPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {!search.trim() ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center">
-                    <Filter className="w-8 h-8 text-emerald-500 mx-auto opacity-50 mb-3" />
-                    <p className="text-muted-foreground font-medium">Ketikkan nama santri pada &quot;Filter Nama Santri&quot; untuk menampilkan daftar hafalan.</p>
-                  </td>
-                </tr>
-              ) : isLoadingRekap ? (
+              {isLoadingRekap ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-emerald-500 mx-auto" />
@@ -161,7 +154,9 @@ export default function HafalanAwalPage() {
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
                     <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto opacity-50 mb-3" />
-                    <p className="text-muted-foreground font-medium">Tidak ada data hafalan ditemukan untuk santri &quot;{search}&quot;</p>
+                    <p className="text-muted-foreground font-medium">
+                      {search ? `Tidak ada data santri ditemukan dengan nama "${search}"` : 'Belum ada data santri terdaftar.'}
+                    </p>
                   </td>
                 </tr>
               ) : (
