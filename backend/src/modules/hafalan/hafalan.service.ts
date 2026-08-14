@@ -215,10 +215,20 @@ export class HafalanService {
       throw new AppError('Santri tidak ditemukan atau Anda tidak memiliki akses.', 404);
     }
 
-    const hafalanDate = new Date();
-    const records = [];
+    if (!data.surahs || !Array.isArray(data.surahs) || data.surahs.length === 0) {
+      throw new AppError('Daftar surat tidak boleh kosong.', 400);
+    }
 
+    const hafalanDate = new Date();
+    const existingHafalan = await prisma.hafalan.findMany({
+      where: { santriId: data.santriId, surahNumber: { in: data.surahs } },
+      select: { surahNumber: true },
+    });
+    const existingSurahSet = new Set(existingHafalan.map(h => h.surahNumber));
+
+    const records = [];
     for (const surahNumber of data.surahs) {
+      if (existingSurahSet.has(surahNumber)) continue;
       const surah = surahList.find((s) => s.number === surahNumber);
       if (!surah) continue;
 
@@ -243,7 +253,7 @@ export class HafalanService {
       await DashboardService.invalidateCache(user.userId);
     }
 
-    return { success: true, count: records.length };
+    return { success: true, count: records.length, totalSelected: data.surahs.length };
   }
 
   async getRekapGlobal(user: { userId: string, role: string, orgId?: string | null }, page: number = 1, limit: number = 10, search?: string, kelasId?: string) {

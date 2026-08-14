@@ -29,12 +29,17 @@ export default function HafalanAwalPage() {
       return;
     }
 
+    const santriObj = santriData?.santri.find((s: any) => s.id === selectedSantri);
+
     try {
       await createBulk.mutateAsync({
         santriId: selectedSantri,
         surahs: selectedSurahs,
       });
       toast.success('Hafalan awal berhasil disimpan');
+      if (santriObj?.name) {
+        setSearch(santriObj.name);
+      }
       setSelectedSantri('');
       setSelectedSurahs([]);
     } catch (error: any) {
