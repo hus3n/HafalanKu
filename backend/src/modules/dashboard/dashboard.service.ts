@@ -18,32 +18,38 @@ export class DashboardService {
     let result;
 
     if (role === 'SUPERADMIN') {
-      const [totalUsers, totalOrg] = await Promise.all([
+      const [totalUsers, totalOrg, totalSantri, totalHafalan] = await Promise.all([
         prisma.user.count({ where: { isActive: true } }),
         prisma.organization.count(),
+        prisma.santri.count({ where: { deletedAt: null } }),
+        prisma.hafalan.count(),
       ]);
 
       result = {
         role: 'SUPERADMIN',
         stats: [
-          { label: 'Total User Active', value: totalUsers, icon: 'users', color: 'from-blue-500 to-indigo-500' },
+          { label: 'Total Santri Aktif', value: totalSantri, icon: 'users', color: 'from-emerald-500 to-teal-500' },
           { label: 'Total Organisasi/TPA', value: totalOrg, icon: 'shield', color: 'from-rose-500 to-red-500' },
+          { label: 'Total User & Pengajar', value: totalUsers, icon: 'shield', color: 'from-blue-500 to-indigo-500' },
+          { label: 'Total Setoran Hafalan', value: totalHafalan, icon: 'book-open', color: 'from-amber-500 to-orange-500' },
         ]
       };
     } else if (role === 'ADMIN') {
-      const totalGuru = orgId 
-        ? await prisma.user.count({ where: { organizationId: orgId, role: 'USER' } })
-        : 0;
-        
-      const totalAdmin = orgId
-        ? await prisma.user.count({ where: { organizationId: orgId, role: 'ADMIN' } })
-        : 0;
+      const accessWhere = orgId ? { user: { organizationId: orgId } } : { userId };
+      const [totalSantri, totalKelas, totalGuru, totalHafalan] = await Promise.all([
+        prisma.santri.count({ where: { ...accessWhere, deletedAt: null } }),
+        prisma.kelas.count({ where: { ...accessWhere } }),
+        orgId ? prisma.user.count({ where: { organizationId: orgId, role: 'USER', isActive: true } }) : 0,
+        prisma.hafalan.count({ where: { ...accessWhere } }),
+      ]);
 
       result = {
         role: 'ADMIN',
         stats: [
-          { label: 'Pengajar / Ustadz', value: totalGuru, icon: 'users', color: 'from-emerald-500 to-teal-500' },
-          { label: 'Admin Organisasi', value: totalAdmin, icon: 'shield', color: 'from-blue-500 to-indigo-500' },
+          { label: 'Total Santri Aktif', value: totalSantri, icon: 'users', color: 'from-emerald-500 to-teal-500' },
+          { label: 'Total Kelas / Kelompok', value: totalKelas, icon: 'building', color: 'from-purple-500 to-pink-500' },
+          { label: 'Pengajar / Ustadz', value: totalGuru, icon: 'shield', color: 'from-blue-500 to-indigo-500' },
+          { label: 'Total Setoran Hafalan', value: totalHafalan, icon: 'book-open', color: 'from-amber-500 to-orange-500' },
         ]
       };
     } else {
@@ -68,7 +74,7 @@ export class DashboardService {
           { label: 'Santri Saya', value: totalSantri, icon: 'graduation-cap', color: 'from-emerald-500 to-teal-500' },
           { label: 'Kelas Saya', value: totalKelas, icon: 'building', color: 'from-purple-500 to-pink-500' },
           { label: 'Total Setoran', value: totalHafalan, icon: 'book-open', color: 'from-amber-500 to-orange-500' },
-          { label: 'Jadwal Murajaah Active', value: totalMurajaah, icon: 'history', color: 'from-cyan-500 to-blue-500' },
+          { label: 'Jadwal Murajaah Aktif', value: totalMurajaah, icon: 'history', color: 'from-cyan-500 to-blue-500' },
         ]
       };
     }

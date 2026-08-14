@@ -17,25 +17,16 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      try {
-        const response = await api.get<DashboardStatsResponse>('/dashboard/stats');
-        if (response.success && response.data) {
-          return response.data;
-        }
-      } catch {
-        // Fallback demo data for immediate testing
+      const response = await api.get<DashboardStatsResponse>('/dashboard/stats');
+      if (response.success && response.data) {
+        return response.data;
       }
       return {
-        role: 'SUPERADMIN',
-        stats: [
-          { label: 'Total Santri Aktif', value: 1248, icon: 'users', color: 'emerald' },
-          { label: 'Total Kelas / Kelompok', value: 36, icon: 'building', color: 'teal' },
-          { label: 'Total User & Pengajar', value: 84, icon: 'shield', color: 'indigo' },
-          { label: 'Notifikasi Terkirim', value: 432, icon: 'bell', color: 'amber' },
-        ],
+        role: 'USER',
+        stats: [],
       };
     },
-    staleTime: 1000 * 60 * 5, // 5 mins
+    staleTime: 1000 * 60 * 2, // 2 mins
   });
 }
 
