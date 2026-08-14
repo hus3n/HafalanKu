@@ -1,25 +1,18 @@
 import { FastifyCorsOptions } from '@fastify/cors';
-import { env } from './env';
 
 export const corsConfig: FastifyCorsOptions = {
-  origin: (origin, cb) => {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return cb(null, true);
-    
-    const allowed = [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'http://localhost',
-      'https://hafalanku.com',
-      env.FRONTEND_URL,
-    ];
-    
-    if (allowed.includes(origin) || env.NODE_ENV === 'development') {
-      cb(null, true);
-    } else {
-      cb(null, true); // Allow origin in production/local container testing
-    }
-  },
+  origin: true, // Allow all requesting origins dynamically with credentials reflection
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+    'Accept-Encoding',
+    'Accept-Language',
+  ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   credentials: true,
+  maxAge: 86400, // Cache preflight for 24 hours
 };
