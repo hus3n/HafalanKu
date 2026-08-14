@@ -326,18 +326,26 @@ export class HafalanService {
       const formattedSurahList = uniqueSurahEntries.map((item) => {
         const surahInfo = surahList.find((surah) => surah.number === item.number);
         const isFullSurah = surahInfo ? (item.ayatStart === 1 && item.ayatEnd === surahInfo.numberOfAyah) : false;
-        if (isFullSurah) {
-          return item.name;
-        }
-        return `${item.name} ${item.ayatStart}-${item.ayatEnd}`;
+        const displayText = isFullSurah ? item.name : `${item.name} (${item.ayatStart}-${item.ayatEnd})`;
+        return {
+          number: item.number,
+          name: item.name,
+          arabicName: surahInfo?.name || '',
+          numberOfAyah: surahInfo?.numberOfAyah || item.ayatEnd,
+          ayatStart: item.ayatStart,
+          ayatEnd: item.ayatEnd,
+          isFullSurah,
+          displayText,
+          juz: item.number >= 78 ? 30 : (item.number >= 67 ? 29 : (item.number >= 58 ? 28 : 1)),
+        };
       });
 
-      const surahNames = formattedSurahList.slice(0, 5);
-      const remainingCount = formattedSurahList.length - 5;
+      const surahNames = formattedSurahList.slice(0, 3).map((s) => s.displayText);
+      const remainingCount = Math.max(0, formattedSurahList.length - 3);
       
       let surahText = surahNames.join(', ');
       if (remainingCount > 0) {
-        surahText += `, ... (+${remainingCount} lainnya)`;
+        surahText += `, +${remainingCount} lainnya`;
       }
 
       return {
@@ -346,6 +354,7 @@ export class HafalanService {
         kelasName: s.kelas?.name || '-',
         totalSurah: uniqueSurahEntries.length,
         surahText: surahText || 'Belum ada hafalan',
+        surahList: formattedSurahList,
         avgScore
       };
     });

@@ -117,12 +117,25 @@ export function useUpdateHafalan() {
   });
 }
 
+export interface RekapSurahItem {
+  number: number;
+  name: string;
+  arabicName?: string;
+  numberOfAyah: number;
+  ayatStart: number;
+  ayatEnd: number;
+  isFullSurah: boolean;
+  displayText: string;
+  juz: number;
+}
+
 export interface RekapGlobalItem {
   santriId: string;
   santriName: string;
   kelasName: string;
   totalSurah: number;
   surahText: string;
+  surahList?: RekapSurahItem[];
   avgScore: number;
 }
 
