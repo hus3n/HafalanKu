@@ -9,6 +9,7 @@ import {
   useSimulateWaReply,
   useMarkNotificationSent,
   useDeleteMurajaah,
+  useSendWhatsAppMurajaah,
   MurajaahItem, 
   MurajaahStatusType 
 } from '../../../hooks/useMurajaah';
@@ -37,7 +38,8 @@ import {
   Smartphone,
   Info,
   Plus,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
 
 export default function MurajaahPage() {
@@ -104,6 +106,8 @@ export default function MurajaahPage() {
   const markNotificationSentMutation = useMarkNotificationSent();
   const createMurajaahMutation = useCreateMurajaah();
   const deleteMurajaahMutation = useDeleteMurajaah();
+  const sendWhatsAppMutation = useSendWhatsAppMurajaah();
+  const [sendingSantriId, setSendingSantriId] = useState<string | null>(null);
 
   // Filtered schedules by search query
   const filteredSchedules = useMemo(() => {
@@ -183,15 +187,38 @@ export default function MurajaahPage() {
     }
   };
 
-  const handleSimulateSingleWaSend = (item: MurajaahItem) => {
-    markNotificationSentMutation.mutate(item.id);
-
-    const surahText = `📖 Target Murajaah Hari Ini: *Surah #${item.selectedSurahNumber} ${item.selectedSurahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}`;
-    const text = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${item.parentName}* (Wali dari Ananda *${item.santriName}* - ${item.kelasName})\n\nBerikut adalah jadwal Murajaah Hafalan Al-Qur'an hari ini:\n${surahText}\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan pendampingan ananda murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih.\n_HafalanKu Automatic Gateway_`;
-    
-    const cleanPhone = item.parentPhone.replace(/[^0-9]/g, '');
-    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+  const handleSendSingleWa = async (item: MurajaahItem) => {
+    setSendingSantriId(item.santriId);
+    try {
+      const res = await sendWhatsAppMutation.mutateAsync(item.santriId);
+      if (res.success || res.status === 'SENT' || res.status === 'DELIVERED') {
+        alert(`✅ Pesan jadwal murajaah berhasil dikirim ke WhatsApp Wali dari ${item.santriName} (${item.parentPhone})!`);
+      } else {
+        const proceedFallback = window.confirm(
+          `Pengiriman otomatis melalui WhatsApp Gateway gagal: ${res.error || 'WhatsApp belum terhubung'}.\n\nApakah Anda ingin membuka WhatsApp Web / Aplikasi untuk mengirimkan pesan secara manual?`
+        );
+        if (proceedFallback) {
+          const surahText = `📖 Target Murajaah Hari Ini: *Surah #${item.selectedSurahNumber} ${item.selectedSurahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}`;
+          const text = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${item.parentName}* (Wali dari Ananda *${item.santriName}* - ${item.kelasName})\n\nBerikut adalah jadwal Murajaah Hafalan Al-Qur'an hari ini:\n${surahText}\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan pendampingan ananda murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih.\n_HafalanKu Automatic Gateway_`;
+          const cleanPhone = item.parentPhone.replace(/[^0-9]/g, '');
+          const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+          window.open(waUrl, '_blank');
+        }
+      }
+    } catch (err: any) {
+      const proceedFallback = window.confirm(
+        `Pengiriman otomatis gagal (${err.message || 'WhatsApp belum terhubung'}).\n\nApakah Anda ingin membuka WhatsApp Web / Aplikasi untuk mengirimkan pesan secara manual?`
+      );
+      if (proceedFallback) {
+        const surahText = `📖 Target Murajaah Hari Ini: *Surah #${item.selectedSurahNumber} ${item.selectedSurahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}`;
+        const text = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${item.parentName}* (Wali dari Ananda *${item.santriName}* - ${item.kelasName})\n\nBerikut adalah jadwal Murajaah Hafalan Al-Qur'an hari ini:\n${surahText}\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan pendampingan ananda murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih.\n_HafalanKu Automatic Gateway_`;
+        const cleanPhone = item.parentPhone.replace(/[^0-9]/g, '');
+        const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+        window.open(waUrl, '_blank');
+      }
+    } finally {
+      setSendingSantriId(null);
+    }
   };
 
   const handleCreateSchedule = async (e: React.FormEvent) => {
@@ -589,12 +616,22 @@ export default function MurajaahPage() {
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-2">
                             <button
-                              onClick={() => handleSimulateSingleWaSend(item)}
-                              className="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 flex items-center gap-1 transition-all cursor-pointer shadow-sm"
-                              title="Kirim atau Kirim Ulang WA Pengingat dengan pesan instruksi membalas ke Wali Santri ini"
+                              onClick={() => handleSendSingleWa(item)}
+                              disabled={sendingSantriId === item.santriId}
+                              className="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                              title="Kirim notifikasi pengingat jadwal murajaah via WhatsApp Gateway ke Wali Murid"
                             >
-                              <Send className="w-3.5 h-3.5" />
-                              <span>{item.notificationStatus === 'SENT' ? 'Kirim Ulang WA' : 'Kirim WA'}</span>
+                              {sendingSantriId === item.santriId ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+                                  <span>Mengirim...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-3.5 h-3.5" />
+                                  <span>{item.notificationStatus === 'SENT' ? 'Kirim Ulang WA' : 'Kirim WA'}</span>
+                                </>
+                              )}
                             </button>
                             <button
                               onClick={() => simulateWaReplyMutation.mutate(item.santriId)}

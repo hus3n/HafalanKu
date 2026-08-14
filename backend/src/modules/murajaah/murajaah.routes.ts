@@ -12,4 +12,6 @@ export async function murajaahRoutes(fastify: FastifyInstance) {
   fastify.get('/history', MurajaahController.getHistory);
   fastify.put('/:id/toggle', MurajaahController.toggle);
   fastify.post('/send/:santriId', MurajaahController.sendWhatsApp);
+  fastify.post('/send-batch', MurajaahController.sendBatchWhatsApp);
+  fastify.post('/simulate-reply/:santriId', MurajaahController.simulateReply);
 }

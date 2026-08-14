@@ -1,6 +1,10 @@
 import { prisma } from '../../config/database';
 import { decrypt } from '../../utils/encryption';
 import { AppError } from '../../utils/AppError';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
+import { NotificationLog } from '../notification/notification.model';
+
+const whatsappService = new WhatsAppService();
 
 export class MurajaahService {
   async getSchedules(userId: string, santriId?: string, kelasId?: string) {
@@ -91,6 +95,32 @@ export class MurajaahService {
       }
     }
 
+    // Query today's notification logs from MongoDB to determine notification status accurately
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const notifiedSantriIds = new Set<string>();
+    const logTimestamps = new Map<string, string>();
+    try {
+      const santriIdList = activeSchedules.map((s) => s.santriId);
+      if (santriIdList.length > 0) {
+        const todayLogs = await NotificationLog.find({
+          type: 'MURAJAAH_SCHEDULE',
+          status: 'SENT',
+          santriId: { $in: santriIdList },
+          createdAt: { $gte: startOfDay }
+        });
+        todayLogs.forEach((l) => {
+          if (l.santriId) {
+            notifiedSantriIds.add(l.santriId);
+            logTimestamps.set(l.santriId, l.createdAt.toISOString());
+          }
+        });
+      }
+    } catch (e) {
+      console.error('[MurajaahService] Error querying NotificationLog in getSchedules:', e);
+    }
+
     return activeSchedules.map((item: any) => {
       // 1. Group unique hafalan surahs memorized by this santri
       const hafalanMap = new Map<number, any>();
@@ -129,10 +159,6 @@ export class MurajaahService {
         hafalanTodayText = 'Belum ada setoran baru hari ini';
       }
 
-      // 3. Compute 24-hour expiration status
-      const itemTime = new Date(item.updatedAt || item.createdAt).getTime();
-      const hoursPassed = (now - itemTime) / (1000 * 60 * 60);
-
       let murajaahStatus = item.isSelected ? 'SUDAH' : 'BELUM';
 
       let parentPhone = item.santri?.parentPhone || '081234567890';
@@ -141,6 +167,8 @@ export class MurajaahService {
       } catch (e) {
         // fallback
       }
+
+      const isNotified = notifiedSantriIds.has(item.santriId);
 
       return {
         id: item.id,
@@ -163,8 +191,8 @@ export class MurajaahService {
           { surahNumber: item.surahNumber, surahName: item.surahName, ayatRange: 'Surah Hafalan' }
         ],
         murajaahStatus,
-        notificationStatus: item.notificationStatus || 'PENDING',
-        lastNotificationSentAt: item.lastNotificationSentAt || null,
+        notificationStatus: isNotified ? 'SENT' : 'PENDING',
+        lastNotificationSentAt: logTimestamps.get(item.santriId) || null,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
       };
@@ -293,9 +321,42 @@ export class MurajaahService {
   }
 
   async sendScheduleToWhatsApp(userId: string, santriId: string) {
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, organizationId: true }
+    });
+
+    let santriAccessWhere: any = {};
+    if (currentUser?.role === 'SUPERADMIN') {
+      santriAccessWhere = {};
+    } else if (currentUser?.role === 'ADMIN' && currentUser.organizationId) {
+      santriAccessWhere = {
+        user: { organizationId: currentUser.organizationId }
+      };
+    } else if (currentUser?.organizationId) {
+      santriAccessWhere = {
+        OR: [
+          { userId },
+          { kelas: { userId } },
+          { user: { organizationId: currentUser.organizationId } }
+        ]
+      };
+    } else {
+      santriAccessWhere = {
+        OR: [
+          { userId },
+          { kelas: { userId } }
+        ]
+      };
+    }
+
     const santri = await prisma.santri.findFirst({
-      where: { id: santriId, userId, deletedAt: null },
-      include: { kelas: true }
+      where: {
+        id: santriId,
+        deletedAt: null,
+        ...santriAccessWhere
+      },
+      include: { kelas: true, user: true }
     });
 
     if (!santri) {
@@ -345,13 +406,105 @@ export class MurajaahService {
 
     const messageText = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${santri.parentName}* (Wali dari Ananda *${santri.name}* - ${santri.kelas?.name || 'Kelompok Ustadz'})\n\nBerikut adalah laporan capaian hafalan dan jadwal murajaah ananda hari ini:\n\n📜 *Setoran Hafalan Hari Ini:*\n${hafalanText}\n\n📖 *Target Murajaah di Rumah:*\n*${surahNameText}*\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan dampingi ananda mengulang murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih atas perhatian dan kerja samanya.\n_HafalanKu Automatic Gateway_`;
 
+    // 1. Attempt sending with current user session
+    let sendResult = await whatsappService.sendMessage(userId, parentPhone, messageText);
+
+    // 2. Fallback: If current user's WA is not connected and user is in an organization, try organization admin session
+    if (!sendResult.success && currentUser?.organizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: currentUser.organizationId },
+        select: { adminId: true }
+      });
+      if (org?.adminId && org.adminId !== userId) {
+        console.log(`[MurajaahService] WA Ustadz ${userId} belum aktif, mencoba sesi WA Admin Organisasi ${org.adminId}...`);
+        const orgSend = await whatsappService.sendMessage(org.adminId, parentPhone, messageText);
+        if (orgSend.success) {
+          sendResult = orgSend;
+        }
+      }
+    }
+
+    // 3. Log to MongoDB NotificationLog
+    try {
+      await NotificationLog.create({
+        userId,
+        santriId,
+        recipientPhone: parentPhone,
+        recipientName: santri.parentName,
+        type: 'MURAJAAH_SCHEDULE',
+        message: messageText,
+        status: sendResult.success ? 'SENT' : 'FAILED',
+        errorMessage: sendResult.success ? null : (sendResult.error || 'Gagal mengirim pesan WhatsApp'),
+        retryCount: 1,
+      });
+    } catch (err) {
+      console.error('[MurajaahService] Failed logging notification to MongoDB:', err);
+    }
+
     return {
-      success: true,
+      success: sendResult.success,
       recipientPhone: parentPhone,
       parentName: santri.parentName,
       santriName: santri.name,
       messagePreview: messageText,
-      status: 'SENT_SIMULATED',
+      status: sendResult.success ? 'SENT' : 'FAILED',
+      error: sendResult.success ? null : (sendResult.error || 'WhatsApp belum terhubung atau nomor tidak terdaftar.'),
+    };
+  }
+
+  async sendBatchScheduleToWhatsApp(userId: string, santriIds: string[]) {
+    const results = [];
+    for (let i = 0; i < santriIds.length; i++) {
+      const santriId = santriIds[i];
+      try {
+        const res = await this.sendScheduleToWhatsApp(userId, santriId);
+        results.push({ santriId, ...res });
+      } catch (err: any) {
+        results.push({
+          santriId,
+          success: false,
+          status: 'FAILED',
+          error: err.message || 'Gagal memproses pengiriman WhatsApp',
+        });
+      }
+
+      // Anti-spam staggered delay (1.5 seconds between sends) if more items remain
+      if (i < santriIds.length - 1) {
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+    }
+
+    const successful = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
+
+    return {
+      total: santriIds.length,
+      successful,
+      failed,
+      details: results,
+    };
+  }
+
+  async simulateParentReply(userId: string, santriId: string, message: string = 'sudah') {
+    if (!message.toLowerCase().includes('sudah') && !message.toLowerCase().includes('sdh')) {
+      return { success: false, message: 'Pesan balasan tidak mengandung kata kunci "sudah"' };
+    }
+
+    const updated = await prisma.murajaahSchedule.updateMany({
+      where: {
+        santriId,
+      },
+      data: {
+        isSelected: true,
+        lastReviewDate: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    return {
+      success: true,
+      message: `Status murajaah santri berhasil diperbarui menjadi Sudah Dimurajaah (${updated.count} jadwal terupdate)`,
+      updatedCount: updated.count,
     };
   }
 }

@@ -46,11 +46,28 @@ export interface MurajaahItem {
 }
 
 export interface SendWhatsAppResponse {
+  success?: boolean;
   recipientPhone: string;
   parentName: string;
   santriName: string;
   messagePreview: string;
   status: string;
+  error?: string | null;
+}
+
+export interface SendBatchWhatsAppResponse {
+  total: number;
+  successful: number;
+  failed: number;
+  details: Array<{
+    santriId: string;
+    success: boolean;
+    recipientPhone?: string;
+    parentName?: string;
+    santriName?: string;
+    status: string;
+    error?: string | null;
+  }>;
 }
 
 export function useMurajaahList(params: { santriId?: string; kelasId?: string } | string = {}) {
@@ -163,13 +180,38 @@ export function useMurajaahHistory(params: { santriId?: string; kelasId?: string
 }
 
 export function useSendWhatsAppMurajaah() {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (santriId: string) => {
+    mutationFn: async (santriId: string): Promise<SendWhatsAppResponse> => {
       const res = await api.post<SendWhatsAppResponse>(`/murajaah/send/${santriId}`);
+      if (!res.success) {
+        throw new Error(res.message || 'Gagal mengirim pesan WhatsApp');
+      }
+      if (res.data) {
+        return res.data;
+      }
+      return res as unknown as SendWhatsAppResponse;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
+    },
+  });
+}
+
+export function useSendBatchWhatsAppMurajaah() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (santriIds: string[]): Promise<SendBatchWhatsAppResponse> => {
+      const res = await api.post<SendBatchWhatsAppResponse>('/murajaah/send-batch', { santriIds });
       if (!res.success || !res.data) {
-        throw new Error(res.message || 'Gagal menyusun pesan WhatsApp');
+        throw new Error(res.message || 'Gagal memproses pengiriman massal WhatsApp');
       }
       return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
     },
   });
 }

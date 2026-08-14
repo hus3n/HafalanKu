@@ -70,6 +70,40 @@ export class MurajaahController {
 
     const result = await murajaahService.sendScheduleToWhatsApp(userId, santriId);
 
+    return reply.send({
+      success: result.success,
+      message: result.success ? 'Pesan WhatsApp berhasil dikirim' : (result.error || 'Gagal mengirim pesan WhatsApp'),
+      data: result,
+    });
+  }
+
+  static async sendBatchWhatsApp(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user!.userId;
+    const { santriIds } = req.body as { santriIds: string[] };
+
+    if (!santriIds || !Array.isArray(santriIds) || santriIds.length === 0) {
+      return reply.status(400).send({
+        success: false,
+        message: 'Daftar santriIds tidak boleh kosong',
+      });
+    }
+
+    const result = await murajaahService.sendBatchScheduleToWhatsApp(userId, santriIds);
+
+    return reply.send({
+      success: true,
+      message: `Proses pengiriman selesai. Berhasil: ${result.successful}, Gagal: ${result.failed}`,
+      data: result,
+    });
+  }
+
+  static async simulateReply(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user!.userId;
+    const { santriId } = req.params as { santriId: string };
+    const { message } = (req.body || {}) as { message?: string };
+
+    const result = await murajaahService.simulateParentReply(userId, santriId, message || 'sudah');
+
     return reply.send(result);
   }
 }

@@ -6,13 +6,25 @@ import { useRouter } from 'next/navigation';
 import { MobileNav } from './MobileNav';
 import { ThemeToggle } from '../shared/ThemeToggle';
 import { motion, AnimatePresence } from 'motion/react';
-import { LogOut, User as UserIcon, Settings, ChevronDown, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  LogOut, 
+  User as UserIcon, 
+  Settings, 
+  ChevronDown, 
+  Bell, 
+  ChevronLeft, 
+  ChevronRight,
+  Maximize2,
+  Minimize2
+} from 'lucide-react';
 import { useSidebarStore } from '../../stores/sidebarStore';
+import { useFullscreen } from '../../hooks/useFullscreen';
 
 export function Topbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { isCollapsed, toggleCollapsed } = useSidebarStore();
+  const { isFullscreen, toggleFullscreen, isSupported } = useFullscreen();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -59,12 +71,35 @@ export function Topbar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center gap-2.5 md:gap-3.5">
+        {/* Fullscreen Mode Toggle Button */}
+        {isSupported && (
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleFullscreen}
+            className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all border cursor-pointer ${
+              isFullscreen 
+                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400/40 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
+                : 'bg-white/10 text-white/90 hover:text-white hover:bg-white/20 border-white/15'
+            }`}
+            title={isFullscreen ? "Keluar dari Layar Penuh (Esc / F11)" : "Tampilan Layar Penuh (Full Screen)"}
+            aria-label={isFullscreen ? "Keluar dari Layar Penuh" : "Tampilan Layar Penuh"}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" />
+            ) : (
+              <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
+            )}
+          </motion.button>
+        )}
+
+        {/* Notifications Bell */}
         <motion.button 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.push('/notifikasi')}
-          className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors relative border border-white/15"
+          className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors relative border border-white/15 cursor-pointer"
           title="Notifikasi Log"
         >
           <Bell className="w-4 h-4 md:w-5 md:h-5" />
@@ -73,6 +108,7 @@ export function Topbar() {
         
         <ThemeToggle />
 
+        {/* User Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -112,13 +148,13 @@ export function Topbar() {
                 
                 <button 
                   onClick={() => { setDropdownOpen(false); router.push('/profil'); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-foreground hover:bg-muted transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-foreground hover:bg-muted transition-colors text-left cursor-pointer"
                 >
                   <UserIcon className="w-4 h-4 text-primary" /> Profil Saya
                 </button>
                 <button 
                   onClick={() => { setDropdownOpen(false); router.push('/settings/whatsapp'); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-foreground hover:bg-muted transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-foreground hover:bg-muted transition-colors text-left cursor-pointer"
                 >
                   <Settings className="w-4 h-4 text-primary" /> Pengaturan WA
                 </button>
@@ -127,7 +163,7 @@ export function Topbar() {
                 
                 <button 
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors text-left cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" /> Keluar
                 </button>

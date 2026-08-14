@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, ShieldCheck, CheckCircle2, Loader2, Smartphone, AlertCircle } from 'lucide-react';
-import { MurajaahItem } from '../../hooks/useMurajaah';
+import { X, Send, ShieldCheck, CheckCircle2, Loader2, Smartphone, AlertCircle, RefreshCw } from 'lucide-react';
+import { MurajaahItem, useSendWhatsAppMurajaah } from '../../hooks/useMurajaah';
+import { useQueryClient } from '@tanstack/react-query';
 
 export interface BatchSantriGroup {
   santriId: string;
@@ -21,10 +22,15 @@ interface WhatsAppBatchModalProps {
 }
 
 export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsAppBatchModalProps) {
+  const queryClient = useQueryClient();
+  const sendWhatsAppMutation = useSendWhatsAppMurajaah();
+
   const [isSending, setIsSending] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const [isFinished, setIsFinished] = useState(false);
+  const [successCount, setSuccessCount] = useState(0);
+  const [failCount, setFailCount] = useState(0);
 
   if (!isOpen) return null;
 
@@ -44,23 +50,45 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
     setCurrentIndex(0);
     setLogs([]);
     setIsFinished(false);
+    let succ = 0;
+    let fail = 0;
 
     for (let i = 0; i < selectedGroups.length; i++) {
       const group = selectedGroups[i];
       setCurrentIndex(i + 1);
 
-      const msg = `[WAIT] Mengirim pesan (${i + 1}/${total}) ke Wali ${group.santriName} (${group.parentPhone})...`;
-      setLogs(prev => [msg, ...prev]);
+      const waitMsg = `[WAIT] Mengirim pesan (${i + 1}/${total}) ke Wali ${group.santriName} (${group.parentPhone})...`;
+      setLogs((prev) => [waitMsg, ...prev]);
 
-      // Anti-Spam Staggered Delay (2.5 seconds per message)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      try {
+        const res = await sendWhatsAppMutation.mutateAsync(group.santriId);
+        if (res.success || res.status === 'SENT' || res.status === 'DELIVERED') {
+          succ++;
+          const successLog = `[OK] ✅ Sukses terkirim ke ${group.parentName} (${group.parentPhone})`;
+          setLogs((prev) => [successLog, ...prev.slice(1)]);
+        } else {
+          fail++;
+          const failLog = `[GAGAL] ❌ Gagal kirim ke ${group.parentName}: ${res.error || 'WhatsApp belum terhubung'}`;
+          setLogs((prev) => [failLog, ...prev.slice(1)]);
+        }
+      } catch (err: any) {
+        fail++;
+        const errorMsg = err.message || 'Gagal mengirim pesan via WhatsApp Gateway';
+        const errorLog = `[GAGAL] ❌ Gagal kirim ke ${group.parentName} (${group.parentPhone}): ${errorMsg}`;
+        setLogs((prev) => [errorLog, ...prev.slice(1)]);
+      }
 
-      const successLog = `[OK] ✅ Sukses terkirim ke ${group.parentName} (${group.parentPhone})`;
-      setLogs(prev => [successLog, ...prev.slice(1)]);
+      // Anti-Spam Staggered Delay (2 seconds per message)
+      if (i < selectedGroups.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
     }
 
+    setSuccessCount(succ);
+    setFailCount(fail);
     setIsSending(false);
     setIsFinished(true);
+    queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
   };
 
   return (
@@ -83,7 +111,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
                   Kirim Pengingat WA Massal Anti-Spam
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Diproses bertahap dengan delay 2.5 detik per pesan agar aman dari pemblokiran spam.
+                  Diproses otomatis melalui WhatsApp Gateway terhubung dengan jeda 2 detik per pesan agar aman dari pemblokiran.
                 </p>
               </div>
             </div>
@@ -91,7 +119,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
             {!isSending && (
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl text-muted-foreground hover:bg-secondary transition-colors"
+                className="p-2 rounded-xl text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -105,7 +133,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
               <span>Total Santri Terpilih: <strong>{selectedGroups.length} Murid</strong></span>
             </div>
             <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 px-2.5 py-1 rounded-md">
-              Anti-Spam Active (2.5s Delay)
+              Anti-Spam Active (2s Delay)
             </span>
           </div>
 
@@ -113,12 +141,21 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
           {(isSending || isFinished) && (
             <div className="space-y-2 p-4 rounded-2xl bg-muted/40 border border-border">
               <div className="flex items-center justify-between text-xs font-bold text-foreground">
-                <span>{isFinished ? '🎉 Selesai!' : `Proses Pengiriman: ${currentIndex} / ${total}`}</span>
+                <span>
+                  {isFinished 
+                    ? `🎉 Selesai! (Berhasil: ${successCount}, Gagal: ${failCount})` 
+                    : `Proses Pengiriman: ${currentIndex} / ${total}`
+                  }
+                </span>
                 <span>{progressPercent}%</span>
               </div>
               <div className="w-full h-3 bg-muted rounded-full overflow-hidden border border-border/50">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-emerald-600 to-teal-500 rounded-full"
+                  className={`h-full rounded-full transition-all ${
+                    failCount > 0 && isFinished 
+                      ? 'bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-500' 
+                      : 'bg-gradient-to-r from-emerald-600 to-teal-500'
+                  }`}
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
                   transition={{ duration: 0.3 }}
@@ -127,7 +164,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
               {isSending && (
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium animate-pulse flex items-center gap-1.5 pt-1">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Mengirimkan pesan dengan jeda waktu 2.5 detik per santri...
+                  Mengirimkan pesan ke nomor WhatsApp Wali Murid...
                 </p>
               )}
             </div>
@@ -147,11 +184,13 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
             {/* Real-time Transmission Logs */}
             {logs.length > 0 && (
               <div className="space-y-1 pt-2">
-                <label className="text-xs font-bold text-foreground block">Status Log Pengiriman:</label>
+                <label className="text-xs font-bold text-foreground block">Status Log Pengiriman Server:</label>
                 <div className="p-3 rounded-xl bg-black/80 text-emerald-400 text-[11px] font-mono space-y-1 max-h-36 overflow-y-auto border border-emerald-500/20">
                   {logs.map((log, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <span>{log}</span>
+                      <span className={log.startsWith('[GAGAL]') ? 'text-rose-400' : log.startsWith('[OK]') ? 'text-emerald-300' : 'text-amber-300'}>
+                        {log}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -166,7 +205,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl border border-input text-xs font-medium hover:bg-secondary transition-all"
+                  className="px-4 py-2.5 rounded-xl border border-input text-xs font-medium hover:bg-secondary transition-all cursor-pointer"
                 >
                   Batal
                 </button>
