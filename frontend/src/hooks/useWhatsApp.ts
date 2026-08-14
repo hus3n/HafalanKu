@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { useAuth } from './useAuth';
 
 export interface WhatsAppStatusResponse {
   status: 'CONNECTED' | 'DISCONNECTED' | 'PAIRING';
@@ -14,8 +15,10 @@ export interface WhatsAppInitResponse {
 }
 
 export function useWhatsAppStatus() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['whatsapp-status'],
+    queryKey: ['whatsapp-status', user?.id],
     queryFn: async () => {
       const res = await api.get<WhatsAppStatusResponse>('/whatsapp/status');
       if (!res.success || !res.data) {
@@ -23,6 +26,8 @@ export function useWhatsAppStatus() {
       }
       return res.data;
     },
+    enabled: !!user?.id,
+    staleTime: 0, // Always get fresh status per user
     refetchInterval: (query) => {
       // Poll every 3 seconds if status is PAIRING
       if (query.state.data?.status === 'PAIRING') {
@@ -35,6 +40,7 @@ export function useWhatsAppStatus() {
 
 export function useInitWhatsAppSession() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async () => {
@@ -45,13 +51,14 @@ export function useInitWhatsAppSession() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['whatsapp-status'] });
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-status', user?.id] });
     },
   });
 }
 
 export function useDisconnectWhatsApp() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async () => {
@@ -62,7 +69,7 @@ export function useDisconnectWhatsApp() {
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['whatsapp-status'] });
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-status', user?.id] });
     },
   });
 }
