@@ -107,9 +107,6 @@ export class HafalanService {
 
     if (typeof isHafalanAwal === 'boolean') {
       where.isHafalanAwal = isHafalanAwal;
-    } else {
-      // Default: Riwayat Hafalan page strictly excludes initial bulk hafalan records (isHafalanAwal = false)
-      where.isHafalanAwal = false;
     }
 
     if (santriId) where.santriId = santriId;
