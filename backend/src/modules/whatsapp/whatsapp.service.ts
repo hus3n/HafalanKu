@@ -109,7 +109,7 @@ export class WhatsappService {
       sock.ev.on('messages.upsert', async (m) => {
         if (m.type === 'notify') {
           for (const msg of m.messages) {
-            if (msg.message) {
+            if (!msg.key.fromMe && msg.message) {
               const mObj = msg.message;
               const text = (
                 mObj.conversation ||
@@ -131,7 +131,7 @@ export class WhatsappService {
               const participantJid = (msg.key as any).participant || '';
               const altJid = (msg.key as any).remoteJidAlt || '';
 
-              // Gather candidate numbers
+              // Gather candidate numbers from incoming message
               const candidateJids = [senderJid, participantJid, altJid].filter(Boolean);
               const candidateNumbers: string[] = [];
 
@@ -140,7 +140,7 @@ export class WhatsappService {
                 if (raw) candidateNumbers.push(raw);
               }
 
-              console.log(`[WA Gateway] Incoming msg: fromMe=${msg.key.fromMe}, text="${text}", candidates=[${candidateNumbers.join(', ')}] for user ${userId}`);
+              console.log(`[WA Gateway] Incoming reply from sender [${candidateNumbers.join(', ')}]: "${text}" (Session User: ${userId})`);
 
               if (text.includes('sudah') || text.includes('sdh')) {
                 console.log(`[WA Gateway] Keyword 'sudah' detected in reply from [${candidateNumbers.join(', ')}] for user ${userId}. Auto-updating Murajaah status...`);
@@ -155,26 +155,34 @@ export class WhatsappService {
 
                   const cleanCandidateSenders = candidateNumbers.map(normalizePhone).filter(Boolean);
 
-                  // Fetch current user organization context
+                  // Fetch current user organization context & role
                   const currentUser = await prisma.user.findUnique({
                     where: { id: userId },
                     select: { id: true, organizationId: true, role: true }
                   });
 
-                  // Fetch all relevant santri across classes and organization
+                  // Absolute binding: strictly limit to user's own assigned santri / classes
+                  let santriScopeWhere: any = {};
+                  if (currentUser?.role === 'SUPERADMIN') {
+                    santriScopeWhere = {};
+                  } else if (currentUser?.role === 'ADMIN' && currentUser.organizationId) {
+                    santriScopeWhere = {
+                      user: { organizationId: currentUser.organizationId }
+                    };
+                  } else {
+                    // Role USER (Ustadz) - Absolute binding: ONLY santri assigned directly to this ustadz or this ustadz's classes
+                    santriScopeWhere = {
+                      OR: [
+                        { userId },
+                        { kelas: { userId } }
+                      ]
+                    };
+                  }
+
                   const allSantri = await prisma.santri.findMany({
                     where: {
                       deletedAt: null,
-                      ...(currentUser?.role === 'SUPERADMIN' ? {} : {
-                        OR: [
-                          { userId },
-                          { kelas: { userId } },
-                          ...(currentUser?.organizationId ? [
-                            { user: { organizationId: currentUser.organizationId } },
-                            { kelas: { user: { organizationId: currentUser.organizationId } } },
-                          ] : [])
-                        ]
-                      })
+                      ...santriScopeWhere
                     }
                   });
 
