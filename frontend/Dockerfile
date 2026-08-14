@@ -2,6 +2,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Disable Next.js telemetry & allocate memory
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
 # Copy package config files
 COPY package.json package-lock.json ./
 COPY backend/package.json ./backend/
@@ -38,6 +42,7 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV TZ=Asia/Jakarta
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Set the correct permission for nextjs user (optional but good practice)
 RUN addgroup -g 1001 -S nodejs
