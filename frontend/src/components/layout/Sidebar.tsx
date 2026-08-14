@@ -24,10 +24,12 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
       transition={{ type: 'spring', stiffness: 350, damping: 32 }}
       className="hidden md:flex flex-col h-screen fixed left-0 top-0 border-r border-emerald-500/15 bg-[#091c15] dark:bg-[#06140e] text-white z-40 overflow-hidden shadow-2xl"
     >
-      <div className="h-full flex flex-col p-4 relative">
+      <div className={`h-full flex flex-col relative transition-all ${isCollapsed ? 'p-3' : 'p-4'}`}>
         {/* Sidebar Brand Header */}
-        <div className="h-16 flex items-center justify-between px-2 mb-6 border-b border-white/10 pb-4">
-          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
+        <div className={`h-16 flex items-center mb-6 border-b border-white/10 pb-4 transition-all ${
+          isCollapsed ? 'justify-center px-0' : 'justify-between px-2'
+        }`}>
+          <Link href="/dashboard" className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 overflow-hidden'}`}>
             <div className="w-10 h-10 rounded-2xl bg-white p-1.5 border border-emerald-400/40 flex items-center justify-center shrink-0 shadow-md">
               <Image src="/logo.png" alt="HafalanKu Logo" width={28} height={28} className="w-full h-full object-contain drop-shadow-sm" />
             </div>

@@ -9,6 +9,7 @@ export function WelcomeCard() {
   const { user } = useAuth();
 
   const today = new Date().toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     weekday: 'long',
     day: 'numeric',
     month: 'long',

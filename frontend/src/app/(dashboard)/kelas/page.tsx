@@ -181,18 +181,18 @@ export default function KelasListPage() {
               onClick={() => setIsCreateModalOpen(false)}
               className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
             />
-            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="glass-card p-6 rounded-2xl max-w-md w-full border border-white/10 shadow-2xl pointer-events-auto space-y-4"
+                className="glass-card p-6 rounded-2xl max-w-md w-full border border-white/10 shadow-2xl pointer-events-auto space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar"
               >
                 <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <h3 className="text-lg font-bold font-outfit text-foreground">Buat Kelas Baru</h3>
                   <button
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary transition-colors"
+                    className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -226,18 +226,18 @@ export default function KelasListPage() {
               onClick={() => setEditingKelas(null)}
               className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
             />
-            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="glass-card p-6 rounded-2xl max-w-md w-full border border-white/10 shadow-2xl pointer-events-auto space-y-4"
+                className="glass-card p-6 rounded-2xl max-w-md w-full border border-white/10 shadow-2xl pointer-events-auto space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar"
               >
                 <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <h3 className="text-lg font-bold font-outfit text-foreground">Edit Kelas</h3>
                   <button
                     onClick={() => setEditingKelas(null)}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary transition-colors"
+                    className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>

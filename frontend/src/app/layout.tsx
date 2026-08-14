@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '../providers/ThemeProvider';
@@ -15,9 +15,29 @@ const outfit = Outfit({
   subsets: ['latin'],
 });
 
+export const viewport: Viewport = {
+  themeColor: '#091c15',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+};
+
 export const metadata: Metadata = {
-  title: 'HafalanKu - Premium Web App',
-  description: 'A modern, premium Hafalan management application.',
+  title: 'HafalanKu - Manajemen Tahfidz & Murajaah',
+  description: 'Aplikasi manajemen hafalan Al-Qur\'an modern dengan notifikasi WhatsApp otomatis.',
+  applicationName: 'HafalanKu',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'HafalanKu',
+  },
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({

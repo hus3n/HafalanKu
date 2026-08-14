@@ -9,13 +9,39 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Format date to standard Indonesian format
+ * Format date to standard Indonesian format (Asia/Jakarta timezone)
  */
 export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
   const defaultOptions: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Jakarta',
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
+    ...options,
   };
-  return new Intl.DateTimeFormat('id-ID', options || defaultOptions).format(new Date(date));
+  try {
+    return new Intl.DateTimeFormat('id-ID', defaultOptions).format(new Date(date));
+  } catch {
+    return String(date);
+  }
+}
+
+/**
+ * Format date and time to standard Indonesian format (Asia/Jakarta timezone)
+ */
+export function formatDateTime(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Jakarta',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    ...options,
+  };
+  try {
+    return new Intl.DateTimeFormat('id-ID', defaultOptions).format(new Date(date));
+  } catch {
+    return String(date);
+  }
 }

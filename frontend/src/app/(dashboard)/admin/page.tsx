@@ -151,14 +151,14 @@ export default function AdminUsersPage() {
       {/* Edit User Modal Dialog */}
       <AnimatePresence>
         {editingUser && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4"
+              className="w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl flex flex-col max-h-[90vh] md:max-h-[85vh] my-auto"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40 shrink-0">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 rounded-xl bg-primary/10 text-primary">
                     <AlertCircle className="w-5 h-5" />
@@ -174,18 +174,20 @@ export default function AdminUsersPage() {
                 </div>
                 <button
                   onClick={() => setEditingUser(null)}
-                  className="p-2 rounded-xl text-muted-foreground hover:bg-secondary transition-all"
+                  className="p-2 rounded-xl text-muted-foreground hover:bg-secondary transition-all cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <UserForm
-                initialData={editingUser}
-                onSubmitUpdate={handleUpdateUserSubmit}
-                isPending={isUpdating}
-                onCancel={() => setEditingUser(null)}
-              />
+              <div className="flex-1 overflow-y-auto pr-1 pt-4 custom-scrollbar">
+                <UserForm
+                  initialData={editingUser}
+                  onSubmitUpdate={handleUpdateUserSubmit}
+                  isPending={isUpdating}
+                  onCancel={() => setEditingUser(null)}
+                />
+              </div>
             </motion.div>
           </div>
         )}
