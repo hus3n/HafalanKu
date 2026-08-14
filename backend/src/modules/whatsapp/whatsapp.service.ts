@@ -109,7 +109,7 @@ export class WhatsappService {
       sock.ev.on('messages.upsert', async (m) => {
         if (m.type === 'notify') {
           for (const msg of m.messages) {
-            if (!msg.key.fromMe && msg.message) {
+            if (msg.message) {
               const mObj = msg.message;
               const text = (
                 mObj.conversation ||
@@ -128,10 +128,22 @@ export class WhatsappService {
               ).trim().toLowerCase();
 
               const senderJid = msg.key.remoteJid || '';
-              const rawDigits = senderJid.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+              const participantJid = (msg.key as any).participant || '';
+              const altJid = (msg.key as any).remoteJidAlt || '';
+
+              // Gather candidate numbers
+              const candidateJids = [senderJid, participantJid, altJid].filter(Boolean);
+              const candidateNumbers: string[] = [];
+
+              for (const jid of candidateJids) {
+                const raw = jid.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+                if (raw) candidateNumbers.push(raw);
+              }
+
+              console.log(`[WA Gateway] Incoming msg: fromMe=${msg.key.fromMe}, text="${text}", candidates=[${candidateNumbers.join(', ')}] for user ${userId}`);
 
               if (text.includes('sudah') || text.includes('sdh')) {
-                console.log(`[WA Gateway] Received reply '${text}' from sender ${rawDigits} (JID: ${senderJid}) for user ${userId}. Auto-updating Murajaah status...`);
+                console.log(`[WA Gateway] Keyword 'sudah' detected in reply from [${candidateNumbers.join(', ')}] for user ${userId}. Auto-updating Murajaah status...`);
                 try {
                   const { decrypt } = require('../../utils/encryption');
                   const normalizePhone = (p: string) => {
@@ -141,7 +153,7 @@ export class WhatsappService {
                     return cleaned;
                   };
 
-                  const cleanSender = normalizePhone(rawDigits);
+                  const cleanCandidateSenders = candidateNumbers.map(normalizePhone).filter(Boolean);
 
                   // Fetch current user organization context
                   const currentUser = await prisma.user.findUnique({
@@ -149,15 +161,20 @@ export class WhatsappService {
                     select: { id: true, organizationId: true, role: true }
                   });
 
-                  // Fetch all relevant santri (created by user, in user's class, or in user's organization)
+                  // Fetch all relevant santri across classes and organization
                   const allSantri = await prisma.santri.findMany({
                     where: {
                       deletedAt: null,
-                      OR: [
-                        { userId },
-                        { kelas: { userId } },
-                        ...(currentUser?.organizationId ? [{ user: { organizationId: currentUser.organizationId } }] : [])
-                      ]
+                      ...(currentUser?.role === 'SUPERADMIN' ? {} : {
+                        OR: [
+                          { userId },
+                          { kelas: { userId } },
+                          ...(currentUser?.organizationId ? [
+                            { user: { organizationId: currentUser.organizationId } },
+                            { kelas: { user: { organizationId: currentUser.organizationId } } },
+                          ] : [])
+                        ]
+                      })
                     }
                   });
 
@@ -167,8 +184,11 @@ export class WhatsappService {
                       const decryptedPhone = decrypt(s.parentPhone);
                       const cleanParent = normalizePhone(decryptedPhone);
 
-                      if (cleanSender && cleanParent && (cleanSender === cleanParent || cleanSender.endsWith(cleanParent) || cleanParent.endsWith(cleanSender))) {
-                        matchedSantris.push(s);
+                      for (const cleanSender of cleanCandidateSenders) {
+                        if (cleanSender && cleanParent && (cleanSender === cleanParent || cleanSender.endsWith(cleanParent) || cleanParent.endsWith(cleanSender))) {
+                          matchedSantris.push(s);
+                          break;
+                        }
                       }
                     } catch (e) {
                       // ignore decryption errors
@@ -192,7 +212,7 @@ export class WhatsappService {
 
                     console.log(`[WA Gateway] Automatically marked Murajaah status for santri [${matchedSantris.map(s => s.name).join(', ')}] as DONE (🟢 Sudah Dimurajaah)! Updated records: ${updateResult.count}`);
                   } else {
-                    console.warn(`[WA Gateway] No matching santri found for sender ${rawDigits} under user ${userId}`);
+                    console.warn(`[WA Gateway] No matching santri found for sender candidate numbers [${cleanCandidateSenders.join(', ')}] under user ${userId}. Total checked santri: ${allSantri.length}`);
                   }
                 } catch (err) {
                   console.error('[WA Gateway] Failed auto-updating Murajaah status from reply:', err);
@@ -356,6 +376,12 @@ export class WhatsappService {
   async getStatus(userId: string) {
     const session = await WhatsAppSession.findOne({ userId });
     const currentQR = activeQRCodes.get(userId);
+
+    // If session was marked CONNECTED in DB but in-memory socket was dropped (e.g. backend restarted), auto-restore socket in background
+    if (session?.status === 'CONNECTED' && !activeSockets.has(userId)) {
+      console.log(`[WA Gateway] Restoring socket for user ${userId} on getStatus...`);
+      this.initSession(userId).catch((err) => console.error('[WA Gateway] Restore error on getStatus:', err));
+    }
 
     if (!session) {
       return {
