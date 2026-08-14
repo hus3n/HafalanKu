@@ -9,7 +9,7 @@ export function startAutoBackupJob() {
     return;
   }
   
-  // Jalankan setiap jam tepat (menit 0)
+  // Jalankan setiap jam tepat (menit 0) WIB
   cron.schedule('0 * * * *', async () => {
     console.log('[AutoBackup] Running scheduled backup...');
     try {
@@ -18,6 +18,8 @@ export function startAutoBackupJob() {
     } catch (err) {
       console.error('[AutoBackup] Failed:', err);
     }
+  }, {
+    timezone: 'Asia/Jakarta'
   });
   
   console.log('[AutoBackup] Cron job scheduled: every hour at minute 0');

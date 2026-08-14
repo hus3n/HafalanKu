@@ -99,7 +99,9 @@ export function startSubscriptionNotifierJob() {
     } catch (err) {
       console.error('[SubscriptionNotifier] Failed:', err);
     }
+  }, {
+    timezone: 'Asia/Jakarta'
   });
 
-  console.log('[SubscriptionNotifier] Cron job scheduled: every day at 08:00 AM');
+  console.log('[SubscriptionNotifier] Cron job scheduled: every day at 08:00 AM WIB');
 }

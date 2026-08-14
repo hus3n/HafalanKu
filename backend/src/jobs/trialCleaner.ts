@@ -52,7 +52,9 @@ export function startTrialCleanerJob() {
     } catch (err) {
       console.error('[TrialCleaner] Failed to run trial cleaner job:', err);
     }
+  }, {
+    timezone: 'Asia/Jakarta'
   });
 
-  console.log('[TrialCleaner] Cron job scheduled: every day at 00:30 AM');
+  console.log('[TrialCleaner] Cron job scheduled: every day at 00:30 AM WIB');
 }

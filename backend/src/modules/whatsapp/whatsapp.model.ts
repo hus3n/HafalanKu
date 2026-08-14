@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IWhatsAppSession extends Document {
   userId: string;
-  sessionData?: string; // Encrypted JSON string of session credentials (opsional karena session tersimpan di disk)
+  sessionData?: string;
   status: 'CONNECTED' | 'DISCONNECTED' | 'PAIRING';
   phoneNumber?: string;
   lastConnectedAt?: Date;
@@ -24,3 +24,26 @@ const WhatsAppSessionSchema: Schema = new Schema(
 );
 
 export const WhatsAppSession = mongoose.model<IWhatsAppSession>('WhatsAppSession', WhatsAppSessionSchema);
+
+export interface IWhatsAppAuthKey extends Document {
+  userId: string;
+  keyId: string;
+  data: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const WhatsAppAuthKeySchema: Schema = new Schema(
+  {
+    userId: { type: String, required: true, index: true },
+    keyId: { type: String, required: true },
+    data: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+WhatsAppAuthKeySchema.index({ userId: 1, keyId: 1 }, { unique: true });
+
+export const WhatsAppAuthKey = mongoose.model<IWhatsAppAuthKey>('WhatsAppAuthKey', WhatsAppAuthKeySchema);

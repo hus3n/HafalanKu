@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 import pino from 'pino';
 import fs from 'fs';
 import path from 'path';
-import { WhatsAppSession } from './whatsapp.model';
+import { WhatsAppSession, WhatsAppAuthKey } from './whatsapp.model';
 import { AppError } from '../../utils/AppError';
 import { prisma } from '../../config/database';
 
@@ -12,6 +12,50 @@ const activeSockets = new Map<string, any>();
 const activeQRCodes = new Map<string, string>();
 const reconnectAttempts = new Map<string, number>();
 
+// Helper to restore auth files from MongoDB to disk if disk is empty after deploy/restart
+async function restoreAuthFromMongo(userId: string, sessionDir: string): Promise<boolean> {
+  try {
+    const credsPath = path.join(sessionDir, 'creds.json');
+    if (!fs.existsSync(credsPath)) {
+      const keys = await WhatsAppAuthKey.find({ userId });
+      if (keys && keys.length > 0) {
+        console.log(`[WA Gateway] Restoring ${keys.length} session auth keys from MongoDB to disk for user ${userId}...`);
+        if (!fs.existsSync(sessionDir)) {
+          fs.mkdirSync(sessionDir, { recursive: true });
+        }
+        for (const k of keys) {
+          fs.writeFileSync(path.join(sessionDir, k.keyId), k.data, 'utf-8');
+        }
+        return true;
+      }
+    }
+  } catch (err) {
+    console.error(`[WA Gateway] Failed restoring auth keys from MongoDB for user ${userId}:`, err);
+  }
+  return false;
+}
+
+// Helper to sync all disk auth files to MongoDB
+async function syncAuthToMongo(userId: string, sessionDir: string): Promise<void> {
+  try {
+    if (!fs.existsSync(sessionDir)) return;
+    const files = fs.readdirSync(sessionDir);
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const filePath = path.join(sessionDir, file);
+        const data = fs.readFileSync(filePath, 'utf-8');
+        await WhatsAppAuthKey.findOneAndUpdate(
+          { userId, keyId: file },
+          { data, updatedAt: new Date() },
+          { upsert: true, new: true }
+        );
+      }
+    }
+  } catch (err) {
+    console.error(`[WA Gateway] Failed syncing auth keys to MongoDB for user ${userId}:`, err);
+  }
+}
+
 export class WhatsappService {
   async initSession(userId: string) {
     const sessionDir = path.resolve(process.cwd(), `./whatsapp_sessions/${userId}`);
@@ -19,6 +63,9 @@ export class WhatsappService {
     if (!fs.existsSync(sessionDir)) {
       fs.mkdirSync(sessionDir, { recursive: true });
     }
+
+    // 1. Attempt restoring credentials from MongoDB if container or disk was recreated
+    await restoreAuthFromMongo(userId, sessionDir);
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
     const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1015901307] as [number, number, number] }));
@@ -46,7 +93,17 @@ export class WhatsappService {
 
       activeSockets.set(userId, sock);
 
-      sock.ev.on('creds.update', saveCreds);
+      // Persistent saveCreds: saves to disk and immediately syncs to MongoDB
+      const persistentSaveCreds = async () => {
+        try {
+          await saveCreds();
+          await syncAuthToMongo(userId, sessionDir);
+        } catch (err) {
+          console.error(`[WA Gateway] Error during persistentSaveCreds for user ${userId}:`, err);
+        }
+      };
+
+      sock.ev.on('creds.update', persistentSaveCreds);
 
       // Listen to incoming messages for auto-updating Murajaah status on keyword 'sudah'
       sock.ev.on('messages.upsert', async (m) => {
@@ -187,6 +244,9 @@ export class WhatsappService {
           const userJid = sock.user?.id || '';
           const phoneNumber = userJid.split(':')[0] || userJid.split('@')[0];
 
+          // Persist all generated auth credentials to MongoDB
+          await syncAuthToMongo(userId, sessionDir);
+
           await WhatsAppSession.findOneAndUpdate(
             { userId },
             {
@@ -225,6 +285,7 @@ export class WhatsappService {
                 updatedAt: new Date(),
               }
             );
+            await WhatsAppAuthKey.deleteMany({ userId });
             activeSockets.delete(userId);
             activeQRCodes.delete(userId);
             reconnectAttempts.delete(userId);
@@ -245,8 +306,8 @@ export class WhatsappService {
             const currentAttempts = (reconnectAttempts.get(userId) || 0) + 1;
             reconnectAttempts.set(userId, currentAttempts);
 
-            if (currentAttempts <= 3) {
-              console.log(`[WA] Connection closed. Retrying connection for user ${userId} (Attempt ${currentAttempts}/3)...`);
+            if (currentAttempts <= 5) {
+              console.log(`[WA] Connection closed. Retrying connection for user ${userId} (Attempt ${currentAttempts}/5)...`);
               setTimeout(() => {
                 this.initSession(userId).catch(err => console.error('[WA] Reconnect error:', err));
               }, 3000);
@@ -279,13 +340,16 @@ export class WhatsappService {
 
   async autoRestoreSessions() {
     try {
+      const distinctKeyUsers = await WhatsAppAuthKey.distinct('userId');
       const connectedSessions = await WhatsAppSession.find({ status: 'CONNECTED' });
-      for (const session of connectedSessions) {
-        console.log(`[WA Gateway] Auto-restoring session for user ${session.userId}...`);
-        this.initSession(session.userId).catch(err => console.error(`[WA Gateway] Restore error for user ${session.userId}:`, err));
+      const allTargetUserIds = Array.from(new Set([...connectedSessions.map(s => s.userId), ...distinctKeyUsers]));
+
+      for (const uid of allTargetUserIds) {
+        console.log(`[WA Gateway] Auto-restoring persistent WhatsApp session for user ${uid}...`);
+        this.initSession(uid).catch(err => console.error(`[WA Gateway] Persistent restore error for user ${uid}:`, err));
       }
     } catch (err) {
-      console.error('[WA Gateway] Error loading connected sessions:', err);
+      console.error('[WA Gateway] Error auto-restoring persistent sessions:', err);
     }
   }
 
@@ -342,6 +406,8 @@ export class WhatsappService {
       }
     }
 
+    await WhatsAppAuthKey.deleteMany({ userId });
+
     await WhatsAppSession.findOneAndUpdate(
       { userId },
       {
@@ -366,16 +432,19 @@ export class WhatsappService {
 
     let sock = activeSockets.get(userId);
 
-    // Auto-restore active session from disk if socket instance was lost on container restart
+    // Auto-restore active session from disk or MongoDB if socket instance was lost on container restart
     if (!sock) {
       const sessionDir = path.resolve(process.cwd(), `./whatsapp_sessions/${userId}`);
-      if (fs.existsSync(sessionDir)) {
+      const hasDiskAuth = fs.existsSync(path.join(sessionDir, 'creds.json'));
+      const hasMongoAuth = await WhatsAppAuthKey.exists({ userId });
+
+      if (hasDiskAuth || hasMongoAuth) {
         try {
-          console.log(`[WA] Restoring active WhatsApp socket from session disk for user ${userId}...`);
+          console.log(`[WA] Restoring active WhatsApp socket from persistent storage for user ${userId}...`);
           await this.initSession(userId);
           sock = activeSockets.get(userId);
         } catch (e) {
-          console.error('[WA] Failed restoring session from disk:', e);
+          console.error('[WA] Failed restoring session from persistent storage:', e);
         }
       }
     }

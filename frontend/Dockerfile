@@ -27,9 +27,13 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
+# Install tzdata for Jakarta timezone
+RUN apk add --no-cache tzdata
+
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV TZ=Asia/Jakarta
 
 # Set the correct permission for nextjs user (optional but good practice)
 RUN addgroup -g 1001 -S nodejs

@@ -6,6 +6,9 @@ import { z } from 'zod';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
+// Enforce Asia/Jakarta timezone for date calculations and cron schedulers
+process.env.TZ = process.env.TZ || 'Asia/Jakarta';
+
 const envSchema = z.object({
   DATABASE_URL: z.string().url('DATABASE_URL must be a valid PostgreSQL connection string'),
   MONGODB_URL: z.string().url('MONGODB_URL must be a valid MongoDB connection string'),

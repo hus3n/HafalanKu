@@ -7,6 +7,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-hafalanku}
       POSTGRES_USER: ${POSTGRES_USER:-hafalanku_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-P@ssw0rdHafalanKu2026!}
+      TZ: Asia/Jakarta
+      PGTZ: Asia/Jakarta
     volumes:
       - hafalanku-pg-data:/var/lib/postgresql/data
     healthcheck:
@@ -18,12 +20,16 @@ services:
 
   hafalanku-mongo:
     image: mongo:7
+    environment:
+      TZ: Asia/Jakarta
     volumes:
       - hafalanku-mongo-data:/data/db
     restart: always
 
   hafalanku-redis:
     image: redis:7-alpine
+    environment:
+      TZ: Asia/Jakarta
     volumes:
       - hafalanku-redis-data:/data
     restart: always
@@ -35,6 +41,7 @@ services:
     command: sh -c "npx prisma db push && node prisma/seed.js && npm run start"
     environment:
       NODE_ENV: production
+      TZ: Asia/Jakarta
       DATABASE_URL: ${DATABASE_URL:-postgresql://hafalanku_user:P@ssw0rdHafalanKu2026!@hafalanku-postgres:5432/hafalanku?schema=public}
       MONGODB_URL: ${MONGODB_URL:-mongodb://hafalanku-mongo:27017/hafalanku}
       REDIS_URL: ${REDIS_URL:-redis://hafalanku-redis:6379}
@@ -52,6 +59,9 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-https://hafalanku.com}
     ports:
       - "4000:4000"
+    volumes:
+      - hafalanku-wa-sessions:/app/backend/whatsapp_sessions
+      - hafalanku-uploads:/app/backend/uploads
     depends_on:
       hafalanku-postgres:
         condition: service_healthy
@@ -67,6 +77,7 @@ services:
       dockerfile: frontend/Dockerfile
     environment:
       NODE_ENV: production
+      TZ: Asia/Jakarta
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
       PORT: 3000
     ports:
@@ -79,3 +90,5 @@ volumes:
   hafalanku-pg-data:
   hafalanku-mongo-data:
   hafalanku-redis-data:
+  hafalanku-wa-sessions:
+  hafalanku-uploads:

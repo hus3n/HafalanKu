@@ -2,8 +2,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install openssl for Prisma
-RUN apk add --no-cache openssl
+# Install openssl for Prisma and tzdata
+RUN apk add --no-cache openssl tzdata
 
 # Copy package config files
 COPY package.json package-lock.json ./
@@ -34,11 +34,12 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Install openssl for Prisma
-RUN apk add --no-cache openssl
+# Install openssl for Prisma and tzdata for Jakarta timezone
+RUN apk add --no-cache openssl tzdata
 
-# Set Node environment to production
+# Set Node environment to production and Timezone to Asia/Jakarta
 ENV NODE_ENV=production
+ENV TZ=Asia/Jakarta
 
 # Copy necessary files from builder
 COPY --from=builder /app/package.json ./
