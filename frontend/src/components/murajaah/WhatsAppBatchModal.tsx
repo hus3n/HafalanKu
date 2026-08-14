@@ -33,9 +33,10 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
 
   const generateMarkdownMessage = (group: BatchSantriGroup) => {
     const item = group.surahs[0];
-    const surahText = item ? `📖 Target Murajaah Hari Ini: *Surah #${item.selectedSurahNumber || item.surahNumber} ${item.selectedSurahName || item.surahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}` : '📖 Target Murajaah: Surah Pilihan';
+    const hafalanInfo = item?.hafalanTodayText ? `📜 *Setoran Hafalan Hari Ini:*\n✨ *${item.hafalanTodayText}*` : '📜 *Setoran Hafalan Hari Ini:*\n_Belum ada setoran baru hari ini_';
+    const surahText = item ? `*Surah #${item.selectedSurahNumber || item.surahNumber} ${item.selectedSurahName || item.surahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}` : '*Surah Pilihan*';
 
-    return `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${group.parentName}* (Wali dari Ananda *${group.santriName}* - ${group.kelasName})\n\nBerikut adalah jadwal Murajaah Hafalan Al-Qur'an hari ini:\n${surahText}\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan pendampingan ananda murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih.\n_HafalanKu Automatic Gateway_`;
+    return `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${group.parentName}* (Wali dari Ananda *${group.santriName}* - ${group.kelasName})\n\nBerikut adalah laporan capaian hafalan dan jadwal murajaah ananda hari ini:\n\n${hafalanInfo}\n\n📖 *Target Murajaah di Rumah:*\n${surahText}\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan dampingi ananda mengulang murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih atas perhatian dan kerja samanya.\n_HafalanKu Automatic Gateway_`;
   };
 
   const handleStartBatchSend = async () => {

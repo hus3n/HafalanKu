@@ -28,6 +28,7 @@ export interface MurajaahItem {
   priorityScore: number;
   lastReviewDate: string | null;
   ayatRange?: string;
+  hafalanTodayText?: string;
   hafalanSurahs: SantriHafalanSurah[]; // Surat-surat yang HANYA sudah dihafal santri
   murajaahStatus: MurajaahStatusType; // 🟢 SUDAH | ⏳ BELUM | ❌ TIDAK_DIMURAJAAH
   notificationStatus: NotificationStatusType; // 📲 SENT | ⏳ PENDING

@@ -110,7 +110,26 @@ export class MurajaahService {
 
       const hafalanSurahs = Array.from(hafalanMap.values());
 
-      // 2. Compute 24-hour expiration status
+      // 2. Identify today's hafalan setoran or latest setoran
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayHafalanList = santriHafalanList.filter((h: any) => {
+        if (!h.date) return false;
+        const dStr = new Date(h.date).toISOString().split('T')[0];
+        return dStr === todayStr;
+      });
+
+      const latestHafalan = santriHafalanList.length > 0 ? santriHafalanList[santriHafalanList.length - 1] : null;
+
+      let hafalanTodayText = '';
+      if (todayHafalanList.length > 0) {
+        hafalanTodayText = todayHafalanList.map((h: any) => `Surah #${h.surahNumber} ${h.surahName} (Ayat ${h.ayatStart}-${h.ayatEnd})`).join(', ');
+      } else if (latestHafalan) {
+        hafalanTodayText = `Surah #${latestHafalan.surahNumber} ${latestHafalan.surahName} (Ayat ${latestHafalan.ayatStart}-${latestHafalan.ayatEnd})`;
+      } else {
+        hafalanTodayText = 'Belum ada setoran baru hari ini';
+      }
+
+      // 3. Compute 24-hour expiration status
       const itemTime = new Date(item.updatedAt || item.createdAt).getTime();
       const hoursPassed = (now - itemTime) / (1000 * 60 * 60);
 
@@ -139,6 +158,7 @@ export class MurajaahService {
         isSelected: item.isSelected,
         priorityScore: item.priorityScore,
         lastReviewDate: item.lastReviewDate,
+        hafalanTodayText,
         hafalanSurahs: hafalanSurahs.length > 0 ? hafalanSurahs : [
           { surahNumber: item.surahNumber, surahName: item.surahName, ayatRange: 'Surah Hafalan' }
         ],
@@ -289,14 +309,36 @@ export class MurajaahService {
       // fallback
     }
 
-    const selectedSchedule = await prisma.murajaahSchedule.findFirst({
-      where: { santriId, userId },
-      orderBy: { priorityScore: 'desc' },
+    // Fetch today's hafalan setoran for this santri
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    const todayHafalan = await prisma.hafalan.findMany({
+      where: {
+        santriId,
+        date: { gte: startOfDay, lte: endOfDay }
+      },
+      orderBy: { createdAt: 'desc' }
     });
 
-    const surahNameText = selectedSchedule ? `Surah #${selectedSchedule.surahNumber} ${selectedSchedule.surahName}` : 'Surah Hafalan Terakhir';
+    const latestHafalan = todayHafalan.length > 0 ? todayHafalan[0] : await prisma.hafalan.findFirst({
+      where: { santriId },
+      orderBy: { date: 'desc' }
+    });
 
-    const messageText = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${santri.parentName}* (Wali dari Ananda *${santri.name}* - ${santri.kelas?.name || 'Kelompok Ustadz'})\n\nBerikut adalah jadwal Murajaah Hafalan Al-Qur'an hari ini:\n📖 Target Murajaah Hari Ini: *${surahNameText}*\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan pendampingan ananda murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih.\n_HafalanKu Automatic Gateway_`;
+    let hafalanText = '';
+    if (todayHafalan.length > 0) {
+      hafalanText = todayHafalan.map(h => `✨ *Surah #${h.surahNumber} ${h.surahName}* (Ayat ${h.ayatStart}-${h.ayatEnd}) - Nilai: *${h.predikat}*`).join('\n');
+    } else if (latestHafalan) {
+      hafalanText = `✨ *Surah #${latestHafalan.surahNumber} ${latestHafalan.surahName}* (Ayat ${latestHafalan.ayatStart}-${latestHafalan.ayatEnd}) - Nilai: *${latestHafalan.predikat}*`;
+    } else {
+      hafalanText = `_Belum ada setoran baru hari ini_`;
+    }
+
+    const surahNameText = selectedSchedule ? `Surah #${selectedSchedule.surahNumber} ${selectedSchedule.surahName}` : 'Surah Pilihan';
+
+    const messageText = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${santri.parentName}* (Wali dari Ananda *${santri.name}* - ${santri.kelas?.name || 'Kelompok Ustadz'})\n\nBerikut adalah laporan capaian hafalan dan jadwal murajaah ananda hari ini:\n\n📜 *Setoran Hafalan Hari Ini:*\n${hafalanText}\n\n📖 *Target Murajaah di Rumah:*\n*${surahNameText}*\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan dampingi ananda mengulang murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih atas perhatian dan kerja samanya.\n_HafalanKu Automatic Gateway_`;
 
     return {
       success: true,
