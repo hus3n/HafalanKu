@@ -26,6 +26,7 @@ import { settingsRoutes } from './modules/settings/settings.route';
 import { startAutoBackupJob } from './jobs/autoBackup';
 import { startSubscriptionNotifierJob } from './jobs/subscriptionNotifier';
 import { startTrialCleanerJob } from './jobs/trialCleaner';
+import { startMurajaahCleanerJob } from './jobs/murajaahCleaner';
 
 const fastify = Fastify({
   logger: loggerConfig,
@@ -93,6 +94,9 @@ async function main() {
 
     // Start Trial Cleaner Cron Job
     startTrialCleanerJob();
+
+    // Start Daily Murajaah Rollover Cron Job
+    startMurajaahCleanerJob();
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

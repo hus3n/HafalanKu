@@ -6,8 +6,58 @@ import { NotificationLog } from '../notification/notification.model';
 
 const whatsappService = new WhatsAppService();
 
+function getStartOfTodayJakarta(): Date {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const todayJakartaStr = formatter.format(new Date()); // "YYYY-MM-DD"
+  return new Date(`${todayJakartaStr}T00:00:00.000+07:00`);
+}
+
 export class MurajaahService {
+  async cleanupExpiredSchedules() {
+    const startOfToday = getStartOfTodayJakarta();
+
+    const expiredSchedules = await prisma.murajaahSchedule.findMany({
+      where: {
+        createdAt: { lt: startOfToday },
+      },
+    });
+
+    if (expiredSchedules.length > 0) {
+      console.log(`[MurajaahService] Moving ${expiredSchedules.length} expired murajaah schedules from previous calendar days to history...`);
+      for (const item of expiredSchedules) {
+        const status = item.isSelected ? 'SUDAH' : 'TIDAK_DIMURAJAAH';
+        try {
+          await prisma.$transaction(async (tx) => {
+            await tx.murajaahHistory.create({
+              data: {
+                santriId: item.santriId,
+                surahNumber: item.surahNumber,
+                surahName: item.surahName,
+                status,
+                date: item.createdAt,
+                userId: item.userId,
+              },
+            });
+            await tx.murajaahSchedule.delete({ where: { id: item.id } });
+          });
+        } catch (e) {
+          console.error(`[MurajaahService] Error moving expired schedule ${item.id} to history:`, e);
+        }
+      }
+    }
+  }
+
   async getSchedules(userId: string, santriId?: string, kelasId?: string) {
+    // 1. Move all previous calendar days' schedules to history
+    await this.cleanupExpiredSchedules();
+
+    const startOfToday = getStartOfTodayJakarta();
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, role: true, organizationId: true }
@@ -31,7 +81,10 @@ export class MurajaahService {
       };
     }
 
-    const where: any = { ...accessWhere };
+    const where: any = {
+      ...accessWhere,
+      createdAt: { gte: startOfToday }, // Only show today's calendar day schedules
+    };
     if (santriId) {
       where.santriId = santriId;
     }
@@ -39,7 +92,7 @@ export class MurajaahService {
       where.santri = { ...(where.santri || {}), kelasId };
     }
 
-    const schedules = await prisma.murajaahSchedule.findMany({
+    const activeSchedules = await prisma.murajaahSchedule.findMany({
       where,
       orderBy: [
         { isSelected: 'desc' },
@@ -62,43 +115,7 @@ export class MurajaahService {
       }
     });
 
-    const now = Date.now();
-    const activeSchedules = [];
-
-    for (const item of schedules) {
-      const itemTime = new Date(item.updatedAt || item.createdAt).getTime();
-      const hoursPassed = (now - itemTime) / (1000 * 60 * 60);
-
-      if (hoursPassed >= 24) {
-        let status = item.isSelected ? 'SUDAH' : 'TIDAK_DIMURAJAAH';
-        try {
-          await prisma.$transaction(async (tx) => {
-             await tx.murajaahHistory.create({
-               data: {
-                 santriId: item.santriId,
-                 surahNumber: item.surahNumber,
-                 surahName: item.surahName,
-                 status,
-                 date: item.createdAt,
-                 userId: item.userId,
-               }
-             });
-             await tx.murajaahSchedule.delete({ where: { id: item.id } });
-          });
-        } catch(e) {
-          console.error('[MurajaahService] Error moving schedule to history:', e);
-          // If fail, just push it to active temporarily
-          activeSchedules.push(item);
-        }
-      } else {
-        activeSchedules.push(item);
-      }
-    }
-
     // Query today's notification logs from MongoDB to determine notification status accurately
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-
     const notifiedSantriIds = new Set<string>();
     const logTimestamps = new Map<string, string>();
     try {
@@ -108,7 +125,7 @@ export class MurajaahService {
           type: 'MURAJAAH_SCHEDULE',
           status: 'SENT',
           santriId: { $in: santriIdList },
-          createdAt: { $gte: startOfDay }
+          createdAt: { $gte: startOfToday }
         });
         todayLogs.forEach((l) => {
           if (l.santriId) {
@@ -120,6 +137,9 @@ export class MurajaahService {
     } catch (e) {
       console.error('[MurajaahService] Error querying NotificationLog in getSchedules:', e);
     }
+
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' });
+    const todayStr = formatter.format(new Date());
 
     return activeSchedules.map((item: any) => {
       // 1. Group unique hafalan surahs memorized by this santri
@@ -141,10 +161,9 @@ export class MurajaahService {
       const hafalanSurahs = Array.from(hafalanMap.values());
 
       // 2. Identify today's hafalan setoran or latest setoran
-      const todayStr = new Date().toISOString().split('T')[0];
       const todayHafalanList = santriHafalanList.filter((h: any) => {
         if (!h.date) return false;
-        const dStr = new Date(h.date).toISOString().split('T')[0];
+        const dStr = formatter.format(new Date(h.date));
         return dStr === todayStr;
       });
 
@@ -241,13 +260,15 @@ export class MurajaahService {
   }
 
   async createSchedule(userId: string, santriId: string, surahNumber: number, surahName: string) {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    // 1. Move all previous days' schedules to history before checking/creating
+    await this.cleanupExpiredSchedules();
+
+    const startOfToday = getStartOfTodayJakarta();
 
     const existingToday = await prisma.murajaahSchedule.findFirst({
       where: {
         santriId,
-        createdAt: { gte: startOfDay },
+        createdAt: { gte: startOfToday },
       },
     });
 
@@ -285,12 +306,38 @@ export class MurajaahService {
   }
 
   async getHistory(userId: string, santriId?: string, kelasId?: string) {
-    const where: any = { userId };
+    // 1. Move all previous days' schedules to history so history is always current
+    await this.cleanupExpiredSchedules();
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, organizationId: true }
+    });
+
+    let accessWhere: any = {};
+    if (user?.role === 'SUPERADMIN') {
+      accessWhere = {};
+    } else if (user?.role === 'ADMIN' && user.organizationId) {
+      accessWhere = {
+        santri: {
+          user: { organizationId: user.organizationId }
+        }
+      };
+    } else {
+      accessWhere = {
+        OR: [
+          { userId },
+          { santri: { OR: [{ userId }, { kelas: { userId } }] } }
+        ]
+      };
+    }
+
+    const where: any = { ...accessWhere };
     if (santriId) {
       where.santriId = santriId;
     }
     if (kelasId) {
-      where.santri = { kelasId };
+      where.santri = { ...(where.santri || {}), kelasId };
     }
 
     const histories = await prisma.murajaahHistory.findMany({
@@ -333,14 +380,6 @@ export class MurajaahService {
       santriAccessWhere = {
         user: { organizationId: currentUser.organizationId }
       };
-    } else if (currentUser?.organizationId) {
-      santriAccessWhere = {
-        OR: [
-          { userId },
-          { kelas: { userId } },
-          { user: { organizationId: currentUser.organizationId } }
-        ]
-      };
     } else {
       santriAccessWhere = {
         OR: [
@@ -353,14 +392,19 @@ export class MurajaahService {
     const santri = await prisma.santri.findFirst({
       where: {
         id: santriId,
-        deletedAt: null,
-        ...santriAccessWhere
+        ...santriAccessWhere,
       },
-      include: { kelas: true, user: true }
+      include: {
+        kelas: true,
+        hafalan: {
+          orderBy: { date: 'desc' },
+          take: 5,
+        },
+      }
     });
 
     if (!santri) {
-      throw new AppError('Santri tidak ditemukan', 404);
+      throw new AppError('Santri tidak ditemukan atau Anda tidak memiliki akses.', 404);
     }
 
     let parentPhone = santri.parentPhone;
@@ -370,31 +414,27 @@ export class MurajaahService {
       // fallback
     }
 
-    // Fetch today's hafalan setoran for this santri
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    if (!parentPhone) {
+      throw new AppError('Nomor WhatsApp Wali Santri belum terdaftar.', 400);
+    }
 
-    const todayHafalan = await prisma.hafalan.findMany({
-      where: {
-        santriId,
-        date: { gte: startOfDay, lte: endOfDay }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' });
+    const todayStr = formatter.format(new Date());
 
-    const latestHafalan = todayHafalan.length > 0 ? todayHafalan[0] : await prisma.hafalan.findFirst({
-      where: { santriId },
-      orderBy: { date: 'desc' }
+    const todayHafalan = santri.hafalan.filter(h => {
+      if (!h.date) return false;
+      const dStr = formatter.format(new Date(h.date));
+      return dStr === todayStr;
     });
 
     let hafalanText = '';
     if (todayHafalan.length > 0) {
-      hafalanText = todayHafalan.map(h => `✨ *Surah #${h.surahNumber} ${h.surahName}* (Ayat ${h.ayatStart}-${h.ayatEnd}) - Nilai: *${h.predikat}*`).join('\n');
-    } else if (latestHafalan) {
-      hafalanText = `✨ *Surah #${latestHafalan.surahNumber} ${latestHafalan.surahName}* (Ayat ${latestHafalan.ayatStart}-${latestHafalan.ayatEnd}) - Nilai: *${latestHafalan.predikat}*`;
+      hafalanText = todayHafalan.map(h => `- Surah #${h.surahNumber} ${h.surahName} (Ayat ${h.ayatStart}-${h.ayatEnd})`).join('\n');
+    } else if (santri.hafalan.length > 0) {
+      const latest = santri.hafalan[0];
+      hafalanText = `- Surah #${latest.surahNumber} ${latest.surahName} (Ayat ${latest.ayatStart}-${latest.ayatEnd}) *(Setoran Terakhir)*`;
     } else {
-      hafalanText = `_Belum ada setoran baru hari ini_`;
+      hafalanText = '- Belum ada catatan setoran baru';
     }
 
     const selectedSchedule = await prisma.murajaahSchedule.findFirst({
