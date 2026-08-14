@@ -4,12 +4,35 @@ import { AppError } from '../../utils/AppError';
 
 export class MurajaahService {
   async getSchedules(userId: string, santriId?: string, kelasId?: string) {
-    const where: any = { userId };
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, organizationId: true }
+    });
+
+    let accessWhere: any = {};
+    if (user?.role === 'SUPERADMIN') {
+      accessWhere = {};
+    } else if (user?.role === 'ADMIN' && user.organizationId) {
+      accessWhere = {
+        santri: {
+          user: { organizationId: user.organizationId }
+        }
+      };
+    } else {
+      accessWhere = {
+        OR: [
+          { userId },
+          { santri: { OR: [{ userId }, { kelas: { userId } }] } }
+        ]
+      };
+    }
+
+    const where: any = { ...accessWhere };
     if (santriId) {
       where.santriId = santriId;
     }
     if (kelasId) {
-      where.santri = { kelasId };
+      where.santri = { ...(where.santri || {}), kelasId };
     }
 
     const schedules = await prisma.murajaahSchedule.findMany({

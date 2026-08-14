@@ -53,27 +53,49 @@ export class WhatsappService {
         if (m.type === 'notify') {
           for (const msg of m.messages) {
             if (!msg.key.fromMe && msg.message) {
-              const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
-              const senderJid = msg.key.remoteJid || '';
-              const senderPhone = senderJid.split('@')[0];
+              const text = (
+                msg.message.conversation ||
+                msg.message.extendedTextMessage?.text ||
+                msg.message.imageMessage?.caption ||
+                msg.message.videoMessage?.caption ||
+                ''
+              ).trim().toLowerCase();
 
-              if (text.toLowerCase().includes('sudah')) {
-                console.log(`[WA Gateway] Received reply 'sudah' from parent ${senderPhone}. Auto-updating Murajaah status...`);
+              const senderJid = msg.key.remoteJid || '';
+              const senderDigits = senderJid.split('@')[0].replace(/[^0-9]/g, '');
+
+              if (text.includes('sudah')) {
+                console.log(`[WA Gateway] Received reply '${text}' from sender ${senderDigits} (JID: ${senderJid}) for user ${userId}. Auto-updating Murajaah status...`);
                 try {
-                  const cleanDigits = senderPhone.replace(/^62/, '0');
-                  
-                  // Fetch all santri for this ustadz (userId) since parentPhone is encrypted
-                  const allSantri = await prisma.santri.findMany({
-                    where: { userId, deletedAt: null }
-                  });
-                  
                   const { decrypt } = require('../../utils/encryption');
-                  
+                  const normalizePhone = (p: string) => (p || '').replace(/[^0-9]/g, '').replace(/^(62|0)/, '');
+                  const cleanSender = normalizePhone(senderDigits);
+
+                  // Fetch current user organization context
+                  const currentUser = await prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { id: true, organizationId: true }
+                  });
+
+                  // Fetch all relevant santri (created by user, in user's class, or in user's organization)
+                  const allSantri = await prisma.santri.findMany({
+                    where: {
+                      deletedAt: null,
+                      OR: [
+                        { userId },
+                        { kelas: { userId } },
+                        ...(currentUser?.organizationId ? [{ user: { organizationId: currentUser.organizationId } }] : [])
+                      ]
+                    }
+                  });
+
                   let matchedSantri = null;
                   for (const s of allSantri) {
                     try {
                       const decryptedPhone = decrypt(s.parentPhone);
-                      if (decryptedPhone.includes(senderPhone) || decryptedPhone.includes(cleanDigits)) {
+                      const cleanParent = normalizePhone(decryptedPhone);
+
+                      if (cleanSender && cleanParent && (cleanSender === cleanParent || cleanSender.endsWith(cleanParent) || cleanParent.endsWith(cleanSender))) {
                         matchedSantri = s;
                         break;
                       }
@@ -81,17 +103,24 @@ export class WhatsappService {
                       // ignore decryption errors
                     }
                   }
-                  
+
                   if (matchedSantri) {
-                    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-                    await prisma.murajaahSchedule.updateMany({
+                    console.log(`[WA Gateway] Matched santri: ${matchedSantri.name} (ID: ${matchedSantri.id})`);
+                    
+                    const updateResult = await prisma.murajaahSchedule.updateMany({
                       where: { 
                         santriId: matchedSantri.id,
-                        createdAt: { gte: yesterday }
                       },
-                      data: { isSelected: true, lastReviewDate: new Date() },
+                      data: { 
+                        isSelected: true, 
+                        lastReviewDate: new Date(),
+                        updatedAt: new Date(),
+                      },
                     });
-                    console.log(`[WA Gateway] Automatically marked Murajaah status for santri ${matchedSantri.name} as DONE (🟢 Sudah Dimurajaah)!`);
+
+                    console.log(`[WA Gateway] Automatically marked Murajaah status for santri ${matchedSantri.name} as DONE (🟢 Sudah Dimurajaah)! Updated records: ${updateResult.count}`);
+                  } else {
+                    console.warn(`[WA Gateway] No matching santri found for sender ${senderDigits} under user ${userId}`);
                   }
                 } catch (err) {
                   console.error('[WA Gateway] Failed auto-updating Murajaah status from reply:', err);
