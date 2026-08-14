@@ -4,28 +4,34 @@ import React, { useState } from 'react';
 import { useReportRecap, downloadExcelReport } from '../../../hooks/useReport';
 import { useSantriList } from '../../../hooks/useSantri';
 import { useKelasList } from '../../../hooks/useKelas';
+import { useUsers } from '../../../hooks/useUsers';
+import { useAuth } from '../../../hooks/useAuth';
 import { ReportTable } from '../../../components/tables/ReportTable';
 import { motion } from 'motion/react';
-import { Download, Filter, BookOpen, Award, Loader2, FileSpreadsheet } from 'lucide-react';
+import { Download, Filter, BookOpen, Award, Loader2, FileSpreadsheet, UserCheck, Calendar } from 'lucide-react';
 
 export default function LaporanPage() {
+  const { user: currentUser } = useAuth();
   const currentDate = new Date();
   const [month, setMonth] = useState<number | undefined>(currentDate.getMonth() + 1);
   const [year, setYear] = useState<number | undefined>(currentDate.getFullYear());
+  const [ustadzId, setUstadzId] = useState('');
   const [kelasId, setKelasId] = useState('');
   const [santriId, setSantriId] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const { data, isLoading } = useReportRecap({ month, year, kelasId, santriId });
+  const { data, isLoading } = useReportRecap({ month, year, kelasId, santriId, ustadzId });
   const { data: santriData } = useSantriList({ limit: 100 });
   const { data: kelasList = [] } = useKelasList();
+  const { data: usersData } = useUsers({ limit: 100 });
 
+  const ustadzOptions = (usersData?.data || []).filter(u => u.role === 'USER' || u.role === 'ADMIN');
   const santriOptions = santriData?.santri || [];
 
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      await downloadExcelReport({ month, year, kelasId, santriId });
+      await downloadExcelReport({ month, year, kelasId, santriId, ustadzId });
     } catch (err) {
       console.error(err);
     } finally {
@@ -48,7 +54,10 @@ export default function LaporanPage() {
     { value: 12, label: 'Desember' },
   ];
 
+  const yearsList = [2026, 2025, 2024, 2023];
+
   const summary = data?.summary;
+  const isSuperOrAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPERADMIN';
 
   return (
     <div className="space-y-6">
@@ -59,7 +68,7 @@ export default function LaporanPage() {
             Laporan Rekapitulasi Hafalan
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Rekap bulanan capaian setoran hafalan santri & unduh file Excel.
+            Rekap bulanan/tahunan capaian setoran hafalan santri & unduh file Excel.
           </p>
         </div>
 
@@ -68,7 +77,7 @@ export default function LaporanPage() {
           whileTap={{ scale: 0.97 }}
           onClick={handleDownload}
           disabled={isDownloading}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm shadow-lg shadow-emerald-600/25 transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm shadow-lg shadow-emerald-600/25 transition-all self-start sm:self-auto cursor-pointer"
         >
           {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
           <span>Download Format Excel (.xlsx)</span>
@@ -76,14 +85,14 @@ export default function LaporanPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* Filter Bulan */}
         <select
           value={month || ''}
           onChange={(e) => setMonth(e.target.value ? Number(e.target.value) : undefined)}
           className="h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
         >
-          <option value="">Semua Bulan</option>
+          <option value="">Semua Bulan (Setahun Penuh)</option>
           {monthsList.map((m) => (
             <option key={m.value} value={m.value}>
               {m.label}
@@ -98,10 +107,28 @@ export default function LaporanPage() {
           className="h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
         >
           <option value="">Semua Tahun</option>
-          <option value={2026}>2026</option>
-          <option value={2025}>2025</option>
-          <option value={2024}>2024</option>
+          {yearsList.map((y) => (
+            <option key={y} value={y}>
+              Tahun {y}
+            </option>
+          ))}
         </select>
+
+        {/* Filter Ustadz / Pengajar (Khusus Admin/Superadmin) */}
+        {isSuperOrAdmin ? (
+          <select
+            value={ustadzId}
+            onChange={(e) => setUstadzId(e.target.value)}
+            className="h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
+          >
+            <option value="">Semua Ustadz / Pengajar</option>
+            {ustadzOptions.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name} ({u.role})
+              </option>
+            ))}
+          </select>
+        ) : null}
 
         {/* Filter Kelas */}
         <select

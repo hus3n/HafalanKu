@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+
 export interface ReportRecapItem {
   id: string;
   santriId: string;
@@ -11,17 +13,24 @@ export interface ReportRecapItem {
   predikat: string;
   date: string;
   notes?: string | null;
+  user?: {
+    name: string;
+  };
   santri?: {
     id: string;
     name: string;
     parentName: string;
     kelas?: {
       name: string;
+      user?: {
+        name: string;
+      };
     } | null;
   };
 }
 
 export interface ReportRecapResponse {
+  organizationName?: string;
   summary: {
     totalSetoran: number;
     predikatCount: Record<string, number>;
@@ -34,19 +43,21 @@ export interface ReportFilterParams {
   year?: number;
   kelasId?: string;
   santriId?: string;
+  ustadzId?: string;
 }
 
 export function useReportRecap(params: ReportFilterParams = {}) {
-  const { month, year, kelasId = '', santriId = '' } = params;
+  const { month, year, kelasId = '', santriId = '', ustadzId = '' } = params;
 
   return useQuery({
-    queryKey: ['report-recap', { month, year, kelasId, santriId }],
+    queryKey: ['report-recap', { month, year, kelasId, santriId, ustadzId }],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
       if (month) queryParams.append('month', month.toString());
       if (year) queryParams.append('year', year.toString());
       if (kelasId) queryParams.append('kelasId', kelasId);
       if (santriId) queryParams.append('santriId', santriId);
+      if (ustadzId) queryParams.append('ustadzId', ustadzId);
 
       const res = await api.get<ReportRecapResponse>(`/reports/recap?${queryParams.toString()}`);
       if (!res.success || !res.data) {
@@ -64,8 +75,9 @@ export async function downloadExcelReport(params: ReportFilterParams = {}) {
   if (params.year) queryParams.append('year', params.year.toString());
   if (params.kelasId) queryParams.append('kelasId', params.kelasId);
   if (params.santriId) queryParams.append('santriId', params.santriId);
+  if (params.ustadzId) queryParams.append('ustadzId', params.ustadzId);
 
-  const res = await fetch(`http://localhost:5000/api/v1/reports/download?${queryParams.toString()}`, {
+  const res = await fetch(`${API_BASE_URL}/reports/download?${queryParams.toString()}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

@@ -6,14 +6,15 @@ const reportService = new ReportService();
 export class ReportController {
   static async getRecap(req: FastifyRequest, reply: FastifyReply) {
     const userId = req.user!.userId;
-    const { month, year, kelasId, santriId } = req.query as any;
+    const { month, year, kelasId, santriId, ustadzId } = req.query as any;
 
     const data = await reportService.getRecapData(
       userId,
       month ? Number(month) : undefined,
       year ? Number(year) : undefined,
       kelasId,
-      santriId
+      santriId,
+      ustadzId
     );
 
     return reply.send({
@@ -24,14 +25,15 @@ export class ReportController {
 
   static async downloadExcel(req: FastifyRequest, reply: FastifyReply) {
     const userId = req.user!.userId;
-    const { month, year, kelasId, santriId } = req.query as any;
+    const { month, year, kelasId, santriId, ustadzId } = req.query as any;
 
     const buffer = await reportService.generateExcelReport(
       userId,
       month ? Number(month) : undefined,
       year ? Number(year) : undefined,
       kelasId,
-      santriId
+      santriId,
+      ustadzId
     );
 
     const fileName = `Rekap_Hafalan_${Date.now()}.xlsx`;

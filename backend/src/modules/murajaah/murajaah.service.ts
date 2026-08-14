@@ -336,6 +336,11 @@ export class MurajaahService {
       hafalanText = `_Belum ada setoran baru hari ini_`;
     }
 
+    const selectedSchedule = await prisma.murajaahSchedule.findFirst({
+      where: { santriId },
+      orderBy: { priorityScore: 'desc' },
+    });
+
     const surahNameText = selectedSchedule ? `Surah #${selectedSchedule.surahNumber} ${selectedSchedule.surahName}` : 'Surah Pilihan';
 
     const messageText = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${santri.parentName}* (Wali dari Ananda *${santri.name}* - ${santri.kelas?.name || 'Kelompok Ustadz'})\n\nBerikut adalah laporan capaian hafalan dan jadwal murajaah ananda hari ini:\n\n📜 *Setoran Hafalan Hari Ini:*\n${hafalanText}\n\n📖 *Target Murajaah di Rumah:*\n*${surahNameText}*\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan dampingi ananda mengulang murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih atas perhatian dan kerja samanya.\n_HafalanKu Automatic Gateway_`;
