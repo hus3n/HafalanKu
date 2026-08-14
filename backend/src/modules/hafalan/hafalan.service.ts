@@ -4,23 +4,37 @@ import { AppError } from '../../utils/AppError';
 import { DashboardService } from '../dashboard/dashboard.service';
 
 export class HafalanService {
-  private buildAccessWhere(user: { userId: string; role: string; orgId?: string | null }) {
+  private buildSantriAccessWhere(user: { userId: string; role: string; orgId?: string | null }) {
     if (user.role === 'SUPERADMIN') return {};
-    if (user.role === 'USER') {
-      return {
-        OR: [
-          { userId: user.userId },
-          { santri: { kelas: { userId: user.userId } } },
-          { santri: { userId: user.userId } }
-        ]
-      };
-    }
-    if (user.orgId) {
+    if (user.role === 'ADMIN' && user.orgId) {
       return {
         user: { organizationId: user.orgId }
       };
     }
-    return { userId: user.userId };
+    // Role USER (Ustadz): strictly santri assigned directly to this ustadz or this ustadz's classes
+    return {
+      OR: [
+        { userId: user.userId },
+        { kelas: { userId: user.userId } }
+      ]
+    };
+  }
+
+  private buildHafalanAccessWhere(user: { userId: string; role: string; orgId?: string | null }) {
+    if (user.role === 'SUPERADMIN') return {};
+    if (user.role === 'ADMIN' && user.orgId) {
+      return {
+        santri: { user: { organizationId: user.orgId } }
+      };
+    }
+    // Role USER (Ustadz): hafalan recorded by ustadz or belonging to santri in ustadz's classes
+    return {
+      OR: [
+        { userId: user.userId },
+        { santri: { kelas: { userId: user.userId } } },
+        { santri: { userId: user.userId } }
+      ]
+    };
   }
 
   private calculatePriorityScore(predikat: string, lastReviewDate: Date): number {
@@ -39,14 +53,14 @@ export class HafalanService {
   }
 
   async createHafalan(user: { userId: string; role: string; orgId?: string | null }, data: CreateHafalanInput) {
-    const accessWhere = this.buildAccessWhere(user);
+    const santriAccessWhere = this.buildSantriAccessWhere(user);
     // 1. Verify Santri ownership & validity
     const santri = await prisma.santri.findFirst({
-      where: { id: data.santriId, ...accessWhere, deletedAt: null },
+      where: { id: data.santriId, ...santriAccessWhere, deletedAt: null },
     });
 
     if (!santri) {
-      throw new AppError('Santri tidak ditemukan', 404);
+      throw new AppError('Santri tidak ditemukan atau Anda tidak memiliki akses.', 404);
     }
 
     // 2. Find Surah Name
@@ -86,7 +100,7 @@ export class HafalanService {
     isHafalanAwal?: boolean
   ) {
     const skip = (page - 1) * limit;
-    const accessWhere = this.buildAccessWhere(user);
+    const accessWhere = this.buildHafalanAccessWhere(user);
     
     // For Hafalan, we check if the Hafalan belongs to the user, or if its Santri belongs to the user's org
     const where: any = { ...accessWhere };
@@ -129,7 +143,7 @@ export class HafalanService {
   }
 
   async getHafalanById(user: { userId: string; role: string; orgId?: string | null }, id: string) {
-    const accessWhere = this.buildAccessWhere(user);
+    const accessWhere = this.buildHafalanAccessWhere(user);
     const hafalan = await prisma.hafalan.findFirst({
       where: { id, ...accessWhere },
       include: {
@@ -147,7 +161,7 @@ export class HafalanService {
   }
 
   async updateHafalan(user: { userId: string; role: string; orgId?: string | null }, id: string, data: UpdateHafalanInput) {
-    const accessWhere = this.buildAccessWhere(user);
+    const accessWhere = this.buildHafalanAccessWhere(user);
     const existing = await prisma.hafalan.findFirst({
       where: { id, ...accessWhere },
     });
@@ -175,7 +189,7 @@ export class HafalanService {
   }
 
   async deleteHafalan(user: { userId: string; role: string; orgId?: string | null }, id: string) {
-    const accessWhere = this.buildAccessWhere(user);
+    const accessWhere = this.buildHafalanAccessWhere(user);
     const existing = await prisma.hafalan.findFirst({
       where: { id, ...accessWhere },
     });
@@ -192,13 +206,13 @@ export class HafalanService {
   }
 
   async createBulkHafalan(user: { userId: string; role: string; orgId?: string | null }, data: { santriId: string, surahs: number[] }) {
-    const accessWhere = this.buildAccessWhere(user);
+    const santriAccessWhere = this.buildSantriAccessWhere(user);
     const santri = await prisma.santri.findFirst({
-      where: { id: data.santriId, ...accessWhere, deletedAt: null },
+      where: { id: data.santriId, ...santriAccessWhere, deletedAt: null },
     });
 
     if (!santri) {
-      throw new AppError('Santri tidak ditemukan', 404);
+      throw new AppError('Santri tidak ditemukan atau Anda tidak memiliki akses.', 404);
     }
 
     const hafalanDate = new Date();
@@ -223,7 +237,7 @@ export class HafalanService {
 
     if (records.length > 0) {
       await prisma.hafalan.createMany({
-        data: records as any, // Cast to any to avoid strict Prisma typing issues with Enum if needed
+        data: records as any,
       });
 
       await DashboardService.invalidateCache(user.userId);
@@ -235,7 +249,7 @@ export class HafalanService {
   async getRekapGlobal(user: { userId: string, role: string, orgId?: string | null }, page: number = 1, limit: number = 10, search?: string, kelasId?: string) {
     const skip = (page - 1) * limit;
 
-    const accessWhere = this.buildAccessWhere(user);
+    const accessWhere = this.buildSantriAccessWhere(user);
 
     const where: any = {
       ...accessWhere,
