@@ -12,9 +12,9 @@ export function Pricing() {
     {
       name: 'Mandiri / Perorangan',
       description: 'Ideal untuk ustadz perorangan atau guru ngaji private.',
-      priceMonthly: 'Rp 0',
-      priceAnnual: 'Rp 0',
-      period: 'Gratis Selamanya',
+      priceMonthly: 'Rp 15000',
+      priceAnnual: 'Rp 15000',
+      period: 'Per Bulan',
       popular: false,
       features: [
         'Maksimal 20 Data Santri',
@@ -37,8 +37,7 @@ export function Pricing() {
         'Santri & Kelas Tanpa Batas',
         'Multi-Admin & Akses Pengajar',
         'Integrasi Notifikasi WhatsApp Bot',
-        'Auto-Backup Cloud Telegram',
-        'Algoritma Prioritas Murajaah Cerdas',
+        'Fitur Prioritas Murajaah Cerdas',
         'Laporan Rekapitulasi XLSX Lengkap',
         'Dukungan Prioritas 24/7',
       ],
@@ -70,9 +69,9 @@ export function Pricing() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-background to-background" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-16 relative z-10">
-        
+
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -103,8 +102,8 @@ export function Pricing() {
               />
             </button>
             <span className={`text-sm font-semibold flex items-center gap-2 transition-colors ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
-              Bayar Tahunan 
-              <motion.span 
+              Bayar Tahunan
+              <motion.span
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-[10px] bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 font-bold px-2.5 py-0.5 rounded-full"
@@ -124,18 +123,17 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.8, delay: idx * 0.15, type: "spring", bounce: 0.4 }}
-              whileHover={{ 
-                y: -15, 
+              whileHover={{
+                y: -15,
                 scale: 1.02,
-                boxShadow: plan.popular 
-                  ? "0 40px 80px rgba(16,185,129,0.2)" 
+                boxShadow: plan.popular
+                  ? "0 40px 80px rgba(16,185,129,0.2)"
                   : "0 30px 60px rgba(0,0,0,0.1)"
               }}
-              className={`rounded-[2rem] p-8 flex flex-col justify-between relative transition-all duration-500 ease-out transform-style-3d ${
-                plan.popular
+              className={`rounded-[2rem] p-8 flex flex-col justify-between relative transition-all duration-500 ease-out transform-style-3d ${plan.popular
                   ? 'border border-primary/50 bg-gradient-to-b from-primary/10 to-background backdrop-blur-3xl z-10'
                   : 'border border-white/10 bg-white/5 dark:bg-black/20 backdrop-blur-xl'
-              }`}
+                }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-primary text-white font-bold text-xs shadow-[0_4px_20px_rgba(16,185,129,0.5)] flex items-center gap-1.5 z-20">
@@ -152,7 +150,7 @@ export function Pricing() {
                 <div className="border-y border-white/10 dark:border-white/5 py-6">
                   <div className="flex items-baseline gap-2">
                     <AnimatePresence mode="wait">
-                      <motion.span 
+                      <motion.span
                         key={isAnnual ? plan.priceAnnual : plan.priceMonthly}
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -183,11 +181,10 @@ export function Pricing() {
                 <Link href="/register" className="w-full block">
                   <motion.button
                     whileTap={{ scale: 0.96 }}
-                    className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
-                      plan.buttonVariant === 'primary'
+                    className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${plan.buttonVariant === 'primary'
                         ? 'bg-gradient-to-r from-primary to-emerald-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40'
                         : 'border border-white/20 bg-white/5 hover:bg-white/10 text-foreground'
-                    }`}
+                      }`}
                   >
                     <span>{plan.buttonText}</span>
                     <ArrowRight className="w-4 h-4" />
