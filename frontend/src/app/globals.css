@@ -30,48 +30,55 @@
 
 @layer base {
   :root {
-    --background: 150 20% 98%; /* Crisp Mint Cream / White */
-    --foreground: 160 50% 10%; /* Solid Dark Emerald Slate #062017 */
-    --card: 0 0% 100%; /* Solid Pure White #ffffff */
-    --card-foreground: 160 50% 10%; /* Solid Dark Text #062017 */
-    --popover: 0 0% 100%; /* Solid White Popover */
+    /* Custom Physics Easing Tokens (Emil Kowalski / Apple HIG) */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* Light Theme (Crisp Emerald & Mint Elegance) */
+    --background: 150 20% 98%;
+    --foreground: 160 50% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 50% 10%;
+    --popover: 0 0% 100%;
     --popover-foreground: 160 50% 10%;
-    --primary: 162 85% 15%; /* Solid Deep Emerald #064e3b for Navbar & Sidebar */
-    --primary-foreground: 0 0% 100%; /* Solid White */
-    --secondary: 160 84% 39%; /* Vibrant Emerald Green #059669 */
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 162 85% 15%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 150 15% 94%; /* Solid Clean Mint Gray */
-    --muted-foreground: 160 25% 35%; /* Solid Dark Muted Green */
-    --accent: 160 84% 39%; /* Vibrant Emerald */
+    --muted: 150 15% 94%;
+    --muted-foreground: 160 25% 35%;
+    --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 150 20% 88%; /* Solid Crisp Border */
+    --border: 150 20% 88%;
     --input: 150 20% 88%;
     --ring: 160 84% 39%;
     --radius: 0.85rem;
   }
 
   .dark {
-    --background: 160 30% 7%; /* Solid Deep Dark Emerald #091812 */
-    --foreground: 150 20% 96%; /* Solid Light Text #f0f7f4 */
-    --card: 160 25% 12%; /* Solid Dark Emerald Container #13261e */
+    /* Dark Theme (Deep Islamic Emerald & Slate Mystery) */
+    --background: 160 38% 6%; /* #07150f */
+    --foreground: 150 20% 96%;
+    --card: 160 30% 10%; /* #0e231a */
     --card-foreground: 150 20% 96%;
-    --popover: 160 25% 12%; /* Solid Dark Popover */
+    --popover: 160 30% 10%;
     --popover-foreground: 150 20% 96%;
-    --primary: 160 65% 18%; /* Solid Dark Emerald Navbar/Sidebar #0a2e22 */
+    --primary: 160 70% 42%; /* #1ecb8b */
     --primary-foreground: 0 0% 100%;
-    --secondary: 160 70% 35%; /* Vibrant Emerald #10b981 */
+    --secondary: 160 65% 18%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 160 20% 18%; /* Solid Dark Muted */
-    --muted-foreground: 150 15% 70%; /* Solid Muted Light */
-    --accent: 160 70% 35%;
+    --muted: 160 25% 15%;
+    --muted-foreground: 150 15% 70%;
+    --accent: 160 70% 42%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 40%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 160 20% 20%; /* Solid Dark Border #1d3b2e */
-    --input: 160 20% 20%;
-    --ring: 160 70% 35%;
+    --border: 160 25% 18%; /* #173628 */
+    --input: 160 25% 18%;
+    --ring: 160 70% 42%;
   }
 }
 
@@ -83,22 +90,54 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tactile Button Press Physics (Emil Kowalski Philosophy) */
+  button, 
+  a[role="button"],
+  .btn-tactile {
+    transition: transform 140ms var(--ease-out), opacity 140ms var(--ease-out), filter 140ms var(--ease-out);
+  }
+  
+  button:active:not(:disabled),
+  a[role="button"]:active,
+  .btn-tactile:active:not(:disabled) {
+    transform: scale(0.97);
   }
 }
 
 @layer utilities {
-  /* Solid elevated cards with high contrast and smooth shadow */
+  /* Translucent Floating Chrome & Glassmorphism */
   .glass {
-    @apply bg-card border border-border shadow-md dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)];
+    @apply bg-card/85 backdrop-blur-xl border border-border/80 shadow-md;
   }
   
   .glass-card {
-    @apply bg-card border border-border shadow-[0_4px_20px_rgba(0,0,0,0.06)] rounded-2xl dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)];
+    @apply bg-card/90 backdrop-blur-xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)] rounded-3xl;
   }
-  
-  /* Solid primary text - strictly no gradient text */
-  .text-gradient {
-    @apply text-foreground font-bold;
+
+  .translucent-topbar {
+    background: rgba(9, 28, 21, 0.82);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 16px rgba(52, 211, 153, 0.4);
+  }
+
+  /* Micro-animation hover lift with pointer gating */
+  @media (hover: hover) and (pointer: fine) {
+    .hover-lift {
+      transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+    }
+    .hover-lift:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
+    }
   }
 
   .animated-bg {
@@ -106,7 +145,17 @@
   }
 }
 
-/* Smooth scrollbar styling */
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Smooth Premium Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -121,4 +170,3 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground));
 }
-
