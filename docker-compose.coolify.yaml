@@ -45,7 +45,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://hafalanku_user:P@ssw0rdHafalanKu2026!@hafalanku-postgres:5432/hafalanku?schema=public}
       MONGODB_URL: ${MONGODB_URL:-mongodb://hafalanku-mongo:27017/hafalanku}
       REDIS_URL: ${REDIS_URL:-redis://hafalanku-redis:6379}
-      PORT: ${BACKEND_PORT:-4000}
+      PORT: 4000
       BACKEND_PORT: ${BACKEND_PORT:-4000}
       JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-min-32-chars-here-replace-in-production}
       APP_SECRET: ${APP_SECRET:-your-aes-256-secret-key-min-32-chars-replace-in-production}
@@ -57,7 +57,9 @@ services:
       WA_GATEWAY_URL: ${WA_GATEWAY_URL:-http://localhost:8000}
       UPLOAD_DIR: ${UPLOAD_DIR:-./uploads}
       MAX_FILE_SIZE: ${MAX_FILE_SIZE:-2097152}
-      FRONTEND_URL: ${FRONTEND_URL:-https://hafalanku.forapp.id}
+      FRONTEND_URL: ${FRONTEND_URL:-https://hafalanku.vipsin.my.id}
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
     expose:
       - "4000"
     volumes:
@@ -77,12 +79,15 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://backend-hafalanku.forapp.id/api/v1}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.vipsin.my.id/api/v1}
     environment:
       NODE_ENV: production
       TZ: Asia/Jakarta
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://backend-hafalanku.forapp.id/api/v1}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.vipsin.my.id/api/v1}
       PORT: 3000
+      FRONTEND_PORT: ${FRONTEND_PORT:-3000}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
     expose:
       - "3000"
     depends_on:
