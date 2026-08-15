@@ -34,7 +34,10 @@ export const metadata: Metadata = {
     title: 'HafalanKu',
   },
   icons: {
-    icon: '/logo.png',
+    icon: [
+      { url: '/logo.png', sizes: 'any' },
+      { url: '/icon.png', sizes: 'any' },
+    ],
     shortcut: '/logo.png',
     apple: '/logo.png',
   },
