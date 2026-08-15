@@ -107,7 +107,7 @@ export class MurajaahService {
             parentPhone: true,
             kelas: { select: { id: true, name: true } },
             hafalan: {
-              select: { surahNumber: true, surahName: true, ayatStart: true, ayatEnd: true, date: true },
+              select: { surahNumber: true, surahName: true, ayatStart: true, ayatEnd: true, date: true, isHafalanAwal: true },
               orderBy: { surahNumber: 'asc' },
             }
           }
@@ -142,7 +142,7 @@ export class MurajaahService {
     const todayStr = formatter.format(new Date());
 
     return activeSchedules.map((item: any) => {
-      // 1. Group unique hafalan surahs memorized by this santri
+      // 1. Group unique hafalan surahs memorized by this santri (all surahs for choosing target)
       const hafalanMap = new Map<number, any>();
       const santriHafalanList = item.santri?.hafalan || [];
       if (santriHafalanList) {
@@ -160,14 +160,15 @@ export class MurajaahService {
 
       const hafalanSurahs = Array.from(hafalanMap.values());
 
-      // 2. Identify today's hafalan setoran or latest setoran
-      const todayHafalanList = santriHafalanList.filter((h: any) => {
+      // 2. Identify strictly REAL NEW SETORANS (isHafalanAwal = false) for today's setoran report
+      const realSetoranList = santriHafalanList.filter((h: any) => !h.isHafalanAwal);
+      const todayHafalanList = realSetoranList.filter((h: any) => {
         if (!h.date) return false;
         const dStr = formatter.format(new Date(h.date));
         return dStr === todayStr;
       });
 
-      const latestHafalan = santriHafalanList.length > 0 ? santriHafalanList[santriHafalanList.length - 1] : null;
+      const latestHafalan = realSetoranList.length > 0 ? realSetoranList[realSetoranList.length - 1] : null;
 
       let hafalanTodayText = '';
       if (todayHafalanList.length > 0) {
@@ -397,6 +398,7 @@ export class MurajaahService {
       include: {
         kelas: true,
         hafalan: {
+          where: { isHafalanAwal: false },
           orderBy: { date: 'desc' },
           take: 5,
         },
