@@ -58,8 +58,8 @@ services:
       UPLOAD_DIR: ${UPLOAD_DIR:-./uploads}
       MAX_FILE_SIZE: ${MAX_FILE_SIZE:-2097152}
       FRONTEND_URL: ${FRONTEND_URL:-https://hafalanku.forapp.id}
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     volumes:
       - hafalanku-wa-sessions:/app/backend/whatsapp_sessions
       - hafalanku-uploads:/app/backend/uploads
@@ -83,8 +83,8 @@ services:
       TZ: Asia/Jakarta
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://backend-hafalanku.forapp.id/api/v1}
       PORT: 3000
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     depends_on:
       - backend
     restart: always
