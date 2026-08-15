@@ -12,7 +12,7 @@ export function ThemeToggle() {
   React.useEffect(() => setMounted(true), []);
 
   if (!mounted) {
-    return <div className="w-9 h-9 rounded-full bg-muted/50" />;
+    return <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/10" />;
   }
 
   const isDark = theme === 'dark';
@@ -22,32 +22,33 @@ export function ThemeToggle() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-muted text-foreground hover:bg-muted/80 transition-colors border border-border shadow-sm"
-      aria-label="Toggle theme"
+      className="relative flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/15 shadow-sm cursor-pointer overflow-hidden shrink-0"
+      aria-label={isDark ? "Ganti ke mode terang" : "Ganti ke mode gelap"}
+      title={isDark ? "Mode Terang" : "Mode Gelap"}
     >
       <motion.div
         initial={false}
         animate={{
           rotate: isDark ? 0 : 90,
-          scale: isDark ? 1 : 0,
+          scale: isDark ? 1 : 0.95,
           opacity: isDark ? 1 : 0,
         }}
-        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-        className="absolute"
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        className="absolute flex items-center justify-center pointer-events-none"
       >
-        <Moon className="w-4 h-4 text-emerald-400" />
+        <Moon className="w-4 h-4 md:w-4.5 md:h-4.5 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
       </motion.div>
       <motion.div
         initial={false}
         animate={{
           rotate: isDark ? -90 : 0,
-          scale: isDark ? 0 : 1,
+          scale: isDark ? 0.95 : 1,
           opacity: isDark ? 0 : 1,
         }}
-        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-        className="absolute"
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        className="absolute flex items-center justify-center pointer-events-none"
       >
-        <Sun className="w-4 h-4 text-amber-600" />
+        <Sun className="w-4 h-4 md:w-4.5 md:h-4.5 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
       </motion.div>
     </motion.button>
   );

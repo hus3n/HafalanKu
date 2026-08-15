@@ -21,7 +21,7 @@ import {
   Maximize2,
   Minimize2,
   Download,
-  Smartphone
+  ShieldCheck
 } from 'lucide-react';
 
 export function Topbar() {
@@ -53,13 +53,15 @@ export function Topbar() {
 
   return (
     <>
-      <header className="h-16 md:h-20 border-b border-emerald-500/15 bg-[#091c15] dark:bg-[#06140e] text-white sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between shadow-xl">
+      <header className="h-16 md:h-20 border-b border-emerald-500/15 bg-[#05140d]/90 dark:bg-[#04100a]/90 backdrop-blur-2xl text-white sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between shadow-xl">
         {/* Left Section */}
         <div className="flex items-center gap-3">
           <MobileNav />
 
           {/* Sidebar Collapse/Expand Toggle Button (Desktop) */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             onClick={toggleCollapsed}
             className="hidden md:flex items-center gap-2 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/90 hover:text-white transition-all border border-white/10 cursor-pointer shadow-sm"
             title={isCollapsed ? "Memperbesar Sidebar (280px)" : "Mengecilkan Sidebar (80px)"}
@@ -72,10 +74,10 @@ export function Topbar() {
             <span className="text-xs font-semibold text-white/80 hidden lg:inline">
               {isCollapsed ? "Buka Sidebar" : "Kecilkan"}
             </span>
-          </button>
+          </motion.button>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs md:text-sm font-semibold text-white/90">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+          <div className="hidden sm:flex items-center gap-2.5 text-xs md:text-sm font-semibold text-white/90">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
             <span>Selamat Datang, <strong>{user?.name || 'Ustadz'}</strong></span>
           </div>
         </div>
@@ -122,7 +124,8 @@ export function Topbar() {
           )}
 
           {/* Role Badge */}
-          <span className="hidden xl:inline-flex px-2.5 py-1.5 rounded-xl bg-white/10 text-emerald-300 border border-white/15 text-[10px] font-extrabold uppercase tracking-wider">
+          <span className="hidden xl:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold uppercase tracking-wider">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             {user?.role || 'USER'}
           </span>
 
@@ -135,14 +138,16 @@ export function Topbar() {
             title="Notifikasi Log"
           >
             <Bell className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#091c15]"></span>
+            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#05140d]"></span>
           </motion.button>
           
           <ThemeToggle />
 
           {/* User Dropdown */}
           <div className="relative" ref={dropdownRef}>
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 p-1.5 pr-2.5 rounded-xl transition-all border border-white/15 shadow-sm cursor-pointer"
             >
@@ -158,15 +163,16 @@ export function Topbar() {
                 <p className="text-[9px] text-emerald-300 font-semibold leading-none uppercase tracking-wider">{user?.role || 'USER'}</p>
               </div>
               <ChevronDown className={`w-3.5 h-3.5 text-white/80 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
+            </motion.button>
 
             <AnimatePresence>
               {dropdownOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                  transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                  style={{ transformOrigin: 'top right' }}
                   className="absolute right-0 mt-3 w-64 bg-card text-card-foreground rounded-2xl shadow-2xl overflow-hidden p-2 z-50 border border-border"
                 >
                   {/* User Info Header Banner */}

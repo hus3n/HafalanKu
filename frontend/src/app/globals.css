@@ -35,50 +35,50 @@
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-    /* Light Theme (Crisp Emerald & Mint Elegance) */
-    --background: 150 20% 98%;
-    --foreground: 160 50% 10%;
+    /* Light Theme (Crisp Royal Emerald & Mint Crystal) */
+    --background: 150 25% 98%;
+    --foreground: 162 55% 9%; /* Deep Islamic Emerald Slate #072218 */
     --card: 0 0% 100%;
-    --card-foreground: 160 50% 10%;
+    --card-foreground: 162 55% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 50% 10%;
-    --primary: 160 84% 39%;
+    --popover-foreground: 162 55% 9%;
+    --primary: 160 84% 39%; /* Vibrant Emerald #059669 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 162 85% 15%;
+    --secondary: 162 85% 15%; /* Royal Deep Emerald #064e3b */
     --secondary-foreground: 0 0% 100%;
-    --muted: 150 15% 94%;
-    --muted-foreground: 160 25% 35%;
+    --muted: 150 18% 94%;
+    --muted-foreground: 160 25% 38%;
     --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 150 20% 88%;
-    --input: 150 20% 88%;
+    --border: 150 20% 89%;
+    --input: 150 20% 89%;
     --ring: 160 84% 39%;
     --radius: 0.85rem;
   }
 
   .dark {
-    /* Dark Theme (Deep Islamic Emerald & Slate Mystery) */
-    --background: 160 38% 6%; /* #07150f */
-    --foreground: 150 20% 96%;
-    --card: 160 30% 10%; /* #0e231a */
-    --card-foreground: 150 20% 96%;
-    --popover: 160 30% 10%;
-    --popover-foreground: 150 20% 96%;
-    --primary: 160 70% 42%; /* #1ecb8b */
+    /* Dark Theme (Deep Royal Obsidian Emerald & Ambient Mystery) */
+    --background: 160 40% 5%; /* #05140d */
+    --foreground: 150 20% 97%; /* Crisp Mint White */
+    --card: 160 32% 9%; /* #0c2017 */
+    --card-foreground: 150 20% 97%;
+    --popover: 160 32% 9%;
+    --popover-foreground: 150 20% 97%;
+    --primary: 160 72% 43%; /* Radiant Emerald #1fc98b */
     --primary-foreground: 0 0% 100%;
     --secondary: 160 65% 18%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 160 25% 15%;
-    --muted-foreground: 150 15% 70%;
-    --accent: 160 70% 42%;
+    --muted: 160 25% 14%;
+    --muted-foreground: 150 15% 72%;
+    --accent: 160 72% 43%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 160 25% 18%; /* #173628 */
-    --input: 160 25% 18%;
-    --ring: 160 70% 42%;
+    --border: 160 25% 17%; /* #153325 */
+    --input: 160 25% 17%;
+    --ring: 160 72% 43%;
   }
 }
 
@@ -95,11 +95,16 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Smooth Theme Transition Mechanism */
+  body, .bg-card, .bg-background {
+    transition: background-color 200ms var(--ease-out), border-color 200ms var(--ease-out), color 200ms var(--ease-out);
+  }
+
   /* Tactile Button Press Physics (Emil Kowalski Philosophy) */
   button, 
   a[role="button"],
   .btn-tactile {
-    transition: transform 140ms var(--ease-out), opacity 140ms var(--ease-out), filter 140ms var(--ease-out);
+    transition: transform 140ms var(--ease-out), opacity 140ms var(--ease-out), filter 140ms var(--ease-out), background-color 140ms var(--ease-out);
   }
   
   button:active:not(:disabled),
@@ -112,17 +117,21 @@
 @layer utilities {
   /* Translucent Floating Chrome & Glassmorphism */
   .glass {
-    @apply bg-card/85 backdrop-blur-xl border border-border/80 shadow-md;
+    @apply bg-card/85 backdrop-blur-2xl border border-border/80 shadow-md;
   }
   
   .glass-card {
-    @apply bg-card/90 backdrop-blur-xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)] rounded-3xl;
+    @apply bg-card/90 backdrop-blur-2xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.28)] rounded-3xl;
   }
 
   .translucent-topbar {
-    background: rgba(9, 28, 21, 0.82);
-    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(7, 20, 13, 0.82);
+    backdrop-filter: blur(24px) saturate(190%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .emerald-glow {
+    box-shadow: 0 0 25px -5px rgba(31, 201, 139, 0.35);
   }
 
   .text-glow {
@@ -132,11 +141,11 @@
   /* Micro-animation hover lift with pointer gating */
   @media (hover: hover) and (pointer: fine) {
     .hover-lift {
-      transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+      transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
     }
     .hover-lift:hover {
       transform: translateY(-3px);
-      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.14);
     }
   }
 

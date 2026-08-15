@@ -117,12 +117,10 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
 
     // Custom visibility rules based on organization affiliation (Task-11)
     if (item.href === '/kelas' || item.href === '/santri') {
-      // USER with organization cannot access Kelas and Santri
       if (role === 'USER' && user?.organizationId) return false;
     }
     
     if (item.href === '/settings/whatsapp') {
-      // USER without organization cannot access WhatsApp Gateway
       if (role === 'USER' && !user?.organizationId) return false;
     }
 
@@ -130,24 +128,27 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
   });
 
   return (
-    <nav className="space-y-1.5">
+    <nav className="space-y-1.5 select-none">
       {visibleMenuItems.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
         return (
           <Link key={item.href} href={item.href} className="block relative group">
             <motion.div
-              whileHover={{ x: isCollapsed ? 0 : 4, scale: isCollapsed ? 1.08 : 1 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ x: isCollapsed ? 0 : 3 }}
+              whileTap={{ scale: 0.97 }}
               className={cn(
-                "flex items-center gap-3 py-3 rounded-xl transition-all relative z-10 font-medium",
+                "flex items-center gap-3 py-3 rounded-2xl transition-all relative z-10 font-medium",
                 isCollapsed ? "justify-center px-0 w-12 h-12 mx-auto" : "px-4",
                 isActive 
                   ? "text-white font-bold" 
                   : "text-white/70 hover:text-white hover:bg-white/10"
               )}
             >
-              <span className={cn("transition-transform duration-200 shrink-0", isActive ? "scale-110 text-emerald-300" : "")}>
+              <span className={cn(
+                "transition-all duration-200 shrink-0", 
+                isActive ? "scale-110 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "text-white/70 group-hover:text-white"
+              )}>
                 {item.icon}
               </span>
               
@@ -156,16 +157,16 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
               )}
             </motion.div>
             
-            {/* Solid Active Indicator Background */}
+            {/* Active Pill Spring Indicator with Emerald Glow Aura */}
             {isActive && (
               <motion.div
                 layoutId={isMobile ? "active-nav-bg-mobile" : "active-nav-bg-desktop"}
                 className={cn(
-                  "absolute bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl z-0 shadow-md border border-emerald-400/30",
+                  "absolute bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 rounded-2xl z-0 shadow-lg shadow-emerald-600/30 border border-emerald-400/40",
                   isCollapsed ? "inset-y-0 left-2 right-2" : "inset-0"
                 )}
                 initial={false}
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               />
             )}
 
@@ -183,4 +184,3 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
     </nav>
   );
 }
-
