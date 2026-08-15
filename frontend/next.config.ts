@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["shared"],
   output: "standalone",
   // Prevent OOM issues during container build on VPS
   experimental: {
