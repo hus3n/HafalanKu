@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+import { api, API_BASE_URL } from '../lib/api';
 
 export interface ReportRecapItem {
   id: string;

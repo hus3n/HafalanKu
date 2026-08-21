@@ -1,7 +1,17 @@
 import { useAuthStore } from '../stores/authStore';
 import { ApiResponse } from 'shared';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+export const getApiBaseUrl = (): string => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:5000/api/v1`;
+  }
+  return 'http://127.0.0.1:5000/api/v1';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export class ApiError extends Error {
   status: number;
@@ -39,7 +49,13 @@ async function fetchWrapper<T>(endpoint: string, options: RequestInit = {}): Pro
     });
   } catch (error: any) {
     // Network offline / backend unreachable
-    throw new ApiError(500, error.message || 'Koneksi ke server backend gagal', null);
+    const target = `${API_BASE_URL}${endpoint}`;
+    console.error(`[API Network Error] Gagal terhubung ke: ${target}`, error);
+    throw new ApiError(
+      500,
+      `Koneksi ke backend gagal (${API_BASE_URL}). Pastikan server backend sedang berjalan di port 5000.`,
+      null
+    );
   }
 
   let data: any;

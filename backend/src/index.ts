@@ -74,8 +74,9 @@ async function main() {
     await fastify.register(masterRoutes, { prefix: '/api/v1/master' });
     await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
     // Start Fastify server
+    const listenPort = env.PORT || env.BACKEND_PORT || 5000;
     const address = await fastify.listen({
-      port: env.BACKEND_PORT,
+      port: listenPort,
       host: '0.0.0.0',
     });
     

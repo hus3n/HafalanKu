@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { api, API_BASE_URL } from '../lib/api';
 import { CreateSantriInput, UpdateSantriInput, BulkImportRow } from 'shared';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export interface SantriItem {
   id: string;
