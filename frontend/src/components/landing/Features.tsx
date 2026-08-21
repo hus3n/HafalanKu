@@ -118,7 +118,7 @@ export function Features() {
                 boxShadow: "0 25px 50px rgba(0,0,0,0.25)"
               }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="p-8 rounded-3xl border border-border dark:border-[#0E8991]/20 bg-card dark:bg-[#0C313A] text-card-foreground shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] transform-style-3d group relative overflow-hidden transition-all duration-300"
+              className="p-8 rounded-3xl border border-border bg-card text-card-foreground shadow-md hover:shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] transform-style-3d group relative overflow-hidden transition-all duration-300"
             >
               <div className={`p-4 rounded-2xl border ${item.bg} w-fit mb-6 shadow-inner transition-transform duration-500 ease-out group-hover:scale-110`}>
                 {item.icon}

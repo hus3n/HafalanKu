@@ -10,10 +10,10 @@ import {
   Building, 
   History, 
   ArrowUpRight, 
-  Sparkles,
-  ShieldCheck,
-  HardDrive,
-  UserCheck
+  Sparkles, 
+  ShieldCheck, 
+  HardDrive, 
+  UserCheck 
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
@@ -22,8 +22,6 @@ export function QuickActionGrid() {
   const { user } = useAuth();
   const role = user?.role || 'USER';
 
-  // 5 Core Requested Menus + Role Adaptive configuration
-  // 5 Core Requested Menus + Role Adaptive configuration
   const ustadzActions = [
     {
       title: 'Pencatatan Hafalan',
@@ -42,17 +40,17 @@ export function QuickActionGrid() {
       icon: <QrCode className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
       bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Auto WA',
-      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
       title: 'Manajemen Santri',
       desc: 'Data & wali murid',
       href: '/santri',
-      icon: <Users className="w-5 h-5 text-[#0E8991] dark:text-[#8DB6BC]" />,
-      bgIcon: 'bg-[#0E8991]/10 dark:bg-[#8DB6BC]/15 border-[#0E8991]/20 dark:border-[#8DB6BC]/30 text-[#0E8991] dark:text-[#8DB6BC]',
+      icon: <Users className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/10 border-[#0E8991]/25 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Santri',
-      badgeColor: 'bg-[#0E8991]/15 dark:bg-[#8DB6BC]/20 text-[#0E8991] dark:text-[#8DB6BC] border-[#0E8991]/30 dark:border-[#8DB6BC]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
@@ -60,9 +58,9 @@ export function QuickActionGrid() {
       desc: 'Rombel & halaqah',
       href: '/kelas',
       icon: <Building className="w-5 h-5 text-[#C46838] dark:text-[#E8BBA6]" />,
-      bgIcon: 'bg-[#EAA27C]/15 dark:bg-[#E8BBA6]/15 border-[#EAA27C]/30 dark:border-[#E8BBA6]/30 text-[#C46838] dark:text-[#E8BBA6]',
+      bgIcon: 'bg-[#EAA27C]/15 border-[#EAA27C]/30 text-[#C46838] dark:text-[#E8BBA6]',
       badge: 'Kelas',
-      badgeColor: 'bg-[#EAA27C]/20 dark:bg-[#E8BBA6]/20 text-[#B85828] dark:text-[#E8BBA6] border-[#EAA27C]/40 dark:border-[#E8BBA6]/40',
+      badgeColor: 'bg-[#EAA27C]/20 text-[#B85828] dark:text-[#E8BBA6] border-[#EAA27C]/40',
       accentGlow: 'hover:border-[#EAA27C]/50 hover:shadow-[#EAA27C]/10',
     },
     {
@@ -72,7 +70,7 @@ export function QuickActionGrid() {
       icon: <History className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
       bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Harian',
-      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
   ];
@@ -82,10 +80,10 @@ export function QuickActionGrid() {
       title: 'Manajemen Santri',
       desc: 'Data & nomor wali',
       href: '/santri',
-      icon: <Users className="w-5 h-5 text-[#0E8991] dark:text-[#8DB6BC]" />,
-      bgIcon: 'bg-[#0E8991]/10 dark:bg-[#8DB6BC]/15 border-[#0E8991]/20 dark:border-[#8DB6BC]/30 text-[#0E8991] dark:text-[#8DB6BC]',
+      icon: <Users className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/10 border-[#0E8991]/25 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Santri',
-      badgeColor: 'bg-[#0E8991]/15 dark:bg-[#8DB6BC]/20 text-[#0E8991] dark:text-[#8DB6BC] border-[#0E8991]/30 dark:border-[#8DB6BC]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
@@ -93,9 +91,9 @@ export function QuickActionGrid() {
       desc: 'Rombel & halaqah',
       href: '/kelas',
       icon: <Building className="w-5 h-5 text-[#C46838] dark:text-[#E8BBA6]" />,
-      bgIcon: 'bg-[#EAA27C]/15 dark:bg-[#E8BBA6]/15 border-[#EAA27C]/30 dark:border-[#E8BBA6]/30 text-[#C46838] dark:text-[#E8BBA6]',
+      bgIcon: 'bg-[#EAA27C]/15 border-[#EAA27C]/30 text-[#C46838] dark:text-[#E8BBA6]',
       badge: 'Kelas',
-      badgeColor: 'bg-[#EAA27C]/20 dark:bg-[#E8BBA6]/20 text-[#B85828] dark:text-[#E8BBA6] border-[#EAA27C]/40 dark:border-[#E8BBA6]/40',
+      badgeColor: 'bg-[#EAA27C]/20 text-[#B85828] dark:text-[#E8BBA6] border-[#EAA27C]/40',
       accentGlow: 'hover:border-[#EAA27C]/50 hover:shadow-[#EAA27C]/10',
     },
     {
@@ -105,7 +103,7 @@ export function QuickActionGrid() {
       icon: <QrCode className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
       bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Auto WA',
-      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
@@ -125,7 +123,7 @@ export function QuickActionGrid() {
       icon: <History className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
       bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Murajaah',
-      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
   ];
@@ -136,7 +134,7 @@ export function QuickActionGrid() {
       desc: 'Admin & Pengajar',
       href: '/admin',
       icon: <UserCheck className="w-5 h-5 text-rose-500 dark:text-rose-400" />,
-      bgIcon: 'bg-rose-500/10 dark:bg-rose-500/15 border-rose-500/20 text-rose-500',
+      bgIcon: 'bg-rose-500/10 border-rose-500/20 text-rose-500',
       badge: 'Admin',
       badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
       accentGlow: 'hover:border-rose-500/40 hover:shadow-rose-500/10',
@@ -148,7 +146,7 @@ export function QuickActionGrid() {
       icon: <QrCode className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
       bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Gateway',
-      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
@@ -156,7 +154,7 @@ export function QuickActionGrid() {
       desc: 'Cloud Telegram Auto',
       href: '/backup',
       icon: <HardDrive className="w-5 h-5 text-blue-500 dark:text-blue-400" />,
-      bgIcon: 'bg-blue-500/10 dark:bg-blue-500/15 border-blue-500/20 text-blue-500',
+      bgIcon: 'bg-blue-500/10 border-blue-500/20 text-blue-500',
       badge: 'Backup',
       badgeColor: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
       accentGlow: 'hover:border-blue-500/40 hover:shadow-blue-500/10',
@@ -166,7 +164,7 @@ export function QuickActionGrid() {
       desc: 'Audit & System Log',
       href: '/superadmin',
       icon: <ShieldCheck className="w-5 h-5 text-purple-500 dark:text-purple-400" />,
-      bgIcon: 'bg-purple-500/10 dark:bg-purple-500/15 border-purple-500/20 text-purple-500',
+      bgIcon: 'bg-purple-500/10 border-purple-500/20 text-purple-500',
       badge: 'Master',
       badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
       accentGlow: 'hover:border-purple-500/40 hover:shadow-purple-500/10',
@@ -175,10 +173,10 @@ export function QuickActionGrid() {
       title: 'Data Santri Global',
       desc: 'Seluruh Lembaga',
       href: '/santri',
-      icon: <Users className="w-5 h-5 text-[#0E8991] dark:text-[#8DB6BC]" />,
-      bgIcon: 'bg-[#0E8991]/10 dark:bg-[#8DB6BC]/15 border-[#0E8991]/20 dark:border-[#8DB6BC]/30 text-[#0E8991] dark:text-[#8DB6BC]',
+      icon: <Users className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/10 border-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Database',
-      badgeColor: 'bg-[#0E8991]/15 dark:bg-[#8DB6BC]/20 text-[#0E8991] dark:text-[#8DB6BC] border-[#0E8991]/30 dark:border-[#8DB6BC]/40',
+      badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
   ];
@@ -207,7 +205,7 @@ export function QuickActionGrid() {
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               className={cn(
-                "p-3 sm:p-4 rounded-2xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full relative overflow-hidden",
+                "p-3 sm:p-4 rounded-2xl bg-card text-card-foreground border border-border shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full relative overflow-hidden",
                 item.accentGlow
               )}
             >
@@ -221,7 +219,7 @@ export function QuickActionGrid() {
                   <span className={cn("hidden xs:inline-block px-2 py-0.5 rounded-md text-[10px] font-bold border", item.badgeColor)}>
                     {item.badge}
                   </span>
-                  <div className="w-6 h-6 rounded-lg bg-muted/60 dark:bg-white/5 flex items-center justify-center text-muted-foreground group-hover:text-[#0E8991] dark:group-hover:text-[#1bb2bd] transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:text-[#0E8991] dark:group-hover:text-[#1bb2bd] transition-colors">
                     <ArrowUpRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </div>
                 </div>
@@ -232,7 +230,7 @@ export function QuickActionGrid() {
                 <h3 className="text-xs sm:text-sm font-bold font-outfit text-foreground leading-tight group-hover:text-[#0E8991] dark:group-hover:text-[#1bb2bd] transition-colors truncate">
                   {item.title}
                 </h3>
-                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-normal leading-tight truncate">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight truncate">
                   {item.desc}
                 </p>
               </div>

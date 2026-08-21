@@ -6,6 +6,7 @@ export interface WhatsAppStatusResponse {
   status: 'CONNECTED' | 'DISCONNECTED' | 'PAIRING';
   phoneNumber?: string | null;
   lastConnectedAt?: string | null;
+  qrCode?: string | null;
 }
 
 export interface WhatsAppInitResponse {
@@ -27,11 +28,11 @@ export function useWhatsAppStatus() {
       return res.data;
     },
     enabled: !!user?.id,
-    staleTime: 0, // Always get fresh status per user
+    staleTime: 1000,
     refetchInterval: (query) => {
-      // Poll every 3 seconds if status is PAIRING
+      // Poll every 2 seconds if status is PAIRING so UI updates the moment phone connects
       if (query.state.data?.status === 'PAIRING') {
-        return 3000;
+        return 2000;
       }
       return false;
     },
@@ -50,7 +51,12 @@ export function useInitWhatsAppSession() {
       }
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(['whatsapp-status', user?.id], (old: any) => ({
+        ...old,
+        status: data.status,
+        qrCode: data.qrCode,
+      }));
       queryClient.invalidateQueries({ queryKey: ['whatsapp-status', user?.id] });
     },
   });
@@ -69,6 +75,12 @@ export function useDisconnectWhatsApp() {
       return res;
     },
     onSuccess: () => {
+      queryClient.setQueryData(['whatsapp-status', user?.id], {
+        status: 'DISCONNECTED',
+        phoneNumber: null,
+        lastConnectedAt: null,
+        qrCode: null,
+      });
       queryClient.invalidateQueries({ queryKey: ['whatsapp-status', user?.id] });
     },
   });

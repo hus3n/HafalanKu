@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   /* shadcn/ui base colors */
   --color-background: hsl(var(--background));
@@ -35,19 +37,19 @@
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-    /* Light Theme (Crisp Coastal Sand & Ocean Crystal with Distinct Card Separation) */
-    --background: 192 28% 92%; /* Soft Coastal Mist #E2ECEF */
-    --foreground: 192 66% 14%; /* Deep Marine Sea #0C313A */
+    /* Light Theme (Crisp Coastal Sand & Ocean Crystal with High Contrast) */
+    --background: 195 30% 95%; /* Clean Light Coastal Mist #ECF3F5 */
+    --foreground: 192 66% 12%; /* Deep Marine Sea #0A2930 */
     --card: 0 0% 100%; /* Crisp Pure White Cards #FFFFFF */
-    --card-foreground: 192 66% 14%;
+    --card-foreground: 192 66% 12%; /* Deep Marine Sea #0A2930 */
     --popover: 0 0% 100%;
-    --popover-foreground: 192 66% 14%;
+    --popover-foreground: 192 66% 12%;
     --primary: 184 82% 31%; /* Ocean Sea Teal #0E8991 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 21 74% 65%; /* Sunset Sand #EAA27C */
-    --secondary-foreground: 192 66% 14%; /* Deep Marine Sea #0C313A for high contrast */
-    --muted: 192 25% 86%; /* #CCE0E5 */
-    --muted-foreground: 192 35% 36%;
+    --secondary: 21 74% 60%; /* Sunset Sand #E48D60 */
+    --secondary-foreground: 192 66% 12%;
+    --muted: 195 25% 90%; /* Soft Slate Mist #DCE9EC */
+    --muted-foreground: 192 35% 32%; /* Dark Readable Muted #355C66 */
     --accent: 184 82% 31%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
@@ -69,7 +71,7 @@
     --primary: 184 75% 42%; /* Radiant Ocean Teal #1bb2bd */
     --primary-foreground: 0 0% 100%;
     --secondary: 21 74% 65%; /* Sunset Sand #EAA27C */
-    --secondary-foreground: 192 66% 14%; /* Deep Marine Sea #0C313A for high contrast */
+    --secondary-foreground: 192 66% 14%;
     --muted: 192 45% 18%;
     --muted-foreground: 188 27% 68%; /* Coastal Teal #8DB6BC */
     --accent: 184 75% 42%;
@@ -131,7 +133,7 @@
   }
   
   .glass-card {
-    @apply bg-card/90 backdrop-blur-2xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.28)] rounded-3xl;
+    @apply bg-card backdrop-blur-2xl border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.28)] rounded-3xl;
   }
 
   .translucent-topbar {

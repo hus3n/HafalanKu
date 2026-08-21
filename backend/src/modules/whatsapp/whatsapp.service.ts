@@ -12,22 +12,52 @@ const activeSockets = new Map<string, any>();
 const activeQRCodes = new Map<string, string>();
 const reconnectAttempts = new Map<string, number>();
 
+// Helper to inspect stored credentials on disk or MongoDB
+async function getStoredCreds(userId: string, sessionDir: string): Promise<{ isRegistered: boolean; phoneNumber: string | null; me: any }> {
+  try {
+    let credsContent: string | null = null;
+    const credsPath = path.join(sessionDir, 'creds.json');
+
+    if (fs.existsSync(credsPath)) {
+      credsContent = fs.readFileSync(credsPath, 'utf-8');
+    } else {
+      const mongoCreds = await WhatsAppAuthKey.findOne({ userId, keyId: 'creds.json' });
+      if (mongoCreds && mongoCreds.data) {
+        credsContent = mongoCreds.data;
+      }
+    }
+
+    if (credsContent) {
+      const parsed = JSON.parse(credsContent);
+      const isRegistered = Boolean(parsed.registered || parsed.me?.id);
+      let phoneNumber: string | null = null;
+      if (parsed.me?.id) {
+        phoneNumber = String(parsed.me.id).split(':')[0].split('@')[0].replace(/[^0-9]/g, '');
+      }
+      return { isRegistered, phoneNumber, me: parsed.me || null };
+    }
+  } catch (err) {
+    console.error(`[WA Gateway] Error parsing stored creds for user ${userId}:`, err);
+  }
+  return { isRegistered: false, phoneNumber: null, me: null };
+}
+
 // Helper to restore auth files from MongoDB to disk if disk is empty after deploy/restart
 async function restoreAuthFromMongo(userId: string, sessionDir: string): Promise<boolean> {
   try {
-    const credsPath = path.join(sessionDir, 'creds.json');
-    if (!fs.existsSync(credsPath)) {
-      const keys = await WhatsAppAuthKey.find({ userId });
-      if (keys && keys.length > 0) {
-        console.log(`[WA Gateway] Restoring ${keys.length} session auth keys from MongoDB to disk for user ${userId}...`);
-        if (!fs.existsSync(sessionDir)) {
-          fs.mkdirSync(sessionDir, { recursive: true });
-        }
-        for (const k of keys) {
-          fs.writeFileSync(path.join(sessionDir, k.keyId), k.data, 'utf-8');
-        }
-        return true;
+    const keys = await WhatsAppAuthKey.find({ userId });
+    if (keys && keys.length > 0) {
+      if (!fs.existsSync(sessionDir)) {
+        fs.mkdirSync(sessionDir, { recursive: true });
       }
+      for (const k of keys) {
+        const filePath = path.join(sessionDir, k.keyId);
+        // Write file if missing or empty
+        if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
+          fs.writeFileSync(filePath, k.data, 'utf-8');
+        }
+      }
+      return true;
     }
   } catch (err) {
     console.error(`[WA Gateway] Failed restoring auth keys from MongoDB for user ${userId}:`, err);
@@ -73,10 +103,14 @@ export class WhatsappService {
     return new Promise((resolve, reject) => {
       let resolved = false;
 
-      // Close existing socket if present
+      // Close and remove previous socket cleanly
       if (activeSockets.has(userId)) {
         try {
-          activeSockets.get(userId)?.end(new Error('Re-initializing session'));
+          const oldSock = activeSockets.get(userId);
+          oldSock.ev?.removeAllListeners('connection.update');
+          oldSock.ev?.removeAllListeners('creds.update');
+          oldSock.ev?.removeAllListeners('messages.upsert');
+          oldSock.end?.(new Error('Re-initializing session'));
         } catch (e) {
           // ignore
         }
@@ -98,6 +132,24 @@ export class WhatsappService {
         try {
           await saveCreds();
           await syncAuthToMongo(userId, sessionDir);
+
+          // If creds are registered, immediately update MongoDB status
+          const userJid = (state.creds as any)?.me?.id || sock.user?.id || '';
+          if (userJid) {
+            const phoneNumber = userJid.split(':')[0].split('@')[0].replace(/[^0-9]/g, '');
+            if (phoneNumber) {
+              await WhatsAppSession.findOneAndUpdate(
+                { userId },
+                {
+                  status: 'CONNECTED',
+                  phoneNumber,
+                  lastConnectedAt: new Date(),
+                  updatedAt: new Date(),
+                },
+                { upsert: true, new: true }
+              );
+            }
+          }
         } catch (err) {
           console.error(`[WA Gateway] Error during persistentSaveCreds for user ${userId}:`, err);
         }
@@ -269,8 +321,8 @@ export class WhatsappService {
         if (connection === 'open') {
           console.log('[WA] Connection opened for user:', userId);
           reconnectAttempts.delete(userId);
-          const userJid = sock.user?.id || '';
-          const phoneNumber = userJid.split(':')[0] || userJid.split('@')[0];
+          const userJid = sock.user?.id || (state.creds as any)?.me?.id || '';
+          const phoneNumber = userJid.split(':')[0].split('@')[0].replace(/[^0-9]/g, '');
 
           // Persist all generated auth credentials to MongoDB
           await syncAuthToMongo(userId, sessionDir);
@@ -334,20 +386,23 @@ export class WhatsappService {
             const currentAttempts = (reconnectAttempts.get(userId) || 0) + 1;
             reconnectAttempts.set(userId, currentAttempts);
 
-            if (currentAttempts <= 5) {
-              console.log(`[WA] Connection closed. Retrying connection for user ${userId} (Attempt ${currentAttempts}/5)...`);
+            if (currentAttempts <= 10) {
+              console.log(`[WA] Connection closed. Retrying connection for user ${userId} (Attempt ${currentAttempts}/10, code: ${statusCode})...`);
               setTimeout(() => {
                 this.initSession(userId).catch(err => console.error('[WA] Reconnect error:', err));
-              }, 3000);
+              }, 2000);
             } else {
               console.log(`[WA] Max reconnect attempts reached for user ${userId}`);
-              await WhatsAppSession.findOneAndUpdate(
-                { userId },
-                {
-                  status: 'DISCONNECTED',
-                  updatedAt: new Date(),
-                }
-              );
+              const stored = await getStoredCreds(userId, sessionDir);
+              if (!stored.isRegistered) {
+                await WhatsAppSession.findOneAndUpdate(
+                  { userId },
+                  {
+                    status: 'DISCONNECTED',
+                    updatedAt: new Date(),
+                  }
+                );
+              }
               activeSockets.delete(userId);
               activeQRCodes.delete(userId);
               reconnectAttempts.delete(userId);
@@ -356,11 +411,22 @@ export class WhatsappService {
         }
       });
 
-      // Timeout if QR is not generated within 45 seconds
-      setTimeout(() => {
+      // Timeout if QR is not generated within 45 seconds and no connection established
+      setTimeout(async () => {
         if (!resolved) {
-          resolved = true;
-          reject(new AppError('Gagal terhubung ke server WhatsApp. Pastikan koneksi internet stabil dan coba lagi.', 504));
+          const stored = await getStoredCreds(userId, sessionDir);
+          if (stored.isRegistered) {
+            resolved = true;
+            resolve({
+              status: 'CONNECTED',
+              phoneNumber: stored.phoneNumber,
+              lastConnectedAt: new Date().toISOString(),
+              qrCode: null,
+            });
+          } else {
+            resolved = true;
+            reject(new AppError('Gagal terhubung ke server WhatsApp. Silakan muat ulang QR code.', 504));
+          }
         }
       }, 45000);
     });
@@ -382,29 +448,65 @@ export class WhatsappService {
   }
 
   async getStatus(userId: string) {
+    const sessionDir = path.resolve(process.cwd(), `./whatsapp_sessions/${userId}`);
     const session = await WhatsAppSession.findOne({ userId });
     const currentQR = activeQRCodes.get(userId);
 
-    // If session was marked CONNECTED in DB but in-memory socket was dropped (e.g. backend restarted), auto-restore socket in background
-    if (session?.status === 'CONNECTED' && !activeSockets.has(userId)) {
-      console.log(`[WA Gateway] Restoring socket for user ${userId} on getStatus...`);
-      this.initSession(userId).catch((err) => console.error('[WA Gateway] Restore error on getStatus:', err));
-    }
+    // 1. Check stored credentials directly from disk or MongoDB
+    const stored = await getStoredCreds(userId, sessionDir);
 
-    if (!session) {
+    if (stored.isRegistered && stored.phoneNumber) {
+      // If DB was not updated or was stuck in PAIRING, immediately fix it to CONNECTED
+      if (session?.status !== 'CONNECTED' || !session?.phoneNumber) {
+        await WhatsAppSession.findOneAndUpdate(
+          { userId },
+          {
+            status: 'CONNECTED',
+            phoneNumber: stored.phoneNumber,
+            lastConnectedAt: session?.lastConnectedAt || new Date(),
+            updatedAt: new Date(),
+          },
+          { upsert: true, new: true }
+        );
+      }
+
+      // Auto-restore socket in background if not in memory
+      if (!activeSockets.has(userId)) {
+        console.log(`[WA Gateway] Restoring socket in background for user ${userId} on getStatus...`);
+        this.initSession(userId).catch((err) => console.error('[WA Gateway] Restore error on getStatus:', err));
+      }
+
       return {
-        status: 'DISCONNECTED',
-        phoneNumber: null,
-        lastConnectedAt: null,
-        qrCode: currentQR || null,
+        status: 'CONNECTED' as const,
+        phoneNumber: stored.phoneNumber,
+        lastConnectedAt: session?.lastConnectedAt || new Date().toISOString(),
+        qrCode: null,
       };
     }
 
+    // 2. If currently pairing with an active QR code
+    if (currentQR && activeSockets.has(userId)) {
+      return {
+        status: 'PAIRING' as const,
+        phoneNumber: null,
+        lastConnectedAt: null,
+        qrCode: currentQR,
+      };
+    }
+
+    // 3. Stale pairing or disconnected: reset DB status to DISCONNECTED so web does not get stuck
+    if (session?.status === 'PAIRING') {
+      await WhatsAppSession.findOneAndUpdate(
+        { userId },
+        { status: 'DISCONNECTED', phoneNumber: null, updatedAt: new Date() }
+      );
+    }
+
     return {
-      status: session.status,
-      phoneNumber: session.phoneNumber,
-      lastConnectedAt: session.lastConnectedAt,
-      qrCode: currentQR || null,
+      status: 'DISCONNECTED' as const,
+      phoneNumber: null,
+      lastConnectedAt: null,
+      qrCode: null,
     };
   }
 
@@ -423,6 +525,9 @@ export class WhatsappService {
     if (activeSockets.has(userId)) {
       try {
         const sock = activeSockets.get(userId);
+        sock.ev?.removeAllListeners('connection.update');
+        sock.ev?.removeAllListeners('creds.update');
+        sock.ev?.removeAllListeners('messages.upsert');
         await sock?.logout();
       } catch (e) {
         // ignore
@@ -466,13 +571,12 @@ export class WhatsappService {
 
     let sock = activeSockets.get(userId);
 
-    // Auto-restore active session from disk or MongoDB if socket instance was lost on container restart
+    // Auto-restore active session from disk or MongoDB if socket instance was lost
     if (!sock) {
       const sessionDir = path.resolve(process.cwd(), `./whatsapp_sessions/${userId}`);
-      const hasDiskAuth = fs.existsSync(path.join(sessionDir, 'creds.json'));
-      const hasMongoAuth = await WhatsAppAuthKey.exists({ userId });
+      const stored = await getStoredCreds(userId, sessionDir);
 
-      if (hasDiskAuth || hasMongoAuth) {
+      if (stored.isRegistered) {
         try {
           console.log(`[WA] Restoring active WhatsApp socket from persistent storage for user ${userId}...`);
           await this.initSession(userId);
@@ -485,11 +589,6 @@ export class WhatsappService {
 
     if (sock) {
       try {
-        const session = await WhatsAppSession.findOne({ userId });
-        if (!session || session.status !== 'CONNECTED') {
-           throw new Error('Sesi WhatsApp belum terhubung secara penuh.');
-        }
-
         const [result] = await sock.onWhatsApp(recipientJid);
         if (!result || !result.exists) {
           return {
