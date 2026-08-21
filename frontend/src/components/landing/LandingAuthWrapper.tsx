@@ -38,38 +38,13 @@ export function LandingAuthWrapper({ children }: { children: React.ReactNode }) 
         }}
         className={cn(
           'min-h-screen flex flex-col relative transition-all origin-left will-change-[width]',
-          isOpen && 'max-lg:w-full select-none cursor-pointer'
+          isOpen && 'max-lg:w-full'
         )}
       >
-        {/* Landing Page Content */}
+        {/* Landing Page Content - Always crisp and interactive */}
         <div className="flex-1 w-full relative">
           {children}
         </div>
-
-        {/* Dim & Blur Overlay on Landing Page when Auth is Open */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              onClick={closeAuth}
-              className="absolute inset-0 z-40 bg-background/50 backdrop-blur-[2px] cursor-pointer group flex items-start justify-center pt-24"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-card/90 border border-border shadow-xl text-xs font-bold text-foreground group-hover:scale-105 transition-transform"
-              >
-                <X className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Klik di sini untuk kembali ke Beranda</span>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
 
       {/* RIGHT: Auth Slide-in Panel with 1.0s Slide Animation */}

@@ -69,9 +69,9 @@ export function Testimonials() {
                 boxShadow: "0 25px 50px rgba(0,0,0,0.15)",
                 borderColor: "rgba(16,185,129,0.3)" 
               }}
-              className="p-8 rounded-[2rem] border border-white/10 bg-white/5 dark:bg-black/20 backdrop-blur-2xl space-y-6 flex flex-col justify-between relative group transition-all duration-300"
+              className="p-8 rounded-[2rem] border border-border dark:border-emerald-500/20 bg-card dark:bg-[#0c2017] text-card-foreground shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] space-y-6 flex flex-col justify-between relative group transition-all duration-300"
             >
-              <Quote className="w-12 h-12 text-primary/10 absolute top-6 right-6 group-hover:scale-110 group-hover:text-primary/20 transition-all duration-500" />
+              <Quote className="w-12 h-12 text-emerald-500/10 absolute top-6 right-6 group-hover:scale-110 group-hover:text-emerald-500/20 transition-all duration-500" />
 
               <div className="space-y-4 relative z-10 pt-4">
                 <div className="flex items-center gap-1.5">
@@ -87,13 +87,13 @@ export function Testimonials() {
                     </motion.div>
                   ))}
                 </div>
-                <p className="text-base text-foreground/90 italic leading-relaxed font-light">
+                <p className="text-base text-foreground italic leading-relaxed font-normal">
                   &quot;{rev.content}&quot;
                 </p>
               </div>
 
-              <div className="pt-6 border-t border-white/10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-primary text-white shadow-lg flex items-center justify-center text-lg font-outfit font-bold">
+              <div className="pt-6 border-t border-border flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg flex items-center justify-center text-lg font-outfit font-bold">
                   {rev.name.charAt(0)}
                 </div>
                 <div>

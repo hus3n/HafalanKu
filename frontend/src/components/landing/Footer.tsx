@@ -14,9 +14,9 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative border-t border-white/10 bg-black/40 backdrop-blur-3xl pt-24 pb-10 overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute top-0 left-1/4 w-[40%] h-[200px] bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+    <footer className="relative border-t border-border bg-card dark:bg-[#071912] text-card-foreground pt-24 pb-10 overflow-hidden">
+      {/* Subtle Background Glow */}
+      <div className="absolute top-0 left-1/4 w-[40%] h-[200px] bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-16 relative z-10">
         
@@ -32,11 +32,11 @@ export function Footer() {
             className="space-y-6 md:col-span-5 lg:col-span-4"
           >
             <Link href="/" className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary to-emerald-500 text-white shadow-lg shadow-primary/25">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-600/25">
                 <BookOpen className="w-6 h-6" />
               </div>
               <span className="font-outfit font-extrabold text-2xl tracking-tight text-foreground">
-                Hafalan<span className="text-primary">Ku</span>
+                Hafalan<span className="text-emerald-600 dark:text-emerald-400">Ku</span>
               </span>
             </Link>
 
@@ -44,9 +44,9 @@ export function Footer() {
               Platform managemen hafalan Al-Qur'an modern berbasis web dengan integrasi WhatsApp otomatis, penjadwalan murajaah cerdas, dan keamanan data berlapis.
             </p>
 
-            {/* Hadith Quote Card */}
-            <div className="p-5 rounded-2xl bg-white/5 border border-white/10 text-sm text-foreground/80 font-serif italic backdrop-blur-md relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+            {/* Hadith Quote Card - Solid Deep Dark with Emerald Accent */}
+            <div className="p-5 rounded-2xl bg-muted/60 dark:bg-[#0c241a] border border-border dark:border-emerald-500/20 text-sm text-foreground font-serif italic relative overflow-hidden shadow-sm">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
               &quot;Sebaik-baik kalian adalah orang yang mempelajari Al-Qur&apos;an dan mengajarkannya.&quot;
               <span className="block not-italic font-sans text-xs text-muted-foreground mt-2 font-semibold tracking-wide uppercase">
                 — HR. Bukhari
@@ -67,11 +67,11 @@ export function Footer() {
           >
             <h4 className="font-bold text-sm font-outfit text-foreground uppercase tracking-wider">Navigasi Utama</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><a href="#fitur" className="hover:text-primary transition-colors">Fitur Utama</a></li>
-              <li><a href="#keunggulan" className="hover:text-primary transition-colors">Keunggulan System</a></li>
-              <li><a href="#harga" className="hover:text-primary transition-colors">Harga Paket</a></li>
-              <li><a href="#testimoni" className="hover:text-primary transition-colors">Testimoni Pengasuh</a></li>
-              <li><a href="#faq" className="hover:text-primary transition-colors">Pertanyaan Umum (FAQ)</a></li>
+              <li><a href="#fitur" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Fitur Utama</a></li>
+              <li><a href="#keunggulan" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Keunggulan System</a></li>
+              <li><a href="#harga" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Harga Paket</a></li>
+              <li><a href="#testimoni" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Testimoni Pengasuh</a></li>
+              <li><a href="#faq" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Pertanyaan Umum (FAQ)</a></li>
             </ul>
           </motion.div>
 
@@ -88,7 +88,7 @@ export function Footer() {
               <li>
                 <button
                   onClick={() => openAuth('login')}
-                  className="hover:text-primary transition-colors text-left cursor-pointer"
+                  className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-left cursor-pointer"
                 >
                   Masuk Dashboard
                 </button>
@@ -96,13 +96,13 @@ export function Footer() {
               <li>
                 <button
                   onClick={() => openAuth('register')}
-                  className="hover:text-primary transition-colors flex items-center gap-2 text-left cursor-pointer"
+                  className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-2 text-left cursor-pointer"
                 >
-                  Daftar Akun Baru <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">GRATIS</span>
+                  Daftar Akun Baru <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">GRATIS</span>
                 </button>
               </li>
-              <li><Link href="/privacy" className="hover:text-primary transition-colors">Kebijakan Privasi</Link></li>
-              <li><Link href="/terms" className="hover:text-primary transition-colors">Syarat & Ketentuan</Link></li>
+              <li><Link href="/privacy" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Kebijakan Privasi</Link></li>
+              <li><Link href="/terms" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Syarat & Ketentuan</Link></li>
             </ul>
           </motion.div>
         </div>
@@ -113,7 +113,7 @@ export function Footer() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground"
+          className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground"
         >
           <p>© {new Date().getFullYear()} HafalanKu. Seluruh Hak Cipta Dilindungi Undang-Undang.</p>
 
@@ -126,7 +126,7 @@ export function Footer() {
               whileHover={{ y: -3 }}
               whileTap={{ scale: 0.9 }}
               onClick={scrollToTop}
-              className="p-3 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-foreground transition-colors shadow-lg"
+              className="p-3 rounded-full border border-border bg-muted/50 hover:bg-muted text-foreground transition-colors shadow-md cursor-pointer"
               title="Kembali ke Atas"
             >
               <ArrowUp className="w-4 h-4" />

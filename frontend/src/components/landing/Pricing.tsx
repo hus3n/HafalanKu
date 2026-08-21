@@ -133,13 +133,13 @@ export function Pricing() {
                   ? "0 40px 80px rgba(16,185,129,0.2)"
                   : "0 30px 60px rgba(0,0,0,0.1)"
               }}
-              className={`rounded-[2rem] p-8 flex flex-col justify-between relative transition-all duration-500 ease-out transform-style-3d ${plan.popular
-                  ? 'border border-primary/50 bg-gradient-to-b from-primary/10 to-background backdrop-blur-3xl z-10'
-                  : 'border border-white/10 bg-white/5 dark:bg-black/20 backdrop-blur-xl'
+              className={`rounded-[2rem] p-8 flex flex-col justify-between relative transition-all duration-500 ease-out transform-style-3d shadow-lg ${plan.popular
+                  ? 'border-2 border-emerald-500 bg-gradient-to-b from-emerald-500/15 via-card to-card dark:from-emerald-500/20 dark:via-[#0c2017] dark:to-[#0c2017] z-10 shadow-emerald-500/10'
+                  : 'border border-border bg-card dark:bg-[#0c2017] text-card-foreground'
                 }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-primary text-white font-bold text-xs shadow-[0_4px_20px_rgba(16,185,129,0.5)] flex items-center gap-1.5 z-20">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs shadow-[0_4px_20px_rgba(16,185,129,0.4)] flex items-center gap-1.5 z-20">
                   <Sparkles className="w-3.5 h-3.5" /> Paling Populer
                 </div>
               )}
@@ -150,7 +150,7 @@ export function Pricing() {
                   <p className="text-sm text-muted-foreground mt-2 min-h-[40px] font-light">{plan.description}</p>
                 </div>
 
-                <div className="border-y border-white/10 dark:border-white/5 py-6">
+                <div className="border-y border-border py-6">
                   <div className="flex items-baseline gap-2">
                     <AnimatePresence mode="wait">
                       <motion.span
