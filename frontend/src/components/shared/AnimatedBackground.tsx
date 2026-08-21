@@ -6,9 +6,9 @@ import { motion } from 'motion/react';
 export function AnimatedBackground() {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none">
-      {/* Ambient Radial Aura 1 - Top Right */}
+      {/* Ambient Radial Aura 1 - Top Right (Ocean Teal) */}
       <motion.div
-        className="absolute top-[-15%] right-[-10%] w-[55vw] h-[55vw] max-w-[650px] max-h-[650px] rounded-full bg-gradient-to-br from-emerald-500/12 via-teal-500/8 to-transparent blur-[110px]"
+        className="absolute top-[-15%] right-[-10%] w-[55vw] h-[55vw] max-w-[650px] max-h-[650px] rounded-full bg-gradient-to-br from-[#0E8991]/15 via-[#0E8991]/8 to-transparent blur-[110px]"
         animate={{
           transform: [
             'translate3d(0, 0, 0) scale(1)',
@@ -23,9 +23,9 @@ export function AnimatedBackground() {
         }}
       />
 
-      {/* Ambient Radial Aura 2 - Bottom Left */}
+      {/* Ambient Radial Aura 2 - Bottom Left (Sunset Terracotta Sand) */}
       <motion.div
-        className="absolute bottom-[-20%] left-[-15%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full bg-gradient-to-tr from-emerald-600/10 via-emerald-800/6 to-transparent blur-[130px]"
+        className="absolute bottom-[-20%] left-[-15%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full bg-gradient-to-tr from-[#EAA27C]/15 via-[#E8BBA6]/10 to-transparent blur-[130px]"
         animate={{
           transform: [
             'translate3d(0, 0, 0) scale(1)',
@@ -41,9 +41,9 @@ export function AnimatedBackground() {
         }}
       />
 
-      {/* Ambient Subtle Center Light */}
+      {/* Ambient Subtle Center Light (Coastal Sea Foam) */}
       <motion.div
-        className="absolute top-[35%] left-[30%] w-[35vw] h-[35vw] max-w-[450px] max-h-[450px] rounded-full bg-teal-400/5 dark:bg-emerald-400/4 blur-[100px]"
+        className="absolute top-[35%] left-[30%] w-[35vw] h-[35vw] max-w-[450px] max-h-[450px] rounded-full bg-[#8DB6BC]/10 dark:bg-[#0E8991]/8 blur-[100px]"
         animate={{
           transform: [
             'translate3d(0, 0, 0) scale(0.95)',

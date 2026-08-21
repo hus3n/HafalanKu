@@ -35,10 +35,10 @@
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-    /* Light Theme (Crisp Coastal Sand & Ocean Crystal) */
-    --background: 188 35% 98%;
+    /* Light Theme (Crisp Coastal Sand & Ocean Crystal with Distinct Card Separation) */
+    --background: 192 28% 92%; /* Soft Coastal Mist #E2ECEF */
     --foreground: 192 66% 14%; /* Deep Marine Sea #0C313A */
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* Crisp Pure White Cards #FFFFFF */
     --card-foreground: 192 66% 14%;
     --popover: 0 0% 100%;
     --popover-foreground: 192 66% 14%;
@@ -46,14 +46,14 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 21 74% 65%; /* Sunset Sand #EAA27C */
     --secondary-foreground: 0 0% 100%;
-    --muted: 188 25% 94%;
-    --muted-foreground: 192 35% 38%;
+    --muted: 192 25% 86%; /* #CCE0E5 */
+    --muted-foreground: 192 35% 36%;
     --accent: 184 82% 31%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 188 25% 88%;
-    --input: 188 25% 88%;
+    --border: 192 25% 82%; /* #BED8DF */
+    --input: 192 25% 82%;
     --ring: 184 82% 31%;
     --radius: 0.85rem;
   }
