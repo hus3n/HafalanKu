@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { BookOpen, Heart, ArrowUp } from 'lucide-react';
 
+import { useLandingAuth } from '../../contexts/LandingAuthContext';
+
 export function Footer() {
+  const { openAuth } = useLandingAuth();
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -82,8 +85,22 @@ export function Footer() {
           >
             <h4 className="font-bold text-sm font-outfit text-foreground uppercase tracking-wider">Akses Pengguna</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><Link href="/login" className="hover:text-primary transition-colors">Masuk Dashboard</Link></li>
-              <li><Link href="/register" className="hover:text-primary transition-colors flex items-center gap-2">Daftar Akun Baru <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">GRATIS</span></Link></li>
+              <li>
+                <button
+                  onClick={() => openAuth('login')}
+                  className="hover:text-primary transition-colors text-left cursor-pointer"
+                >
+                  Masuk Dashboard
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => openAuth('register')}
+                  className="hover:text-primary transition-colors flex items-center gap-2 text-left cursor-pointer"
+                >
+                  Daftar Akun Baru <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">GRATIS</span>
+                </button>
+              </li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">Kebijakan Privasi</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">Syarat & Ketentuan</Link></li>
             </ul>

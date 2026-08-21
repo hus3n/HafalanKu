@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, Play, ShieldCheck, Smartphone, Users, BookOpen, Bell } from 'lucide-react';
 
+import { useLandingAuth } from '../../contexts/LandingAuthContext';
+
 export function Hero() {
+  const { openAuth } = useLandingAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const { scrollYProgress } = useScroll({
@@ -74,16 +77,15 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
           >
-            <Link href="/register" className="w-full sm:w-auto">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 text-sm font-extrabold shadow-xl shadow-emerald-600/25 transition-all"
-              >
-                <span>Mulai Uji Coba Gratis</span>
-                <ArrowRight className="w-4 h-4" />
-              </motion.button>
-            </Link>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => openAuth('register')}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 text-sm font-extrabold shadow-xl shadow-emerald-600/25 transition-all cursor-pointer"
+            >
+              <span>Mulai Uji Coba Gratis</span>
+              <ArrowRight className="w-4 h-4" />
+            </motion.button>
 
             <Link href="#fitur" className="w-full sm:w-auto">
               <motion.button

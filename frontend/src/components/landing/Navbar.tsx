@@ -7,8 +7,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
 import { ThemeToggle } from '../shared/ThemeToggle';
 
+import { useLandingAuth } from '../../contexts/LandingAuthContext';
+
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { openAuth } = useLandingAuth();
 
   const navLinks = [
     { label: 'Fitur Utama', href: '#fitur' },
@@ -52,22 +55,23 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           <ThemeToggle />
 
-          <Link
-            href="/login"
-            className="px-4 py-2 rounded-xl text-xs font-bold text-foreground border border-border hover:bg-muted transition-all"
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => openAuth('login')}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-foreground border border-border hover:bg-muted transition-all cursor-pointer"
           >
             Masuk
-          </Link>
+          </motion.button>
 
-          <Link href="/register">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="px-4.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-lg shadow-emerald-600/25 transition-all"
-            >
-              <Sparkles className="w-3.5 h-3.5" /> Daftar Gratis
-            </motion.button>
-          </Link>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => openAuth('register')}
+            className="px-4.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-lg shadow-emerald-600/25 transition-all cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> Daftar Gratis
+          </motion.button>
         </div>
 
         {/* Mobile Menu Hamburger */}
@@ -106,20 +110,24 @@ export function Navbar() {
             </nav>
 
             <div className="pt-4 border-t border-border flex flex-col gap-3">
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-3 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-muted"
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuth('login');
+                }}
+                className="w-full text-center py-3 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-muted cursor-pointer"
               >
                 Masuk
-              </Link>
-              <Link
-                href="/register"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-3 rounded-xl bg-emerald-600 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 hover:bg-emerald-700"
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuth('register');
+                }}
+                className="w-full text-center py-3 rounded-xl bg-emerald-600 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 cursor-pointer"
               >
                 Daftar Gratis <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           </motion.div>
         )}

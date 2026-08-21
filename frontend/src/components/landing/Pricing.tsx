@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, Sparkles, ArrowRight } from 'lucide-react';
 
+import { useLandingAuth } from '../../contexts/LandingAuthContext';
+
 export function Pricing() {
+  const { openAuth } = useLandingAuth();
   const [isAnnual, setIsAnnual] = useState(true);
 
   const plans = [
@@ -178,18 +181,17 @@ export function Pricing() {
               </div>
 
               <div className="pt-10">
-                <Link href="/register" className="w-full block">
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${plan.buttonVariant === 'primary'
-                        ? 'bg-gradient-to-r from-primary to-emerald-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40'
-                        : 'border border-white/20 bg-white/5 hover:bg-white/10 text-foreground'
-                      }`}
-                  >
-                    <span>{plan.buttonText}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </motion.button>
-                </Link>
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => openAuth('register')}
+                  className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${plan.buttonVariant === 'primary'
+                      ? 'bg-gradient-to-r from-primary to-emerald-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40'
+                      : 'border border-white/20 bg-white/5 hover:bg-white/10 text-foreground'
+                    }`}
+                >
+                  <span>{plan.buttonText}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
               </div>
             </motion.div>
           ))}

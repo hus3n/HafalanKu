@@ -10,6 +10,7 @@ import { Loader2, Lock, Mail, User as UserIcon, Building2, Eye, EyeOff, Phone } 
 import { RegisterInput, registerSchema } from 'shared';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
+import { useLandingAuth } from '../../contexts/LandingAuthContext';
 import Link from 'next/link';
 import { User } from 'shared';
 import { cn } from '../../lib/utils';
@@ -17,6 +18,7 @@ import { cn } from '../../lib/utils';
 export function RegisterForm() {
   const router = useRouter();
   const { setAuth } = useAuth();
+  const { authMode, setAuthMode } = useLandingAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -299,9 +301,19 @@ export function RegisterForm() {
         className="mt-6 text-center text-sm text-muted-foreground"
       >
         Sudah punya akun?{' '}
-        <Link href="/login" className="font-semibold text-primary hover:underline transition-colors">
-          Masuk di sini
-        </Link>
+        {authMode ? (
+          <button
+            type="button"
+            onClick={() => setAuthMode('login')}
+            className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors cursor-pointer"
+          >
+            Masuk di sini
+          </button>
+        ) : (
+          <Link href="/login" className="font-semibold text-primary hover:underline transition-colors">
+            Masuk di sini
+          </Link>
+        )}
       </motion.div>
     </motion.div>
   );

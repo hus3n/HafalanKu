@@ -10,6 +10,7 @@ import { Loader2, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { LoginInput, loginSchema } from 'shared';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
+import { useLandingAuth } from '../../contexts/LandingAuthContext';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { User } from 'shared';
@@ -17,6 +18,7 @@ import { User } from 'shared';
 export function LoginForm() {
   const router = useRouter();
   const { setAuth } = useAuth();
+  const { authMode, setAuthMode } = useLandingAuth();
   const searchParams = useSearchParams();
   const isPending = searchParams.get('pending') === 'true';
 
@@ -176,9 +178,19 @@ export function LoginForm() {
         className="mt-6 text-center text-xs text-muted-foreground"
       >
         Belum punya akun?{' '}
-        <Link href="/register" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors">
-          Daftar Sekarang
-        </Link>
+        {authMode ? (
+          <button
+            type="button"
+            onClick={() => setAuthMode('register')}
+            className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors cursor-pointer"
+          >
+            Daftar Sekarang
+          </button>
+        ) : (
+          <Link href="/register" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors">
+            Daftar Sekarang
+          </Link>
+        )}
       </motion.div>
     </motion.div>
   );

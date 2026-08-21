@@ -10,12 +10,19 @@ export const metadata: Metadata = {
   keywords: ["HafalanKu", "Hafalan Quran", "Tahfidz", "Aplikasi Pesantren", "Murajaah", "WhatsApp Bot Quran"],
 };
 
+import { LandingAuthProvider } from '../../contexts/LandingAuthContext';
+import { LandingAuthWrapper } from '../../components/landing/LandingAuthWrapper';
+
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-x-hidden selection:bg-primary/20 selection:text-primary">
-      <Navbar />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
+    <LandingAuthProvider>
+      <LandingAuthWrapper>
+        <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-x-hidden selection:bg-primary/20 selection:text-primary">
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
+      </LandingAuthWrapper>
+    </LandingAuthProvider>
   );
 }
