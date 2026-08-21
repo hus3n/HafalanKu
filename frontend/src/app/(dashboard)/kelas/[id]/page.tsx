@@ -99,10 +99,10 @@ export default function KelasDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {!kelas.santri || kelas.santri.length === 0 ? (
-          <div className="glass-card p-10 text-center rounded-2xl border border-white/10">
+          <div className="p-10 text-center rounded-3xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-sm">
             <Users className="w-10 h-10 text-muted-foreground mx-auto mb-2 opacity-50" />
-            <p className="text-sm font-medium text-foreground">Belum ada santri di kelas ini.</p>
-            <p className="text-xs text-muted-foreground mt-1">Klik tombol di atas untuk memilih dan memasukkan santri.</p>
+            <p className="text-sm font-bold text-foreground">Belum ada santri di kelas ini.</p>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Klik tombol di atas untuk memilih dan memasukkan santri.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -114,22 +114,22 @@ export default function KelasDetailPage({ params }: { params: Promise<{ id: stri
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, delay: index * 0.04 }}
-                  className="glass-card p-4 rounded-xl border border-white/10 flex items-center justify-between gap-3"
+                  className="p-4 rounded-2xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-sm flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
+                    <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center font-bold text-xs border border-primary/20">
                       {santri.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{santri.name}</p>
-                      <p className="text-[11px] text-muted-foreground">Wali: {santri.parentName}</p>
+                      <p className="text-sm font-bold text-foreground">{santri.name}</p>
+                      <p className="text-[11px] text-muted-foreground font-medium">Wali: {santri.parentName}</p>
                     </div>
                   </div>
 
                   <button
                     onClick={() => handleUnassign(santri.id)}
                     disabled={unassignMutation.isPending}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    className="p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                     title="Keluarkan dari kelas"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -144,21 +144,20 @@ export default function KelasDetailPage({ params }: { params: Promise<{ id: stri
       {/* Modal Assign Santri */}
       <AnimatePresence>
         {isAssignModalOpen && (
-          <>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAssignModalOpen(false)}
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm"
             />
-            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="glass-card p-6 rounded-2xl max-w-md w-full border border-white/10 shadow-2xl pointer-events-auto space-y-4 max-h-[80vh] flex flex-col"
-              >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="p-6 rounded-3xl bg-card dark:bg-[#0C313A] max-w-md w-full border border-border dark:border-[#0E8991]/30 shadow-2xl pointer-events-auto space-y-4 max-h-[80vh] flex flex-col relative z-10"
+            >
                 <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <h3 className="text-lg font-bold font-outfit text-foreground">Pilih Santri</h3>
                   <button
@@ -210,7 +209,6 @@ export default function KelasDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
               </motion.div>
             </div>
-          </>
         )}
       </AnimatePresence>
     </div>

@@ -42,7 +42,7 @@ export default function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-xl shadow-primary/5 flex flex-col md:flex-row items-center justify-between gap-6"
+        className="p-6 md:p-8 rounded-3xl border border-border dark:border-[#0E8991]/20 bg-card dark:bg-[#0C313A] shadow-md flex flex-col md:flex-row items-center justify-between gap-6"
       >
         <div className="flex items-center gap-5 text-center md:text-left">
           <div className="w-20 h-20 rounded-full border-2 border-primary/30 bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl overflow-hidden shrink-0 shadow-md">
@@ -68,7 +68,7 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/20 text-primary border border-primary/30">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/15 text-primary border border-primary/30">
                 <Shield className="w-3 h-3" />
                 {user?.role === 'SUPERADMIN'
                   ? 'Superadmin'
@@ -77,8 +77,8 @@ export default function ProfilePage() {
                   : 'Pengajar / User'}
               </span>
 
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-secondary text-secondary-foreground border border-border/40">
-                <Building className="w-3 h-3 text-muted-foreground" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border border-[#0E8991]/25">
+                <Building className="w-3 h-3 text-primary" />
                 {user?.organization?.name || 'Perorangan'}
               </span>
             </div>
@@ -107,7 +107,7 @@ export default function ProfilePage() {
         <h3 className="text-base font-bold font-outfit text-foreground flex items-center gap-2">
           <Building className="w-4 h-4 text-primary" /> Informasi Pribadi & Kontak
         </h3>
-        <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-xl shadow-black/5">
+        <div className="p-6 md:p-8 rounded-3xl border border-border dark:border-[#0E8991]/20 bg-card dark:bg-[#0C313A] shadow-md">
           <ProfileForm />
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function ProfilePage() {
         <h3 className="text-base font-bold font-outfit text-foreground flex items-center gap-2">
           <KeyRound className="w-4 h-4 text-primary" /> Keamanan & Kata Sandi
         </h3>
-        <div className="p-6 md:p-8 rounded-3xl border border-border bg-card shadow-xl shadow-black/5">
+        <div className="p-6 md:p-8 rounded-3xl border border-border dark:border-[#0E8991]/20 bg-card dark:bg-[#0C313A] shadow-md">
           <ChangePasswordForm />
         </div>
       </div>

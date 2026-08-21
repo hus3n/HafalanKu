@@ -105,7 +105,7 @@ export default function WhatsAppSettingsPage() {
       {/* Main Connection Status Card */}
       <div className="bg-card dark:bg-[#0C313A] p-6 md:p-8 rounded-2xl border border-border dark:border-[#0E8991]/20 shadow-2xl space-y-6 relative overflow-hidden">
         {/* Status Indicator Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-secondary dark:bg-[#071a1f] border border-border dark:border-[#0E8991]/20">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-muted/50 dark:bg-[#071a1f] border border-border dark:border-[#0E8991]/20">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
               isConnected 

@@ -71,7 +71,7 @@ export default function CatatHafalanPage() {
       </div>
 
       {/* Form Container */}
-      <div className="glass-card p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
+      <div className="p-6 md:p-8 rounded-3xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-md relative overflow-hidden">
         {createMutation.isError && (
           <div className="p-3 mb-6 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs text-center">
             {createMutation.error?.message || 'Gagal menyimpan setoran hafalan.'}

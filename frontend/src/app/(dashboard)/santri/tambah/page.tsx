@@ -37,7 +37,7 @@ export default function TambahSantriPage() {
         </div>
       </div>
 
-      <div className="glass-card p-6 md:p-8 rounded-2xl border border-white/10 shadow-xl">
+      <div className="p-6 md:p-8 rounded-3xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-md">
         {createMutation.isError && (
           <div className="p-3 mb-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs text-center">
             {createMutation.error?.message || 'Gagal menambahkan santri.'}

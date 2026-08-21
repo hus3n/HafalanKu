@@ -25,10 +25,10 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
 
   if (logs.length === 0) {
     return (
-      <div className="glass-card p-12 text-center rounded-2xl border border-white/10">
+      <div className="p-12 text-center rounded-3xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-sm">
         <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-        <h3 className="text-base font-semibold font-outfit text-foreground">Belum Ada Riwayat Notifikasi</h3>
-        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+        <h3 className="text-base font-bold font-outfit text-foreground">Belum Ada Riwayat Notifikasi</h3>
+        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto font-medium">
           Belum ada notifikasi WhatsApp terkirim atau filter pencarian tidak menemukan hasil.
         </p>
       </div>
@@ -61,27 +61,25 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'HAFALAN_NEW':
-        return <span className="text-xs font-semibold text-primary">Setoran Hafalan Baru</span>;
+        return <span className="text-xs font-bold text-primary">Setoran Hafalan Baru</span>;
       case 'MURAJAAH_SCHEDULE':
-        return <span className="text-xs font-semibold text-accent">Jadwal Murajaah</span>;
+        return <span className="text-xs font-bold text-[#C46838] dark:text-[#EAA27C]">Jadwal Murajaah</span>;
       case 'SYSTEM_ALERT':
-        return <span className="text-xs font-semibold text-rose-500">Info Sistem</span>;
+        return <span className="text-xs font-bold text-rose-600 dark:text-rose-400">Info Sistem</span>;
       case 'REGISTRATION':
-        return <span className="text-xs font-semibold text-sky-500">Pendaftaran</span>;
-      case 'SUBSCRIPTION_ALERT':
-        return <span className="text-xs font-semibold text-amber-500">Info Langganan</span>;
+        return <span className="text-xs font-bold text-sky-600 dark:text-sky-400">Pendaftaran</span>;
       default:
-        return <span className="text-xs text-muted-foreground">{type}</span>;
+        return <span className="text-xs font-bold text-muted-foreground">{type}</span>;
     }
   };
 
   return (
     <>
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-hidden rounded-2xl glass-card border border-white/10 shadow-xl">
+      <div className="hidden md:block overflow-hidden rounded-3xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-md">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-border/50 bg-secondary/30 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <tr className="border-b border-border bg-muted/50 text-xs font-bold text-muted-foreground uppercase tracking-wider">
               <th className="py-4 px-6">Penerima</th>
               <th className="py-4 px-6">Jenis Notifikasi</th>
               <th className="py-4 px-6">Ringkasan Pesan</th>
@@ -90,7 +88,7 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
               <th className="py-4 px-6 text-right">Detail</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/30 text-sm">
+          <tbody className="divide-y divide-border/50 text-sm">
             <AnimatePresence>
               {logs.map((log, index) => (
                 <motion.tr
@@ -99,26 +97,26 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2, delay: index * 0.04 }}
-                  className="hover:bg-secondary/40 transition-colors"
+                  className="hover:bg-muted/30 transition-colors"
                 >
-                  <td className="py-4 px-6 font-medium text-foreground">
+                  <td className="py-4 px-6 font-semibold text-foreground">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 font-semibold">
+                      <div className="flex items-center gap-1.5 font-bold">
                         <User className="w-3.5 h-3.5 text-muted-foreground" />
                         <span>{log.recipientName}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
-                        <Phone className="w-3 h-3 text-emerald-500" />
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono mt-0.5">
+                        <Phone className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span>{log.recipientPhone}</span>
                       </div>
                     </div>
                   </td>
                   <td className="py-4 px-6">{getTypeLabel(log.type)}</td>
-                  <td className="py-4 px-6 text-xs text-muted-foreground max-w-xs truncate">
+                  <td className="py-4 px-6 text-xs text-muted-foreground max-w-xs truncate font-medium">
                     {log.message}
                   </td>
                   <td className="py-4 px-6">{getStatusBadge(log.status)}</td>
-                  <td className="py-4 px-6 text-xs text-muted-foreground whitespace-nowrap">
+                  <td className="py-4 px-6 text-xs text-muted-foreground whitespace-nowrap font-medium">
                     {new Date(log.createdAt).toLocaleString('id-ID', {
                       day: 'numeric',
                       month: 'short',
@@ -130,7 +128,7 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
                   <td className="py-4 px-6 text-right">
                     <button
                       onClick={() => setViewingLog(log)}
-                      className="p-2 rounded-lg bg-secondary/80 text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
+                      className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer"
                       title="Lihat Isi Pesan"
                     >
                       <Eye className="w-4 h-4" />
@@ -144,7 +142,7 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
+      <div className="md:hidden space-y-3.5">
         <AnimatePresence>
           {logs.map((log, index) => (
             <motion.div
@@ -153,23 +151,23 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2, delay: index * 0.04 }}
-              className="glass-card p-5 rounded-2xl border border-white/10 space-y-3"
+              className="p-5 rounded-3xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-sm space-y-3"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h4 className="font-bold text-foreground">{log.recipientName}</h4>
-                  <p className="text-xs text-muted-foreground font-mono">{log.recipientPhone}</p>
+                  <h4 className="font-bold text-foreground text-sm">{log.recipientName}</h4>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">{log.recipientPhone}</p>
                 </div>
                 {getStatusBadge(log.status)}
               </div>
 
-              <div className="text-xs">{getTypeLabel(log.type)}</div>
+              <div>{getTypeLabel(log.type)}</div>
 
-              <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground">
+              <div className="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground font-medium">
                 <span>{new Date(log.createdAt).toLocaleDateString('id-ID')}</span>
                 <button
                   onClick={() => setViewingLog(log)}
-                  className="px-3 py-1 rounded-lg bg-secondary/80 text-foreground flex items-center gap-1 text-xs"
+                  className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer"
                 >
                   <Eye className="w-3.5 h-3.5" /> Lihat Pesan
                 </button>
@@ -195,7 +193,7 @@ export function NotificationTable({ logs, isLoading }: NotificationTableProps) {
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="glass-card p-6 rounded-2xl max-w-lg w-full border border-white/10 shadow-2xl pointer-events-auto space-y-4 max-h-[80vh] flex flex-col"
+                className="p-6 rounded-3xl bg-card dark:bg-[#0C313A] max-w-lg w-full border border-border dark:border-[#0E8991]/30 shadow-2xl pointer-events-auto space-y-4 max-h-[80vh] flex flex-col"
               >
                 <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <h3 className="text-base font-bold font-outfit text-foreground">

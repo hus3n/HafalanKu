@@ -90,14 +90,14 @@ export default function HafalanAwalPage() {
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-2xl p-6 shadow-sm relative overflow-visible"
+        className="bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 rounded-3xl p-6 shadow-sm relative overflow-visible"
       >
-        <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none -z-10">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+        <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none -z-10">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
         </div>
         
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <Plus className="w-5 h-5 text-emerald-500" />
+        <h2 className="text-lg font-bold mb-4 flex items-center gap-2 font-outfit text-foreground">
+          <Plus className="w-5 h-5 text-primary" />
           Input Hafalan Awal
         </h2>
         
@@ -107,7 +107,7 @@ export default function HafalanAwalPage() {
             <select
               value={selectedSantri}
               onChange={(e) => setSelectedSantri(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all disabled:opacity-50"
+              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all disabled:opacity-50"
               disabled={isLoadingSantri || createBulk.isPending}
             >
               <option value="">-- Pilih Santri --</option>
@@ -130,7 +130,7 @@ export default function HafalanAwalPage() {
             <button
               onClick={handleSimpan}
               disabled={createBulk.isPending || !selectedSantri || selectedSurahs.length === 0}
-              className="w-full h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-emerald-500/20 cursor-pointer"
+              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-primary/20 cursor-pointer"
             >
               {createBulk.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Simpan
@@ -140,11 +140,11 @@ export default function HafalanAwalPage() {
       </motion.div>
 
       {/* Table Section */}
-      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/20">
+      <div className="bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 rounded-3xl shadow-md overflow-hidden flex flex-col">
+        <div className="p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/40">
           <div>
-            <h2 className="text-lg font-bold">Rekapitulasi Hafalan Santri</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Ringkasan capaian seluruh surat yang telah dikuasai santri.</p>
+            <h2 className="text-lg font-bold font-outfit text-foreground">Rekapitulasi Hafalan Santri</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 font-medium">Ringkasan capaian seluruh surat yang telah dikuasai santri.</p>
           </div>
           <div className="relative">
             <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -156,14 +156,14 @@ export default function HafalanAwalPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full sm:w-64 pl-9 pr-4 py-2 rounded-xl border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all"
+              className="w-full sm:w-64 pl-9 pr-4 py-2 rounded-xl border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-semibold">
+            <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-bold border-b border-border">
               <tr>
                 <th className="px-6 py-4 w-48">Nama Santri</th>
                 <th className="px-6 py-4 w-36">Kelas / Kelompok</th>
