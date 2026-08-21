@@ -13,7 +13,7 @@ COPY frontend/package.json ./frontend/
 COPY shared/package.json ./shared/
 
 # Install all dependencies using npm workspace
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 # Copy source code
 COPY shared ./shared

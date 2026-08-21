@@ -4,8 +4,16 @@ Dockerfile
 .dockerignore
 .git
 .github
+.agents
 .env
+.env.*
 .next
 dist
 graphify-out
-.agents
+**/node_modules
+**/dist
+**/.next
+**/tsconfig.tsbuildinfo
+backend/uploads
+backend/whatsapp_sessions
+
