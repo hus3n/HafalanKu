@@ -21,6 +21,20 @@ export const createKelasSchema = z.object({
   userId: z.string().uuid('Format ID Ustadz tidak valid').optional().nullable(),
 });
 
+export const bulkImportRowSchema = z.object({
+  namaSantri: z.string().min(2, 'Nama santri minimal 2 karakter'),
+  namaWali: z.string().min(2, 'Nama wali murid minimal 2 karakter'),
+  noHpWali: z.string().min(6, 'Nomor HP wali tidak valid'),
+  namaKelas: z.string().optional().nullable(),
+  capaianHafalan: z.string().optional().nullable(),
+});
+
+export const executeBulkImportSchema = z.object({
+  rows: z.array(bulkImportRowSchema).min(1, 'Data import tidak boleh kosong'),
+});
+
 export type CreateSantriInput = z.infer<typeof createSantriSchema>;
 export type UpdateSantriInput = z.infer<typeof updateSantriSchema>;
 export type CreateKelasInput = z.infer<typeof createKelasSchema>;
+export type BulkImportRow = z.infer<typeof bulkImportRowSchema>;
+export type ExecuteBulkImportInput = z.infer<typeof executeBulkImportSchema>;

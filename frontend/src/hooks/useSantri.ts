@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { CreateSantriInput, UpdateSantriInput } from 'shared';
+import { CreateSantriInput, UpdateSantriInput, BulkImportRow } from 'shared';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export interface SantriItem {
   id: string;
@@ -137,4 +139,119 @@ export function useDeleteSantri() {
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
   });
+}
+
+// ==========================================
+// BULK IMPORT & EXPORT HOOKS & UTILITIES
+// ==========================================
+
+export interface BulkImportPreviewResult {
+  summary: {
+    totalRows: number;
+    validRows: number;
+    invalidRows: number;
+    totalSantri: number;
+    totalKelas: number;
+    totalHafalanRecords: number;
+    currentSantriCount: number;
+    remainingQuota: number;
+    isQuotaExceeded: boolean;
+  };
+  rows: Array<{
+    rowNumber: number;
+    namaSantri: string;
+    namaWali: string;
+    noHpWali: string;
+    namaKelas: string;
+    capaianHafalan: string;
+    parsedHafalanCount: number;
+    parsedSurahsSummary: string;
+    isValid: boolean;
+    errorMessage?: string;
+  }>;
+}
+
+export function useBulkImportPreview() {
+  return useMutation({
+    mutationFn: async (fileBase64: string): Promise<BulkImportPreviewResult> => {
+      const res = await api.post<BulkImportPreviewResult>('/santri/preview-import', { fileBase64 });
+      if (!res.success || !res.data) {
+        throw new Error(res.message || 'Gagal memproses pratinjau file Excel');
+      }
+      return res.data;
+    },
+  });
+}
+
+export function useBulkImportExecute() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (rows: BulkImportRow[]) => {
+      const res = await api.post<{ createdSantriCount: number; createdKelasCount: number; createdHafalanCount: number }>(
+        '/santri/execute-import',
+        { rows }
+      );
+      if (!res.success) {
+        throw new Error(res.message || 'Gagal menyimpan data impor');
+      }
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['santri-list'] });
+      queryClient.invalidateQueries({ queryKey: ['rekap-global'] });
+      queryClient.invalidateQueries({ queryKey: ['hafalan-list'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['kelas-list'] });
+    },
+  });
+}
+
+export async function downloadImportTemplate() {
+  const token = localStorage.getItem('token') || (JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token);
+  const res = await fetch(`${API_BASE_URL}/santri/template-import`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Gagal mengunduh template Excel');
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Template_Import_HafalanKu.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+export async function downloadFullSantriData(kelasId?: string) {
+  const token = localStorage.getItem('token') || (JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token);
+  const queryParams = new URLSearchParams();
+  if (kelasId) queryParams.append('kelasId', kelasId);
+
+  const res = await fetch(`${API_BASE_URL}/santri/export-full?${queryParams.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Gagal mengunduh data lengkap santri');
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Data_Lengkap_Santri_HafalanKu_${Date.now()}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
 }

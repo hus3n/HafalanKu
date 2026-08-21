@@ -1,19 +1,17 @@
 import { FastifyInstance } from 'fastify';
 import { SantriController } from './santri.controller';
-import { createSantriSchema, updateSantriSchema } from 'shared';
-import { z } from 'zod';
-
-const getSantriQuerySchema = z.object({
-  page: z.string().optional().transform(Number),
-  limit: z.string().optional().transform(Number),
-  search: z.string().optional(),
-  kelasId: z.string().optional(),
-});
 
 export async function santriRoutes(fastify: FastifyInstance) {
   // Semua route santri butuh otentikasi
   fastify.addHook('onRequest', fastify.authenticate);
 
+  // Bulk Import & Export Routes (Daftarkan sebelum /:id)
+  fastify.get('/template-import', SantriController.downloadTemplate);
+  fastify.post('/preview-import', SantriController.previewImport);
+  fastify.post('/execute-import', SantriController.executeImport);
+  fastify.get('/export-full', SantriController.exportFull);
+
+  // Standard CRUD Routes
   fastify.post('/', SantriController.create);
   fastify.get('/', SantriController.getList);
   fastify.get('/:id', SantriController.getById);

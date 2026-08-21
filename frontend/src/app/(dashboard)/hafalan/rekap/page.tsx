@@ -5,7 +5,24 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useSantriList } from '../../../../hooks/useSantri';
 import { useRekapGlobalList, useCreateBulkHafalan, RekapGlobalItem, RekapSurahItem } from '../../../../hooks/useHafalan';
 import { MultiSelectSurah } from '../../../../components/forms/MultiSelectSurah';
-import { Search, Plus, Save, Loader2, BookOpen, AlertTriangle, Filter, Eye, X, CheckCircle2, Award, Sparkles } from 'lucide-react';
+import { BulkImportModal } from '../../../../components/modals/BulkImportModal';
+import { downloadFullSantriData } from '../../../../hooks/useSantri';
+import { 
+  Search, 
+  Plus, 
+  Save, 
+  Loader2, 
+  BookOpen, 
+  AlertTriangle, 
+  Filter, 
+  Eye, 
+  X, 
+  CheckCircle2, 
+  Award, 
+  Sparkles, 
+  UploadCloud, 
+  FileSpreadsheet 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function HafalanAwalPage() {
@@ -14,6 +31,8 @@ export default function HafalanAwalPage() {
   
   const [selectedSantri, setSelectedSantri] = useState('');
   const [selectedSurahs, setSelectedSurahs] = useState<number[]>([]);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Modal State for viewing all memorized surahs of a santri
   const [detailModalSantri, setDetailModalSantri] = useState<RekapGlobalItem | null>(null);
@@ -21,8 +40,20 @@ export default function HafalanAwalPage() {
   const [selectedJuzFilter, setSelectedJuzFilter] = useState<number | 'ALL'>('ALL');
 
   const { data: santriData, isLoading: isLoadingSantri } = useSantriList({ limit: 1000 });
-  const { data: rekapData, isLoading: isLoadingRekap } = useRekapGlobalList({ page, limit: 10, search });
+  const { data: rekapData, isLoading: isLoadingRekap, refetch: refetchRekap } = useRekapGlobalList({ page, limit: 10, search });
   const createBulk = useCreateBulkHafalan();
+
+  const handleExportFull = async () => {
+    try {
+      setIsExporting(true);
+      await downloadFullSantriData();
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mengunduh data lengkap santri');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleSimpan = async () => {
     if (!selectedSantri) {
@@ -41,14 +72,13 @@ export default function HafalanAwalPage() {
         santriId: selectedSantri,
         surahs: selectedSurahs,
       });
-      toast.success('Hafalan awal berhasil disimpan');
-      if (santriObj?.name) {
-        setSearch(santriObj.name);
-      }
-      setSelectedSantri('');
+
+      toast.success(`Berhasil mencatat ${selectedSurahs.length} hafalan awal untuk ${santriObj?.name || 'santri'}`);
       setSelectedSurahs([]);
-    } catch (error: any) {
-      toast.error(error.message || 'Gagal menyimpan hafalan');
+      setSelectedSantri('');
+      refetchRekap();
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal menyimpan data hafalan awal');
     }
   };
 
@@ -76,14 +106,37 @@ export default function HafalanAwalPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold font-outfit text-foreground flex items-center gap-2">
-          <BookOpen className="w-8 h-8 text-emerald-500" />
-          Hafalan Awal Santri
-        </h1>
-        <p className="text-muted-foreground text-sm max-w-2xl">
-          Catat daftar surat yang sudah dihafal oleh santri sebelum menggunakan aplikasi HafalanKu secara massal.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl md:text-3xl font-bold font-outfit text-foreground flex items-center gap-2">
+            <BookOpen className="w-7 h-7 text-primary" />
+            Hafalan Awal & Rekapitulasi Santri
+          </h1>
+          <p className="text-muted-foreground text-xs max-w-2xl font-medium">
+            Catat daftar surat yang sudah dihafal oleh santri secara massal atau impor langsung dari Excel.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={handleExportFull}
+            disabled={isExporting}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-border bg-card hover:bg-muted text-foreground font-semibold text-xs shadow-sm transition-all cursor-pointer"
+            title="Download seluruh data santri & hafalan dalam format Excel"
+          >
+            {isExporting ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+            <span>{isExporting ? 'Mengunduh...' : 'Download Data (.xlsx)'}</span>
+          </button>
+
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs shadow-sm transition-all cursor-pointer"
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span>Impor Excel (Bulk)</span>
+          </button>
+        </div>
       </div>
 
       {/* Form Section */}
@@ -501,6 +554,13 @@ export default function HafalanAwalPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Bulk Import Modal */}
+      <BulkImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => refetchRekap()}
+      />
     </div>
   );
 }
