@@ -162,29 +162,29 @@ export default function LaporanPage() {
       {/* Summary Recap Cards */}
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="glass-card p-4 rounded-xl border border-white/10 text-center">
+          <div className="glass-card p-4 rounded-xl border border-border/80 text-center">
             <p className="text-[11px] font-medium text-muted-foreground uppercase">Total Setoran</p>
             <p className="text-xl font-bold font-outfit text-foreground mt-1">{summary.totalSetoran}</p>
           </div>
           <div className="glass-card p-4 rounded-xl border border-emerald-500/20 text-center">
-            <p className="text-[11px] font-medium text-emerald-400 uppercase">MUMTAZ</p>
-            <p className="text-xl font-bold font-outfit text-emerald-400 mt-1">{summary.predikatCount.MUMTAZ || 0}</p>
+            <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase">MUMTAZ</p>
+            <p className="text-xl font-bold font-outfit text-emerald-700 dark:text-emerald-300 mt-1">{summary.predikatCount.MUMTAZ || 0}</p>
           </div>
-          <div className="glass-card p-4 rounded-xl border border-teal-500/20 text-center">
-            <p className="text-[11px] font-medium text-teal-400 uppercase">JAYYID JIDDAN</p>
-            <p className="text-xl font-bold font-outfit text-teal-400 mt-1">{summary.predikatCount.JAYYID_JIDDAN || 0}</p>
+          <div className="glass-card p-4 rounded-xl border border-[#0E8991]/20 text-center">
+            <p className="text-[11px] font-bold text-[#0E8991] dark:text-[#1bb2bd] uppercase">JAYYID JIDDAN</p>
+            <p className="text-xl font-bold font-outfit text-[#0E8991] dark:text-[#1bb2bd] mt-1">{summary.predikatCount.JAYYID_JIDDAN || 0}</p>
           </div>
-          <div className="glass-card p-4 rounded-xl border border-blue-500/20 text-center">
-            <p className="text-[11px] font-medium text-blue-400 uppercase">JAYYID</p>
-            <p className="text-xl font-bold font-outfit text-blue-400 mt-1">{summary.predikatCount.JAYYID || 0}</p>
+          <div className="glass-card p-4 rounded-xl border border-sky-500/20 text-center">
+            <p className="text-[11px] font-bold text-sky-700 dark:text-sky-300 uppercase">JAYYID</p>
+            <p className="text-xl font-bold font-outfit text-sky-700 dark:text-sky-300 mt-1">{summary.predikatCount.JAYYID || 0}</p>
           </div>
-          <div className="glass-card p-4 rounded-xl border border-amber-500/20 text-center">
-            <p className="text-[11px] font-medium text-amber-400 uppercase">MAQBUL</p>
-            <p className="text-xl font-bold font-outfit text-amber-400 mt-1">{summary.predikatCount.MAQBUL || 0}</p>
+          <div className="glass-card p-4 rounded-xl border border-[#EAA27C]/30 text-center">
+            <p className="text-[11px] font-bold text-[#B85828] dark:text-[#EAA27C] uppercase">MAQBUL</p>
+            <p className="text-xl font-bold font-outfit text-[#B85828] dark:text-[#EAA27C] mt-1">{summary.predikatCount.MAQBUL || 0}</p>
           </div>
           <div className="glass-card p-4 rounded-xl border border-rose-500/20 text-center">
-            <p className="text-[11px] font-medium text-rose-400 uppercase">ULANG</p>
-            <p className="text-xl font-bold font-outfit text-rose-400 mt-1">{summary.predikatCount.ULANG || 0}</p>
+            <p className="text-[11px] font-bold text-rose-700 dark:text-rose-300 uppercase">ULANG</p>
+            <p className="text-xl font-bold font-outfit text-rose-700 dark:text-rose-300 mt-1">{summary.predikatCount.ULANG || 0}</p>
           </div>
         </div>
       )}

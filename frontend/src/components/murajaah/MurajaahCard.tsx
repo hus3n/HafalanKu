@@ -24,17 +24,17 @@ export function MurajaahCard({ item, onToggle, index }: MurajaahCardProps) {
       className={cn(
         'bg-card p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 group relative overflow-hidden',
         item.isSelected
-          ? 'border-primary shadow-lg bg-secondary'
-          : 'border-border opacity-60'
+          ? 'border-[#0E8991] shadow-lg bg-[#0E8991]/5 dark:bg-[#0E8991]/15'
+          : 'border-border opacity-70'
       )}
     >
       <div className="flex items-center gap-4 z-10">
         <button
           onClick={() => onToggle(item.id)}
-          className="p-1 rounded-full text-primary hover:scale-110 transition-transform focus:outline-none"
+          className="p-1 rounded-full text-[#0E8991] dark:text-[#1bb2bd] hover:scale-110 transition-transform focus:outline-none"
         >
           {item.isSelected ? (
-            <CheckCircle className="w-6 h-6 text-primary fill-primary/20" />
+            <CheckCircle className="w-6 h-6 text-[#0E8991] dark:text-[#1bb2bd] fill-[#0E8991]/20" />
           ) : (
             <Circle className="w-6 h-6 text-muted-foreground" />
           )}
@@ -47,8 +47,8 @@ export function MurajaahCard({ item, onToggle, index }: MurajaahCardProps) {
             </h4>
 
             {isHighPriority && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                <Flame className="w-3 h-3 fill-amber-400 text-amber-400" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAA27C]/20 text-[#B85828] dark:text-[#EAA27C] border border-[#EAA27C]/35">
+                <Flame className="w-3 h-3 fill-[#EAA27C] text-[#EAA27C]" />
                 Prioritas Tinggi
               </span>
             )}

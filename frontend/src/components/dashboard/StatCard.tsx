@@ -44,12 +44,12 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const badgeStyles = [
-  "bg-[#0E8991] shadow-[#0E8991]/30",
-  "bg-[#EAA27C] shadow-[#EAA27C]/30",
-  "bg-[#8DB6BC] shadow-[#8DB6BC]/30",
-  "bg-[#E8BBA6] shadow-[#E8BBA6]/30",
-  "bg-[#0C313A] shadow-[#0C313A]/40",
-  "bg-[#12a4ae] shadow-[#12a4ae]/30",
+  "bg-[#0E8991] text-white shadow-[#0E8991]/30",
+  "bg-[#D97746] text-white shadow-[#D97746]/30",
+  "bg-[#0E8991]/85 text-white shadow-[#0E8991]/30",
+  "bg-[#C46838] text-white shadow-[#C46838]/30",
+  "bg-[#0C313A] text-white shadow-[#0C313A]/40",
+  "bg-[#12a4ae] text-white shadow-[#12a4ae]/30",
 ];
 
 export function StatCard({ stat, index }: StatCardProps) {

@@ -45,7 +45,7 @@
     --primary: 184 82% 31%; /* Ocean Sea Teal #0E8991 */
     --primary-foreground: 0 0% 100%;
     --secondary: 21 74% 65%; /* Sunset Sand #EAA27C */
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 192 66% 14%; /* Deep Marine Sea #0C313A for high contrast */
     --muted: 192 25% 86%; /* #CCE0E5 */
     --muted-foreground: 192 35% 36%;
     --accent: 184 82% 31%;
@@ -69,7 +69,7 @@
     --primary: 184 75% 42%; /* Radiant Ocean Teal #1bb2bd */
     --primary-foreground: 0 0% 100%;
     --secondary: 21 74% 65%; /* Sunset Sand #EAA27C */
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 192 66% 14%; /* Deep Marine Sea #0C313A for high contrast */
     --muted: 192 45% 18%;
     --muted-foreground: 188 27% 68%; /* Coastal Teal #8DB6BC */
     --accent: 184 75% 42%;

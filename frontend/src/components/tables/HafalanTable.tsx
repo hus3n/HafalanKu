@@ -39,17 +39,17 @@ export function HafalanTable({ items, onDelete, onEdit, isLoading }: HafalanTabl
   const getPredikatBadge = (predikat: string) => {
     switch (predikat) {
       case 'MUMTAZ':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">MUMTAZ</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">MUMTAZ</span>;
       case 'JAYYID_JIDDAN':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-400 border border-teal-500/30">JAYYID JIDDAN</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border border-[#0E8991]/30">JAYYID JIDDAN</span>;
       case 'JAYYID':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">JAYYID</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30">JAYYID</span>;
       case 'MAQBUL':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">MAQBUL</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#EAA27C]/20 text-[#B85828] dark:text-[#EAA27C] border border-[#EAA27C]/30">MAQBUL</span>;
       case 'ULANG':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">ULANG</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30">ULANG</span>;
       default:
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary text-foreground">{predikat}</span>;
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-muted text-foreground border border-border">{predikat}</span>;
     }
   };
 

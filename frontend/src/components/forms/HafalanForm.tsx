@@ -78,11 +78,11 @@ export function HafalanForm({ onSubmit, onSubmitUpdate, initialData, isLoading =
     description: string;
     badgeColor: string;
   }> = [
-    { value: 'MUMTAZ', label: 'Mumtaz (Mumtaz)', description: 'Lancar tanpa salah', badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-    { value: 'JAYYID_JIDDAN', label: 'Jayyid Jiddan', description: 'Sangat baik (1-2 salah)', badgeColor: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
-    { value: 'JAYYID', label: 'Jayyid', description: 'Baik (3-4 salah)', badgeColor: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-    { value: 'MAQBUL', label: 'Maqbul', description: 'Cukup (5+ salah)', badgeColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-    { value: 'ULANG', label: 'Ulang', description: 'Wajib diulang kembali', badgeColor: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
+    { value: 'MUMTAZ', label: 'Mumtaz (Mumtaz)', description: 'Lancar tanpa salah', badgeColor: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30' },
+    { value: 'JAYYID_JIDDAN', label: 'Jayyid Jiddan', description: 'Sangat baik (1-2 salah)', badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30' },
+    { value: 'JAYYID', label: 'Jayyid', description: 'Baik (3-4 salah)', badgeColor: 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30' },
+    { value: 'MAQBUL', label: 'Maqbul', description: 'Cukup (5+ salah)', badgeColor: 'bg-[#EAA27C]/20 text-[#B85828] dark:text-[#EAA27C] border-[#EAA27C]/30' },
+    { value: 'ULANG', label: 'Ulang', description: 'Wajib diulang kembali', badgeColor: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30' },
   ];
 
   return (
