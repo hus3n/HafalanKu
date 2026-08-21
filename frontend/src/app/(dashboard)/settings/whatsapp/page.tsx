@@ -26,8 +26,6 @@ import { useAuth } from '../../../../hooks/useAuth';
 
 export default function WhatsAppSettingsPage() {
   const { user: currentUser } = useAuth();
-  const isAuthorized = !(currentUser?.role === 'USER' && !currentUser?.organizationId);
-
   const { data: statusData, isLoading: isStatusLoading } = useWhatsAppStatus();
   const initMutation = useInitWhatsAppSession();
   const disconnectMutation = useDisconnectWhatsApp();
@@ -55,29 +53,6 @@ export default function WhatsAppSettingsPage() {
     const customMsg = `Assalamu'alaikum,\nIni adalah tes pesan dari aplikasi HafalanKu.\nStatus Server: Aktif\nWaktu: ${new Date().toLocaleString('id-ID')}`;
     setValue('message', customMsg);
   };
-
-  if (!isAuthorized) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-8 rounded-3xl border border-rose-500/30 bg-rose-500/10 backdrop-blur-2xl text-center space-y-4 max-w-lg mx-auto my-12"
-      >
-        <motion.div 
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-          className="p-4 rounded-full bg-rose-500/20 text-rose-500 w-16 h-16 mx-auto flex items-center justify-center"
-        >
-          <AlertCircle className="w-8 h-8" />
-        </motion.div>
-        <h2 className="text-xl font-bold font-outfit text-foreground">Akses Ditolak</h2>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Fitur WhatsApp Gateway khusus diperuntukkan bagi pengguna yang berafiliasi dengan Organisasi/Lembaga.
-        </p>
-      </motion.div>
-    );
-  }
 
   const onTestSubmit = async (data: any) => {
     setTestSuccess(null);
@@ -123,20 +98,20 @@ export default function WhatsAppSettingsPage() {
           Integrasi WhatsApp Gateway
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Hubungkan akun WhatsApp pengajar / TPA untuk mengirim notifikasi & jadwal murajaah ke orang tua santri.
+          Hubungkan akun WhatsApp Anda untuk mengirim notifikasi & jadwal murajaah otomatis ke santri dan wali murid.
         </p>
       </div>
 
       {/* Main Connection Status Card */}
-      <div className="bg-card p-6 md:p-8 rounded-2xl border border-border shadow-2xl space-y-6 relative overflow-hidden">
+      <div className="bg-card dark:bg-[#0C313A] p-6 md:p-8 rounded-2xl border border-border dark:border-[#0E8991]/20 shadow-2xl space-y-6 relative overflow-hidden">
         {/* Status Indicator Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-secondary border border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-secondary dark:bg-[#071a1f] border border-border dark:border-[#0E8991]/20">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
               isConnected 
-                ? 'bg-emerald-500/20 text-emerald-400' 
+                ? 'bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd]' 
                 : isPairing 
-                ? 'bg-amber-500/20 text-amber-400 animate-pulse' 
+                ? 'bg-[#EAA27C]/20 text-[#EAA27C] animate-pulse' 
                 : 'bg-muted text-muted-foreground'
             }`}>
               {isConnected ? <CheckCircle2 className="w-6 h-6" /> : <Smartphone className="w-6 h-6" />}
@@ -147,9 +122,9 @@ export default function WhatsAppSettingsPage() {
                 {isStatusLoading ? (
                   <span>Memeriksa...</span>
                 ) : isConnected ? (
-                  <span className="text-emerald-400">Terhubung (WhatsApp Active)</span>
+                  <span className="text-[#0E8991] dark:text-[#1bb2bd]">Terhubung (WhatsApp Active)</span>
                 ) : isPairing ? (
-                  <span className="text-amber-400">Menunggu Scan QR Code...</span>
+                  <span className="text-[#EAA27C]">Menunggu Scan QR Code...</span>
                 ) : (
                   <span className="text-muted-foreground">Belum Terhubung</span>
                 )}
@@ -164,7 +139,7 @@ export default function WhatsAppSettingsPage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={handleDisconnect}
                 disabled={disconnectMutation.isPending}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 text-destructive text-xs font-semibold hover:bg-destructive hover:text-white transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 text-destructive text-xs font-semibold hover:bg-destructive hover:text-white transition-all cursor-pointer"
               >
                 {disconnectMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
                 <span>Putuskan Koneksi</span>
@@ -175,7 +150,7 @@ export default function WhatsAppSettingsPage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={handleStartPairing}
                 disabled={initMutation.isPending}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-medium text-xs shadow-lg shadow-emerald-600/25 hover:bg-emerald-500 transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0E8991] hover:bg-[#0C737A] text-white font-medium text-xs shadow-lg shadow-[#0E8991]/25 transition-all cursor-pointer"
               >
                 {initMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
                 <span>{isPairing ? 'Muat Ulang QR Code' : 'Hubungkan WhatsApp'}</span>
@@ -194,7 +169,7 @@ export default function WhatsAppSettingsPage() {
               className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-border/40"
             >
               {/* Left Column: QR Display */}
-              <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-background/50 border border-white/10 text-center space-y-4">
+              <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-background/50 border border-border text-center space-y-4">
                 <div className="p-4 rounded-2xl bg-white shadow-xl inline-block">
                   {qrCodeData ? (
                     <img src={qrCodeData} alt="WhatsApp Pairing QR Code" className="w-52 h-52 object-contain" />
@@ -214,21 +189,21 @@ export default function WhatsAppSettingsPage() {
               {/* Right Column: Instructions */}
               <div className="space-y-4 flex flex-col justify-center">
                 <h4 className="text-base font-bold font-outfit text-foreground flex items-center gap-2">
-                  <Info className="w-4 h-4 text-primary" />
+                  <Info className="w-4 h-4 text-[#0E8991]" />
                   Langkah-Langkah Pautan Perangkat:
                 </h4>
 
                 <ol className="space-y-3 text-xs text-muted-foreground list-decimal pl-4">
-                  <li>Buka aplikasi **WhatsApp** di smartphone Anda.</li>
-                  <li>Ketuk **Setelan / Menu** (ikon titik tiga di pojok kanan atas).</li>
-                  <li>Pilih **Perangkat Tertaut (Linked Devices)**.</li>
-                  <li>Ketuk **Tautkan Perangkat (Link a Device)**.</li>
-                  <li>Arahkan kamera smartphone ke **QR Code** di samping layar ini.</li>
+                  <li>Buka aplikasi <strong>WhatsApp</strong> di smartphone Anda.</li>
+                  <li>Ketuk <strong>Setelan / Menu</strong> (ikon titik tiga di pojok kanan atas).</li>
+                  <li>Pilih <strong>Perangkat Tertaut (Linked Devices)</strong>.</li>
+                  <li>Ketuk <strong>Tautkan Perangkat (Link a Device)</strong>.</li>
+                  <li>Arahkan kamera smartphone ke <strong>QR Code</strong> di samping layar ini.</li>
                 </ol>
 
-                <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-xs text-primary flex items-start gap-2 mt-2">
-                  <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>Kredensial sesi disimpan secara aman menggunakan **Enkripsi AES-256** pada server.</span>
+                <div className="p-3 rounded-xl bg-[#0E8991]/10 border border-[#0E8991]/20 text-xs text-[#0E8991] dark:text-[#1bb2bd] flex items-start gap-2 mt-2">
+                  <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#EAA27C]" />
+                  <span>Kredensial sesi disimpan secara aman menggunakan <strong>Enkripsi AES-256</strong> pada server.</span>
                 </div>
               </div>
             </motion.div>
@@ -237,14 +212,14 @@ export default function WhatsAppSettingsPage() {
 
         {/* Active Session Details if Connected */}
         {isConnected && (
-          <div className="p-5 rounded-2xl bg-emerald-100 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-500/30 text-xs space-y-2 text-emerald-800 dark:text-emerald-200">
+          <div className="p-5 rounded-2xl bg-[#0E8991]/10 border border-[#0E8991]/30 text-xs space-y-2 text-foreground">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-emerald-900 dark:text-emerald-300">Nomor Perangkat Terhubung:</span>
-              <span className="font-mono">{statusData.phoneNumber || '628xxxxxxxxxx'}</span>
+              <span className="font-semibold text-[#0E8991] dark:text-[#1bb2bd]">Nomor Perangkat Terhubung:</span>
+              <span className="font-mono">{statusData?.phoneNumber || '628xxxxxxxxxx'}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-emerald-900 dark:text-emerald-300">Terakhir Terhubung:</span>
-              <span>{statusData.lastConnectedAt ? new Date(statusData.lastConnectedAt).toLocaleString('id-ID') : 'Aktif'}</span>
+              <span className="font-semibold text-[#0E8991] dark:text-[#1bb2bd]">Terakhir Terhubung:</span>
+              <span>{statusData?.lastConnectedAt ? new Date(statusData.lastConnectedAt).toLocaleString('id-ID') : 'Aktif'}</span>
             </div>
           </div>
         )}
@@ -252,17 +227,17 @@ export default function WhatsAppSettingsPage() {
 
       {/* Testing Message Card */}
       {isConnected && (
-        <div className="bg-card p-6 md:p-8 rounded-2xl border border-border shadow-2xl space-y-6">
+        <div className="bg-card dark:bg-[#0C313A] p-6 md:p-8 rounded-2xl border border-border dark:border-[#0E8991]/20 shadow-2xl space-y-6">
           <div>
             <h2 className="text-xl font-bold font-outfit text-foreground flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-primary" /> Kirim Pesan Uji Coba
+              <MessageSquare className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" /> Kirim Pesan Uji Coba
             </h2>
             <p className="text-xs text-muted-foreground mt-1">Uji koneksi WhatsApp Anda dengan mengirim pesan ke nomor mana pun.</p>
           </div>
 
           <form onSubmit={handleSubmit(onTestSubmit)} className="space-y-4">
             {testSuccess && (
-              <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-xs font-medium">
+              <div className="p-3 rounded-xl border border-[#0E8991]/30 bg-[#0E8991]/10 text-[#0E8991] dark:text-[#1bb2bd] flex items-center gap-2 text-xs font-medium">
                 <CheckCircle2 className="w-4 h-4 shrink-0" /> {testSuccess}
               </div>
             )}
@@ -279,7 +254,7 @@ export default function WhatsAppSettingsPage() {
                   type="text" 
                   placeholder="Contoh: 081234567890" 
                   {...register('recipientPhone', { required: 'Nomor tujuan wajib diisi' })} 
-                  className="w-full h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
+                  className="w-full h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E8991] transition-all"
                 />
                 {errors.recipientPhone && <p className="text-xs text-rose-500">{errors.recipientPhone.message}</p>}
               </div>
@@ -297,7 +272,7 @@ export default function WhatsAppSettingsPage() {
                       setValue('message', '');
                     }
                   }}
-                  className="w-full h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
+                  className="w-full h-11 px-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E8991] transition-all"
                 >
                   <option value="template">Template Default</option>
                   <option value="custom">Pesan Custom</option>
@@ -311,7 +286,7 @@ export default function WhatsAppSettingsPage() {
                 rows={4}
                 placeholder="Tulis pesan..." 
                 {...register('message', { required: 'Pesan wajib diisi' })} 
-                className="w-full p-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
+                className="w-full p-4 rounded-xl border border-input bg-background/50 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E8991] transition-all"
               />
               {errors.message && <p className="text-xs text-rose-500">{errors.message.message}</p>}
             </div>
@@ -322,7 +297,7 @@ export default function WhatsAppSettingsPage() {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={sendMutation.isPending}
-                className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-[#0E8991] hover:bg-[#0C737A] text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#0E8991]/20 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {sendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 Kirim Pesan Uji Coba

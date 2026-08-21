@@ -119,10 +119,6 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
     if (item.href === '/kelas' || item.href === '/santri') {
       if (role === 'USER' && user?.organizationId) return false;
     }
-    
-    if (item.href === '/settings/whatsapp') {
-      if (role === 'USER' && !user?.organizationId) return false;
-    }
 
     return true;
   });
