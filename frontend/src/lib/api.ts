@@ -6,9 +6,9 @@ export const getApiBaseUrl = (): string => {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.hostname}:5000/api/v1`;
+    return `${window.location.protocol}//${window.location.hostname}:4000/api/v1`;
   }
-  return 'http://127.0.0.1:5000/api/v1';
+  return 'http://127.0.0.1:4000/api/v1';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
@@ -51,9 +51,10 @@ async function fetchWrapper<T>(endpoint: string, options: RequestInit = {}): Pro
     // Network offline / backend unreachable
     const target = `${API_BASE_URL}${endpoint}`;
     console.error(`[API Network Error] Gagal terhubung ke: ${target}`, error);
+    const configuredPort = API_BASE_URL.match(/:(\d+)/)?.[1] || '4000';
     throw new ApiError(
       500,
-      `Koneksi ke backend gagal (${API_BASE_URL}). Pastikan server backend sedang berjalan di port 5000.`,
+      `Koneksi ke backend gagal (${API_BASE_URL}). Pastikan server backend sedang berjalan di port ${configuredPort}.`,
       null
     );
   }
