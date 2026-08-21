@@ -55,8 +55,8 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
           {/* Header */}
           <div className="flex items-start justify-between border-b border-border pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-md shrink-0">
-                <Download className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-white shadow-md border border-border p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                <img src="/icon-192x192.png" alt="HafalanKu Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h3 className="text-lg font-bold font-outfit text-foreground flex items-center gap-2">
