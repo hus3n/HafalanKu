@@ -305,7 +305,7 @@ export function RegisterForm() {
           <button
             type="button"
             onClick={() => setAuthMode('login')}
-            className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors cursor-pointer"
+            className="font-semibold text-[#0E8991] dark:text-[#1bb2bd] hover:underline transition-colors cursor-pointer"
           >
             Masuk di sini
           </button>

@@ -69,7 +69,7 @@ export function Pricing() {
   return (
     <section id="harga" className="py-32 relative overflow-hidden bg-background">
       {/* Abstract Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-background to-background" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#0E8991]/10 via-background to-background" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-16 relative z-10">
 
@@ -95,11 +95,11 @@ export function Pricing() {
             </span>
             <button
               onClick={() => setIsAnnual(!isAnnual)}
-              className="w-16 h-8 rounded-full bg-secondary/80 border border-white/10 p-1 relative flex items-center focus:outline-none shadow-inner"
+              className="w-16 h-8 rounded-full bg-muted border border-border p-1 relative flex items-center focus:outline-none shadow-inner"
             >
               <motion.div
                 layout
-                className="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-500 to-primary shadow-md"
+                className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#0E8991] to-[#12a4ae] shadow-md"
                 animate={{ x: isAnnual ? 32 : 0 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
@@ -109,7 +109,7 @@ export function Pricing() {
               <motion.span
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-[10px] bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 font-bold px-2.5 py-0.5 rounded-full"
+                className="text-[10px] bg-[#EAA27C]/20 border border-[#EAA27C]/30 text-[#EAA27C] font-bold px-2.5 py-0.5 rounded-full"
               >
                 Hemat 20%
               </motion.span>
@@ -130,17 +130,17 @@ export function Pricing() {
                 y: -15,
                 scale: 1.02,
                 boxShadow: plan.popular
-                  ? "0 40px 80px rgba(16,185,129,0.2)"
+                  ? "0 40px 80px rgba(14,137,145,0.25)"
                   : "0 30px 60px rgba(0,0,0,0.1)"
               }}
               className={`rounded-[2rem] p-8 flex flex-col justify-between relative transition-all duration-500 ease-out transform-style-3d shadow-lg ${plan.popular
-                  ? 'border-2 border-emerald-500 bg-gradient-to-b from-emerald-500/15 via-card to-card dark:from-emerald-500/20 dark:via-[#0c2017] dark:to-[#0c2017] z-10 shadow-emerald-500/10'
-                  : 'border border-border bg-card dark:bg-[#0c2017] text-card-foreground'
+                  ? 'border-2 border-[#0E8991] bg-gradient-to-b from-[#0E8991]/15 via-card to-card dark:from-[#0E8991]/20 dark:via-[#0C313A] dark:to-[#0C313A] z-10 shadow-[#0E8991]/15'
+                  : 'border border-border bg-card dark:bg-[#0C313A] text-card-foreground'
                 }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs shadow-[0_4px_20px_rgba(16,185,129,0.4)] flex items-center gap-1.5 z-20">
-                  <Sparkles className="w-3.5 h-3.5" /> Paling Populer
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#0E8991] to-[#12a4ae] text-white font-bold text-xs shadow-[0_4px_20px_rgba(14,137,145,0.4)] flex items-center gap-1.5 z-20">
+                  <Sparkles className="w-3.5 h-3.5 text-[#EAA27C]" /> Paling Populer
                 </div>
               )}
 
@@ -171,7 +171,7 @@ export function Pricing() {
                 <ul className="space-y-4 text-sm text-muted-foreground pt-4">
                   {plan.features.map((feat, fIdx) => (
                     <li key={fIdx} className="flex items-start gap-3">
-                      <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-500 shrink-0 mt-0.5">
+                      <div className="p-1 rounded-full bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd] shrink-0 mt-0.5">
                         <Check className="w-3 h-3" strokeWidth={3} />
                       </div>
                       <span className="text-foreground/90 font-medium leading-tight">{feat}</span>
@@ -185,12 +185,12 @@ export function Pricing() {
                   whileTap={{ scale: 0.96 }}
                   onClick={() => openAuth('register')}
                   className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${plan.buttonVariant === 'primary'
-                      ? 'bg-gradient-to-r from-primary to-emerald-600 text-white shadow-lg shadow-primary/25 hover:shadow-primary/40'
-                      : 'border border-white/20 bg-white/5 hover:bg-white/10 text-foreground'
+                      ? 'bg-gradient-to-r from-[#0E8991] to-[#12a4ae] text-white shadow-lg shadow-[#0E8991]/25 hover:shadow-[#0E8991]/40'
+                      : 'border border-border bg-muted/60 hover:bg-muted text-foreground'
                     }`}
                 >
                   <span>{plan.buttonText}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 text-[#EAA27C]" />
                 </motion.button>
               </div>
             </motion.div>

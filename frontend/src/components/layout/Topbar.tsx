@@ -53,7 +53,7 @@ export function Topbar() {
 
   return (
     <>
-      <header className="h-16 md:h-20 border-b border-emerald-500/15 bg-[#05140d]/90 dark:bg-[#04100a]/90 backdrop-blur-2xl text-white sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between shadow-xl">
+      <header className="h-16 md:h-20 border-b border-[#0E8991]/20 bg-[#0C313A]/90 dark:bg-[#071a1f]/90 backdrop-blur-2xl text-white sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between shadow-xl">
         {/* Left Section */}
         <div className="flex items-center gap-3">
           <MobileNav />
@@ -67,9 +67,9 @@ export function Topbar() {
             title={isCollapsed ? "Memperbesar Sidebar (280px)" : "Mengecilkan Sidebar (80px)"}
           >
             {isCollapsed ? (
-              <ChevronRight className="w-5 h-5 text-emerald-400" />
+              <ChevronRight className="w-5 h-5 text-[#1bb2bd]" />
             ) : (
-              <ChevronLeft className="w-5 h-5 text-emerald-400" />
+              <ChevronLeft className="w-5 h-5 text-[#1bb2bd]" />
             )}
             <span className="text-xs font-semibold text-white/80 hidden lg:inline">
               {isCollapsed ? "Buka Sidebar" : "Kecilkan"}
@@ -77,7 +77,7 @@ export function Topbar() {
           </motion.button>
 
           <div className="hidden sm:flex items-center gap-2.5 text-xs md:text-sm font-semibold text-white/90">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.9)]"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#1bb2bd] animate-pulse shadow-[0_0_10px_rgba(27,178,189,0.9)]"></span>
             <span>Selamat Datang, <strong>{user?.name || 'Ustadz'}</strong></span>
           </div>
         </div>
@@ -89,10 +89,10 @@ export function Topbar() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => setIsInstallModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-xl bg-[#0E8991]/25 hover:bg-[#0E8991]/35 text-[#8DB6BC] border border-[#0E8991]/40 text-xs font-bold transition-all shadow-sm cursor-pointer"
             title="Buka atau Pasang Mode Aplikasi (Tanpa Tab Browser)"
           >
-            <Download className="w-4 h-4 text-emerald-400 shrink-0" />
+            <Download className="w-4 h-4 text-[#1bb2bd] shrink-0" />
             <span className="hidden md:inline">
               {isStandalone ? "Mode Aplikasi Aktif" : "Mode Aplikasi (Tanpa Tab)"}
             </span>
@@ -109,14 +109,14 @@ export function Topbar() {
               onClick={toggleFullscreen}
               className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all border cursor-pointer shrink-0 ${
                 isFullscreen 
-                  ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400/40 shadow-[0_0_12px_rgba(52,211,153,0.3)]' 
+                  ? 'bg-[#0E8991]/30 text-[#8DB6BC] border-[#0E8991]/50 shadow-[0_0_12px_rgba(27,178,189,0.3)]' 
                   : 'bg-white/10 text-white/90 hover:text-white hover:bg-white/20 border-white/15'
               }`}
               title={isFullscreen ? "Keluar dari Layar Penuh (Esc / F11)" : "Tampilan Layar Penuh (Full Screen)"}
               aria-label={isFullscreen ? "Keluar dari Layar Penuh" : "Tampilan Layar Penuh"}
             >
               {isFullscreen ? (
-                <Minimize2 className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" />
+                <Minimize2 className="w-4 h-4 md:w-5 md:h-5 text-[#1bb2bd]" />
               ) : (
                 <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />
               )}
@@ -124,8 +124,8 @@ export function Topbar() {
           )}
 
           {/* Role Badge */}
-          <span className="hidden xl:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold uppercase tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="hidden xl:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#0E8991]/20 text-[#8DB6BC] border border-[#0E8991]/30 text-[10px] font-extrabold uppercase tracking-wider">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#1bb2bd]" />
             {user?.role || 'USER'}
           </span>
 
@@ -138,7 +138,7 @@ export function Topbar() {
             title="Notifikasi Log"
           >
             <Bell className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#05140d]"></span>
+            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0C313A]"></span>
           </motion.button>
           
           <ThemeToggle />
@@ -151,7 +151,7 @@ export function Topbar() {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 p-1.5 pr-2.5 rounded-xl transition-all border border-white/15 shadow-sm cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md overflow-hidden shrink-0 border border-emerald-400/30">
+              <div className="w-8 h-8 rounded-lg bg-[#0E8991] text-white font-extrabold text-xs flex items-center justify-center shadow-md overflow-hidden shrink-0 border border-[#1bb2bd]/30">
                 {user?.avatarUrl ? (
                   <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -160,7 +160,7 @@ export function Topbar() {
               </div>
               <div className="hidden lg:block text-left">
                 <p className="text-xs font-bold text-white leading-none mb-0.5 truncate max-w-[100px]">{user?.name || 'Pengguna'}</p>
-                <p className="text-[9px] text-emerald-300 font-semibold leading-none uppercase tracking-wider">{user?.role || 'USER'}</p>
+                <p className="text-[9px] text-[#8DB6BC] font-semibold leading-none uppercase tracking-wider">{user?.role || 'USER'}</p>
               </div>
               <ChevronDown className={`w-3.5 h-3.5 text-white/80 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
             </motion.button>

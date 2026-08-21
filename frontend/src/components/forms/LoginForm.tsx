@@ -91,7 +91,7 @@ export function LoginForm() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="p-3 text-sm text-emerald-700 bg-emerald-500/10 rounded-md border border-emerald-500/20 text-center"
+              className="p-3 text-sm text-[#0E8991] bg-[#0E8991]/10 rounded-md border border-[#0E8991]/20 text-center"
             >
               Pendaftaran berhasil! Akun Anda sedang diverifikasi. Silakan hubungi Admin via WhatsApp.
             </motion.div>
@@ -155,7 +155,7 @@ export function LoginForm() {
             animate={isSuccess ? { scale: [1, 1.05, 1] } : {}}
             type="submit"
             disabled={loginMutation.isPending || isSuccess}
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-bold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 h-11 px-4 py-2 w-full mt-4 cursor-pointer"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-bold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-[#0E8991] hover:bg-[#0C737A] text-white shadow-lg shadow-[#0E8991]/25 h-11 px-4 py-2 w-full mt-4 cursor-pointer"
           >
             {loginMutation.isPending ? (
               <>
@@ -182,12 +182,12 @@ export function LoginForm() {
           <button
             type="button"
             onClick={() => setAuthMode('register')}
-            className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors cursor-pointer"
+            className="font-bold text-[#0E8991] dark:text-[#1bb2bd] hover:underline transition-colors cursor-pointer"
           >
             Daftar Sekarang
           </button>
         ) : (
-          <Link href="/register" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors">
+          <Link href="/register" className="font-bold text-[#0E8991] dark:text-[#1bb2bd] hover:underline transition-colors">
             Daftar Sekarang
           </Link>
         )}

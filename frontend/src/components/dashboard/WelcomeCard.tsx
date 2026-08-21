@@ -37,13 +37,13 @@ export function WelcomeCard() {
         );
       case 'ADMIN':
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#EAA27C]/20 text-[#EAA27C] border border-[#EAA27C]/40">
             Admin Lembaga
           </span>
         );
       default:
         return (
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd] border border-[#0E8991]/40">
             Pengajar Al-Qur'an
           </span>
         );
@@ -55,27 +55,27 @@ export function WelcomeCard() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-card via-card to-emerald-950/20 p-6 md:p-8 border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] mb-8"
+      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-card via-card to-[#0E8991]/15 dark:to-[#0C313A] p-6 md:p-8 border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] mb-6"
     >
       {/* Subtle Ambient Decorative Glow */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#0E8991]/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
       <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 text-xs text-foreground font-semibold bg-muted/80 px-3 py-1 rounded-full border border-border/60">
-              <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <Calendar className="w-3.5 h-3.5 text-[#0E8991] dark:text-[#1bb2bd]" />
               {today}
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-medium bg-muted/50 px-2.5 py-1 rounded-full border border-border/40">
-              <Clock className="w-3 h-3 text-amber-500" />
+              <Clock className="w-3 h-3 text-[#EAA27C]" />
               Waktu {time}
             </span>
             {getRoleBadge(user?.role)}
           </div>
 
           <h1 className="text-2xl md:text-3xl font-extrabold font-outfit text-foreground tracking-tight pt-1">
-            Assalamu’alaikum, <span className="text-emerald-600 dark:text-emerald-400">{user?.name || 'Ustadz'}</span> 👋
+            Assalamu’alaikum, <span className="text-[#0E8991] dark:text-[#1bb2bd]">{user?.name || 'Ustadz'}</span> 👋
           </h1>
           
           <p className="text-xs md:text-sm text-muted-foreground max-w-xl leading-relaxed font-medium">
@@ -89,13 +89,13 @@ export function WelcomeCard() {
           whileTap={{ scale: 0.97 }}
           className="self-start md:self-center shrink-0"
         >
-          <div className="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-3.5 rounded-2xl shadow-lg shadow-emerald-600/25 border border-emerald-400/30 transition-all cursor-default">
+          <div className="flex items-center gap-3 bg-[#0E8991] hover:bg-[#0C737A] text-white font-bold text-xs px-5 py-3.5 rounded-2xl shadow-lg shadow-[#0E8991]/25 border border-[#1bb2bd]/30 transition-all cursor-default">
             <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-emerald-200" />
+              <Sparkles className="w-4 h-4 text-[#EAA27C]" />
             </div>
             <div>
               <p className="font-extrabold text-white text-[11px] leading-tight">HafalanKu Pro</p>
-              <p className="text-emerald-200 text-[10px] font-medium leading-tight">Sistem Tahfizh Modern</p>
+              <p className="text-[#8DB6BC] text-[10px] font-medium leading-tight">Sistem Tahfizh Modern</p>
             </div>
           </div>
         </motion.div>

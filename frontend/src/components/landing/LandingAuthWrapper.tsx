@@ -64,10 +64,10 @@ export function LandingAuthWrapper({ children }: { children: React.ReactNode }) 
         )}
       >
         {/* Ambient Top Glow */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+        <div className="absolute top-0 right-0 w-72 h-72 bg-[#0E8991]/15 rounded-full blur-[100px] pointer-events-none -z-10" />
 
         {/* Panel Header */}
-        <div className="sticky top-0 z-20 px-6 py-4 border-b border-border bg-card/90 backdrop-blur-xl flex items-center justify-between gap-4">
+        <div className="sticky top-0 z-20 px-6 py-4 border-b border-border bg-card/90 dark:bg-[#0C313A]/90 backdrop-blur-xl flex items-center justify-between gap-4">
           
           {/* Logo Brand */}
           <div className="flex items-center gap-2.5">
@@ -79,7 +79,7 @@ export function LandingAuthWrapper({ children }: { children: React.ReactNode }) 
               className="w-7 h-7 object-contain drop-shadow-sm"
             />
             <span className="font-outfit font-extrabold text-lg tracking-tight text-foreground">
-              Hafalan<span className="text-emerald-600 dark:text-emerald-400">Ku</span>
+              Hafalan<span className="text-[#0E8991] dark:text-[#1bb2bd]">Ku</span>
             </span>
           </div>
 
@@ -160,7 +160,7 @@ export function LandingAuthWrapper({ children }: { children: React.ReactNode }) 
 
           {/* Bottom Security Assurance Badge */}
           <div className="mt-8 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+            <Sparkles className="w-3.5 h-3.5 text-[#EAA27C]" />
             <span>Enkripsi Data Standar Industri & Privasi Terjamin</span>
           </div>
         </div>

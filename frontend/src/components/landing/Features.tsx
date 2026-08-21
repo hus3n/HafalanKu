@@ -15,38 +15,38 @@ export function Features() {
 
   const features = [
     {
-      icon: <MessageSquare className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />,
-      bg: 'bg-emerald-500/15 border-emerald-500/30',
+      icon: <MessageSquare className="w-6 h-6 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bg: 'bg-[#0E8991]/15 border-[#0E8991]/30',
       title: 'Notifikasi WhatsApp Wali Murid',
       description: 'Kirim laporan hasil setoran hafalan otomatis langsung ke nomor WhatsApp orang tua santri.',
     },
     {
-      icon: <Brain className="w-6 h-6 text-teal-600 dark:text-teal-400" />,
-      bg: 'bg-teal-500/15 border-teal-500/30',
+      icon: <Brain className="w-6 h-6 text-[#8DB6BC]" />,
+      bg: 'bg-[#8DB6BC]/15 border-[#8DB6BC]/30',
       title: 'Algoritma Murajaah Cerdas',
       description: 'Sistem secara otomatis mengkalkulasi prioritas pengulangan surat berdasarkan predikat.',
     },
     {
-      icon: <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />,
-      bg: 'bg-indigo-500/15 border-indigo-500/30',
+      icon: <ShieldCheck className="w-6 h-6 text-[#EAA27C]" />,
+      bg: 'bg-[#EAA27C]/15 border-[#EAA27C]/30',
       title: 'Enkripsi Data & Auto-Backup',
       description: 'Data terenkripsi dengan AES-256-GCM. Fitur pencadangan otomatis ke Cloud Bot Telegram.',
     },
     {
-      icon: <FileSpreadsheet className="w-6 h-6 text-amber-600 dark:text-amber-400" />,
-      bg: 'bg-amber-500/15 border-amber-500/30',
+      icon: <FileSpreadsheet className="w-6 h-6 text-[#E8BBA6]" />,
+      bg: 'bg-[#E8BBA6]/15 border-[#E8BBA6]/30',
       title: 'Laporan Rekapitulasi Excel',
       description: 'Cetak dan unduh laporan capaian hafalan santri dalam format berkas Microsoft Excel (.XLSX).',
     },
     {
-      icon: <Building className="w-6 h-6 text-sky-600 dark:text-sky-400" />,
-      bg: 'bg-sky-500/15 border-sky-500/30',
+      icon: <Building className="w-6 h-6 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bg: 'bg-[#0E8991]/15 border-[#0E8991]/30',
       title: 'Manajemen Kelas & Santri',
       description: 'Kelompokkan santri berdasarkan kelas dan kriteria jenjang hafalan dengan antarmuka yang cepat.',
     },
     {
-      icon: <Users className="w-6 h-6 text-rose-600 dark:text-rose-400" />,
-      bg: 'bg-rose-500/15 border-rose-500/30',
+      icon: <Users className="w-6 h-6 text-[#EAA27C]" />,
+      bg: 'bg-[#EAA27C]/15 border-[#EAA27C]/30',
       title: 'Dukungan Multi-Role Akses',
       description: 'Hak akses bertingkat untuk Superadmin, Admin Lembaga, serta Ustadz Pengampu.',
     },
@@ -77,7 +77,7 @@ export function Features() {
     <section id="fitur" ref={containerRef} className="py-32 relative perspective-1000 overflow-hidden bg-background">
       
       {/* Background Parallax Element */}
-      <motion.div style={{ y: yBg }} className="absolute -left-[20%] top-0 w-[60%] h-[100%] bg-emerald-500/5 blur-[120px] rounded-full -z-10" />
+      <motion.div style={{ y: yBg }} className="absolute -left-[20%] top-0 w-[60%] h-[100%] bg-[#0E8991]/5 blur-[120px] rounded-full -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-20 relative z-10">
         {/* Section Header */}
@@ -88,7 +88,7 @@ export function Features() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center space-y-4 max-w-2xl mx-auto"
         >
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20 tracking-wide uppercase">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0E8991]/10 text-[#0E8991] dark:text-[#1bb2bd] text-xs font-bold border border-[#0E8991]/20 tracking-wide uppercase">
             Fungsi & Fitur Utama
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-outfit text-foreground tracking-tight">
@@ -118,7 +118,7 @@ export function Features() {
                 boxShadow: "0 25px 50px rgba(0,0,0,0.25)"
               }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="p-8 rounded-3xl border border-border dark:border-emerald-500/20 bg-card dark:bg-[#0c2017] text-card-foreground shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] transform-style-3d group relative overflow-hidden transition-all duration-300"
+              className="p-8 rounded-3xl border border-border dark:border-[#0E8991]/20 bg-card dark:bg-[#0C313A] text-card-foreground shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] transform-style-3d group relative overflow-hidden transition-all duration-300"
             >
               <div className={`p-4 rounded-2xl border ${item.bg} w-fit mb-6 shadow-inner transition-transform duration-500 ease-out group-hover:scale-110`}>
                 {item.icon}

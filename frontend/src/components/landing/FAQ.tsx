@@ -46,8 +46,8 @@ export function FAQ() {
           transition={{ duration: 0.8 }}
           className="text-center space-y-4"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-semibold border border-emerald-500/20">
-            <MessageCircleQuestion className="w-4 h-4" /> Bantuan & FAQ
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0E8991]/10 text-[#0E8991] dark:text-[#1bb2bd] text-xs font-semibold border border-[#0E8991]/20">
+            <MessageCircleQuestion className="w-4 h-4 text-[#EAA27C]" /> Bantuan & FAQ
           </div>
           <h2 className="text-4xl md:text-5xl font-bold font-outfit text-foreground tracking-tight">
             Pertanyaan yang Sering Diajukan
@@ -68,8 +68,8 @@ export function FAQ() {
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                 className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
                   isOpen 
-                    ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_10px_30px_rgba(16,185,129,0.15)]' 
-                    : 'border-border bg-card dark:bg-[#0c2017] hover:border-emerald-500/30'
+                    ? 'border-[#0E8991]/40 bg-[#0E8991]/10 shadow-[0_10px_30px_rgba(14,137,145,0.15)]' 
+                    : 'border-border bg-card dark:bg-[#0C313A] hover:border-[#0E8991]/30'
                 }`}
               >
                 <button
@@ -80,7 +80,7 @@ export function FAQ() {
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isOpen ? 'bg-emerald-500 text-white' : 'bg-muted text-muted-foreground'}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isOpen ? 'bg-[#0E8991] text-white' : 'bg-muted text-muted-foreground'}`}
                   >
                     <ChevronDown className="w-5 h-5" />
                   </motion.div>

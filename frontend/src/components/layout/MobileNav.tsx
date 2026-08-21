@@ -64,12 +64,12 @@ export function MobileNav() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="fixed inset-y-0 left-0 w-[300px] max-w-[85vw] h-[100dvh] bg-[#091c15] dark:bg-[#06140e] text-white border-r border-emerald-500/20 shadow-[20px_0_60px_rgba(0,0,0,0.8)] z-[1000] flex flex-col p-5 overflow-hidden"
+            className="fixed inset-y-0 left-0 w-[300px] max-w-[85vw] h-[100dvh] bg-[#0C313A] dark:bg-[#071a1f] text-white border-r border-[#0E8991]/20 shadow-[20px_0_60px_rgba(0,0,0,0.8)] z-[1000] flex flex-col p-5 overflow-hidden"
           >
             {/* Drawer Header with Logo & Close Button */}
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-white p-1.5 border border-emerald-400/40 flex items-center justify-center shrink-0 shadow-md">
+                <div className="w-10 h-10 rounded-2xl bg-white p-1.5 border border-[#0E8991]/40 flex items-center justify-center shrink-0 shadow-md">
                   <Image 
                     src="/logo.png" 
                     alt="HafalanKu Logo" 
@@ -80,7 +80,7 @@ export function MobileNav() {
                 </div>
                 <Link href="/dashboard" onClick={() => setIsOpen(false)}>
                   <span className="text-xl font-extrabold font-outfit text-white tracking-tight">
-                    Hafalan<span className="text-emerald-400">Ku</span>
+                    Hafalan<span className="text-[#1bb2bd]">Ku</span>
                   </span>
                 </Link>
               </div>
@@ -96,13 +96,13 @@ export function MobileNav() {
 
             {/* User Quick Profile Badge */}
             {user && (
-              <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-emerald-500/20 flex items-center gap-3 shrink-0">
-                <div className="w-9 h-9 rounded-xl bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-bold text-xs uppercase">
+              <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-[#0E8991]/20 flex items-center gap-3 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[#0E8991]/30 border border-[#0E8991]/40 text-[#8DB6BC] flex items-center justify-center font-bold text-xs uppercase">
                   {user.name?.charAt(0) || 'U'}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-white truncate">{user.name}</p>
-                  <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">{user.role}</p>
+                  <p className="text-[10px] text-[#1bb2bd] font-semibold uppercase tracking-wider">{user.role}</p>
                 </div>
               </div>
             )}

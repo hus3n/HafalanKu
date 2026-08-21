@@ -44,12 +44,12 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const badgeStyles = [
-  "bg-emerald-600 shadow-emerald-600/30",
-  "bg-teal-600 shadow-teal-600/30",
-  "bg-indigo-600 shadow-indigo-600/30",
-  "bg-amber-600 shadow-amber-600/30",
-  "bg-rose-600 shadow-rose-600/30",
-  "bg-cyan-600 shadow-cyan-600/30",
+  "bg-[#0E8991] shadow-[#0E8991]/30",
+  "bg-[#EAA27C] shadow-[#EAA27C]/30",
+  "bg-[#8DB6BC] shadow-[#8DB6BC]/30",
+  "bg-[#E8BBA6] shadow-[#E8BBA6]/30",
+  "bg-[#0C313A] shadow-[#0C313A]/40",
+  "bg-[#12a4ae] shadow-[#12a4ae]/30",
 ];
 
 export function StatCard({ stat, index }: StatCardProps) {
@@ -80,18 +80,18 @@ export function StatCard({ stat, index }: StatCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05, ease: [0.23, 1, 0.32, 1] }}
       whileHover={{ y: -3, transition: { duration: 0.15 } }}
-      className="bg-card p-6 rounded-3xl border border-border/80 shadow-md hover:shadow-xl transition-all flex items-center justify-between group relative overflow-hidden"
+      className="bg-card dark:bg-[#0C313A] p-5 sm:p-6 rounded-3xl border border-border dark:border-[#0E8991]/20 shadow-md hover:shadow-xl transition-all flex items-center justify-between group relative overflow-hidden"
     >
-      <div className="space-y-1.5 z-10">
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+      <div className="space-y-1 z-10">
+        <p className="text-[11px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">
           {stat.label}
         </p>
-        <div className="text-3xl font-extrabold font-outfit text-foreground tracking-tight">
+        <div className="text-2xl sm:text-3xl font-extrabold font-outfit text-foreground tracking-tight">
           {displayValue}
         </div>
       </div>
 
-      <div className={`w-12 h-12 rounded-2xl ${badgeColor} flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200 z-10 shrink-0 border border-white/10`}>
+      <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl ${badgeColor} flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-200 z-10 shrink-0 border border-white/10`}>
         {iconMap[stat.icon] || <BookOpen className="w-5 h-5 text-white" />}
       </div>
     </motion.div>

@@ -28,51 +28,51 @@ export function QuickActionGrid() {
       title: 'Pencatatan Hafalan',
       desc: 'Input setoran baru',
       href: '/hafalan',
-      icon: <BookOpen className="w-5 h-5 text-amber-500 dark:text-amber-400" />,
-      bgIcon: 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/20 text-amber-500',
+      icon: <BookOpen className="w-5 h-5 text-[#EAA27C]" />,
+      bgIcon: 'bg-[#EAA27C]/15 border-[#EAA27C]/30 text-[#EAA27C]',
       badge: 'Utama',
-      badgeColor: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
-      accentGlow: 'hover:border-amber-500/40 hover:shadow-amber-500/10',
+      badgeColor: 'bg-[#EAA27C]/20 text-[#EAA27C] border-[#EAA27C]/40',
+      accentGlow: 'hover:border-[#EAA27C]/50 hover:shadow-[#EAA27C]/10',
     },
     {
       title: 'Pairing WhatsApp',
       desc: 'Scan QR Gateway',
       href: '/settings/whatsapp',
-      icon: <QrCode className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />,
-      bgIcon: 'bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/20 text-emerald-500',
+      icon: <QrCode className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Auto WA',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-      accentGlow: 'hover:border-emerald-500/40 hover:shadow-emerald-500/10',
+      badgeColor: 'bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
       title: 'Manajemen Santri',
       desc: 'Data & wali murid',
       href: '/santri',
-      icon: <Users className="w-5 h-5 text-sky-500 dark:text-sky-400" />,
-      bgIcon: 'bg-sky-500/10 dark:bg-sky-500/15 border-sky-500/20 text-sky-500',
+      icon: <Users className="w-5 h-5 text-[#8DB6BC]" />,
+      bgIcon: 'bg-[#8DB6BC]/15 border-[#8DB6BC]/30 text-[#8DB6BC]',
       badge: 'Santri',
-      badgeColor: 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30',
-      accentGlow: 'hover:border-sky-500/40 hover:shadow-sky-500/10',
+      badgeColor: 'bg-[#8DB6BC]/20 text-[#8DB6BC] border-[#8DB6BC]/40',
+      accentGlow: 'hover:border-[#8DB6BC]/50 hover:shadow-[#8DB6BC]/10',
     },
     {
       title: 'Manajemen Kelas',
       desc: 'Rombel & halaqah',
       href: '/kelas',
-      icon: <Building className="w-5 h-5 text-purple-500 dark:text-purple-400" />,
-      bgIcon: 'bg-purple-500/10 dark:bg-purple-500/15 border-purple-500/20 text-purple-500',
+      icon: <Building className="w-5 h-5 text-[#E8BBA6]" />,
+      bgIcon: 'bg-[#E8BBA6]/15 border-[#E8BBA6]/30 text-[#E8BBA6]',
       badge: 'Kelas',
-      badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
-      accentGlow: 'hover:border-purple-500/40 hover:shadow-purple-500/10',
+      badgeColor: 'bg-[#E8BBA6]/20 text-[#E8BBA6] border-[#E8BBA6]/40',
+      accentGlow: 'hover:border-[#E8BBA6]/50 hover:shadow-[#E8BBA6]/10',
     },
     {
       title: 'Jadwal Murajaah',
       desc: 'Kalkulasi cerdas',
       href: '/murajaah',
-      icon: <History className="w-5 h-5 text-teal-500 dark:text-teal-400" />,
-      bgIcon: 'bg-teal-500/10 dark:bg-teal-500/15 border-teal-500/20 text-teal-500',
+      icon: <History className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Harian',
-      badgeColor: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
-      accentGlow: 'hover:border-teal-500/40 hover:shadow-teal-500/10',
+      badgeColor: 'bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
   ];
 
@@ -81,51 +81,51 @@ export function QuickActionGrid() {
       title: 'Manajemen Santri',
       desc: 'Data & nomor wali',
       href: '/santri',
-      icon: <Users className="w-5 h-5 text-sky-500 dark:text-sky-400" />,
-      bgIcon: 'bg-sky-500/10 dark:bg-sky-500/15 border-sky-500/20 text-sky-500',
+      icon: <Users className="w-5 h-5 text-[#8DB6BC]" />,
+      bgIcon: 'bg-[#8DB6BC]/15 border-[#8DB6BC]/30 text-[#8DB6BC]',
       badge: 'Santri',
-      badgeColor: 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30',
-      accentGlow: 'hover:border-sky-500/40 hover:shadow-sky-500/10',
+      badgeColor: 'bg-[#8DB6BC]/20 text-[#8DB6BC] border-[#8DB6BC]/40',
+      accentGlow: 'hover:border-[#8DB6BC]/50 hover:shadow-[#8DB6BC]/10',
     },
     {
       title: 'Manajemen Kelas',
       desc: 'Rombel & halaqah',
       href: '/kelas',
-      icon: <Building className="w-5 h-5 text-purple-500 dark:text-purple-400" />,
-      bgIcon: 'bg-purple-500/10 dark:bg-purple-500/15 border-purple-500/20 text-purple-500',
+      icon: <Building className="w-5 h-5 text-[#E8BBA6]" />,
+      bgIcon: 'bg-[#E8BBA6]/15 border-[#E8BBA6]/30 text-[#E8BBA6]',
       badge: 'Kelas',
-      badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
-      accentGlow: 'hover:border-purple-500/40 hover:shadow-purple-500/10',
+      badgeColor: 'bg-[#E8BBA6]/20 text-[#E8BBA6] border-[#E8BBA6]/40',
+      accentGlow: 'hover:border-[#E8BBA6]/50 hover:shadow-[#E8BBA6]/10',
     },
     {
       title: 'Pairing WhatsApp',
       desc: 'Scan QR Gateway',
       href: '/settings/whatsapp',
-      icon: <QrCode className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />,
-      bgIcon: 'bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/20 text-emerald-500',
+      icon: <QrCode className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Auto WA',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-      accentGlow: 'hover:border-emerald-500/40 hover:shadow-emerald-500/10',
+      badgeColor: 'bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
       title: 'Pencatatan Hafalan',
       desc: 'Rekapitulasi setoran',
       href: '/hafalan',
-      icon: <BookOpen className="w-5 h-5 text-amber-500 dark:text-amber-400" />,
-      bgIcon: 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/20 text-amber-500',
+      icon: <BookOpen className="w-5 h-5 text-[#EAA27C]" />,
+      bgIcon: 'bg-[#EAA27C]/15 border-[#EAA27C]/30 text-[#EAA27C]',
       badge: 'Setoran',
-      badgeColor: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
-      accentGlow: 'hover:border-amber-500/40 hover:shadow-amber-500/10',
+      badgeColor: 'bg-[#EAA27C]/20 text-[#EAA27C] border-[#EAA27C]/40',
+      accentGlow: 'hover:border-[#EAA27C]/50 hover:shadow-[#EAA27C]/10',
     },
     {
       title: 'Jadwal Murajaah',
       desc: 'Target pengulangan',
       href: '/murajaah',
-      icon: <History className="w-5 h-5 text-teal-500 dark:text-teal-400" />,
-      bgIcon: 'bg-teal-500/10 dark:bg-teal-500/15 border-teal-500/20 text-teal-500',
+      icon: <History className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Murajaah',
-      badgeColor: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
-      accentGlow: 'hover:border-teal-500/40 hover:shadow-teal-500/10',
+      badgeColor: 'bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
   ];
 
@@ -144,11 +144,11 @@ export function QuickActionGrid() {
       title: 'Pairing WhatsApp',
       desc: 'Status Gateway Pusat',
       href: '/settings/whatsapp',
-      icon: <QrCode className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />,
-      bgIcon: 'bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/20 text-emerald-500',
+      icon: <QrCode className="w-5 h-5 text-[#0E8991] dark:text-[#1bb2bd]" />,
+      bgIcon: 'bg-[#0E8991]/15 border-[#0E8991]/30 text-[#0E8991] dark:text-[#1bb2bd]',
       badge: 'Gateway',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-      accentGlow: 'hover:border-emerald-500/40 hover:shadow-emerald-500/10',
+      badgeColor: 'bg-[#0E8991]/20 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/40',
+      accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
       title: 'Backup & Restore',
@@ -174,11 +174,11 @@ export function QuickActionGrid() {
       title: 'Data Santri Global',
       desc: 'Seluruh Lembaga',
       href: '/santri',
-      icon: <Users className="w-5 h-5 text-teal-500 dark:text-teal-400" />,
-      bgIcon: 'bg-teal-500/10 dark:bg-teal-500/15 border-teal-500/20 text-teal-500',
+      icon: <Users className="w-5 h-5 text-[#8DB6BC]" />,
+      bgIcon: 'bg-[#8DB6BC]/15 border-[#8DB6BC]/30 text-[#8DB6BC]',
       badge: 'Database',
-      badgeColor: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
-      accentGlow: 'hover:border-teal-500/40 hover:shadow-teal-500/10',
+      badgeColor: 'bg-[#8DB6BC]/20 text-[#8DB6BC] border-[#8DB6BC]/40',
+      accentGlow: 'hover:border-[#8DB6BC]/50 hover:shadow-[#8DB6BC]/10',
     },
   ];
 
@@ -189,7 +189,7 @@ export function QuickActionGrid() {
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-sm sm:text-base font-bold font-outfit text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-emerald-500" />
+          <Sparkles className="w-4 h-4 text-[#0E8991] dark:text-[#1bb2bd]" />
           <span>Menu & Akses Cepat</span>
         </h2>
         <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">
@@ -206,7 +206,7 @@ export function QuickActionGrid() {
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               className={cn(
-                "p-3 sm:p-4 rounded-2xl bg-card dark:bg-[#0c2017] border border-border dark:border-emerald-500/20 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full relative overflow-hidden",
+                "p-3 sm:p-4 rounded-2xl bg-card dark:bg-[#0C313A] border border-border dark:border-[#0E8991]/20 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full relative overflow-hidden",
                 item.accentGlow
               )}
             >
@@ -220,7 +220,7 @@ export function QuickActionGrid() {
                   <span className={cn("hidden xs:inline-block px-2 py-0.5 rounded-md text-[10px] font-bold border", item.badgeColor)}>
                     {item.badge}
                   </span>
-                  <div className="w-6 h-6 rounded-lg bg-muted/60 dark:bg-white/5 flex items-center justify-center text-muted-foreground group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-muted/60 dark:bg-white/5 flex items-center justify-center text-muted-foreground group-hover:text-[#0E8991] dark:group-hover:text-[#1bb2bd] transition-colors">
                     <ArrowUpRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </div>
                 </div>
@@ -228,7 +228,7 @@ export function QuickActionGrid() {
 
               {/* Bottom: Title & Subtitle */}
               <div className="space-y-0.5">
-                <h3 className="text-xs sm:text-sm font-bold font-outfit text-foreground leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                <h3 className="text-xs sm:text-sm font-bold font-outfit text-foreground leading-tight group-hover:text-[#0E8991] dark:group-hover:text-[#1bb2bd] transition-colors truncate">
                   {item.title}
                 </h3>
                 <p className="text-[10px] sm:text-[11px] text-muted-foreground font-normal leading-tight truncate">
@@ -237,7 +237,7 @@ export function QuickActionGrid() {
               </div>
 
               {/* Subtle Bottom Glow on Hover */}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#0E8991]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </motion.div>
           </Link>
         ))}

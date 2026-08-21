@@ -22,7 +22,7 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
         width: isCollapsed ? 80 : 280,
       }}
       transition={{ type: 'spring', stiffness: 350, damping: 32 }}
-      className="hidden md:flex flex-col h-screen fixed left-0 top-0 border-r border-emerald-500/15 bg-[#091c15] dark:bg-[#06140e] text-white z-40 overflow-hidden shadow-2xl"
+      className="hidden md:flex flex-col h-screen fixed left-0 top-0 border-r border-[#0E8991]/20 bg-[#0C313A] dark:bg-[#071a1f] text-white z-40 overflow-hidden shadow-2xl"
     >
       <div className={`h-full flex flex-col relative transition-all ${isCollapsed ? 'p-3' : 'p-4'}`}>
         {/* Sidebar Brand Header */}
@@ -30,7 +30,7 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
           isCollapsed ? 'justify-center px-0' : 'justify-between px-2'
         }`}>
           <Link href="/dashboard" className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 overflow-hidden'}`}>
-            <div className="w-10 h-10 rounded-2xl bg-white p-1.5 border border-emerald-400/40 flex items-center justify-center shrink-0 shadow-md">
+            <div className="w-10 h-10 rounded-2xl bg-white p-1.5 border border-[#0E8991]/40 flex items-center justify-center shrink-0 shadow-md">
               <Image src="/logo.png" alt="HafalanKu Logo" width={28} height={28} className="w-full h-full object-contain drop-shadow-sm" />
             </div>
             {!isCollapsed && (
@@ -39,7 +39,7 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
                 animate={{ opacity: 1 }}
                 className="text-xl font-extrabold font-outfit text-white tracking-tight whitespace-nowrap"
               >
-                Hafalan<span className="text-emerald-400">Ku</span>
+                Hafalan<span className="text-[#1bb2bd]">Ku</span>
               </motion.span>
             )}
           </Link>
@@ -65,10 +65,10 @@ export function Sidebar({ isOpen = true }: SidebarProps) {
           {isCollapsed ? (
             <button
               onClick={toggleCollapsed}
-              className="w-10 h-10 mx-auto rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-white flex items-center justify-center transition-all border border-emerald-500/30 cursor-pointer"
+              className="w-10 h-10 mx-auto rounded-xl bg-[#0E8991]/30 hover:bg-[#0E8991]/50 text-white flex items-center justify-center transition-all border border-[#0E8991]/40 cursor-pointer"
               title="Memperbesar Sidebar"
             >
-              <ChevronRight className="w-5 h-5 text-emerald-400" />
+              <ChevronRight className="w-5 h-5 text-[#1bb2bd]" />
             </button>
           ) : (
             <div className="flex items-center justify-between px-2">

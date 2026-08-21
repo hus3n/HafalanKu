@@ -147,7 +147,7 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
             >
               <span className={cn(
                 "transition-all duration-200 shrink-0", 
-                isActive ? "scale-110 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "text-white/70 group-hover:text-white"
+                isActive ? "scale-110 text-[#1bb2bd] drop-shadow-[0_0_8px_rgba(27,178,189,0.5)]" : "text-white/70 group-hover:text-white"
               )}>
                 {item.icon}
               </span>
@@ -157,12 +157,12 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
               )}
             </motion.div>
             
-            {/* Active Pill Spring Indicator with Emerald Glow Aura */}
+            {/* Active Pill Spring Indicator with Ocean Teal Glow Aura */}
             {isActive && (
               <motion.div
                 layoutId={isMobile ? "active-nav-bg-mobile" : "active-nav-bg-desktop"}
                 className={cn(
-                  "absolute bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 rounded-2xl z-0 shadow-lg shadow-emerald-600/30 border border-emerald-400/40",
+                  "absolute bg-gradient-to-r from-[#0E8991] via-[#0E8991] to-[#12a4ae] rounded-2xl z-0 shadow-lg shadow-[#0E8991]/30 border border-[#1bb2bd]/40",
                   isCollapsed ? "inset-y-0 left-2 right-2" : "inset-0"
                 )}
                 initial={false}
