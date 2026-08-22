@@ -5,6 +5,8 @@ import { generateAccessToken, generateRefreshToken, verifyToken } from '../../ut
 import { AuditTrail } from '../audit/audit.model';
 import { ChangePasswordInput, LoginInput, RegisterInput } from './auth.schema';
 import { Role } from '@prisma/client';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
+import { getTelegramBot, getTelegramChatId } from '../../config/telegram';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -106,6 +108,18 @@ export class AuthService {
     });
 
     const { passwordHash: _, ...userWithoutPassword } = user;
+
+    // Kirim notifikasi WhatsApp & Telegram otomatis ke Superadmin secara asinkron
+    this.notifySuperadminNewRegistration({
+      name: user.name,
+      email: user.email,
+      phone: input.phone || '-',
+      role: user.role,
+      organizationName: input.organizationName || 'Perorangan',
+      createdAt: user.createdAt,
+    }).catch((err) => {
+      console.error('[AuthService] Error notifying superadmin of new registration:', err);
+    });
 
     // Do not return tokens; user needs to be activated by superadmin first
     return {
@@ -330,6 +344,72 @@ export class AuthService {
 
     const { passwordHash: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
+  }
+
+  /**
+   * Mengirimkan notifikasi pendaftaran pengguna baru ke WhatsApp dan Telegram Superadmin
+   */
+  private async notifySuperadminNewRegistration(data: {
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+    organizationName?: string;
+    createdAt: Date;
+  }) {
+    const timeStr = new Date(data.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    const superAdminPhone = process.env.SUPERADMIN_PHONE || '085229925593';
+
+    // Format pesan WhatsApp
+    const waMessage =
+      `🔔 *Pemberitahuan Pendaftaran Pengguna Baru - HafalanKu*\n\n` +
+      `Assalamu'alaikum Superadmin,\n` +
+      `Ada pengguna baru yang baru saja mendaftar dan menunggu persetujuan / aktivasi akun:\n\n` +
+      `👤 *Nama:* ${data.name}\n` +
+      `📧 *Email:* ${data.email}\n` +
+      `📱 *No. HP/WA:* ${data.phone}\n` +
+      `🏷️ *Role:* ${data.role}\n` +
+      `🏢 *Lembaga/TPQ:* ${data.organizationName || 'Perorangan'}\n` +
+      `🕒 *Waktu Daftar:* ${timeStr} WIB\n\n` +
+      `Silakan login ke *Dashboard Superadmin* (Menu Pengguna Platform) untuk mengaktifkan akun pengguna tersebut.\n\n` +
+      `- *Sistem Otomatis HafalanKu*`;
+
+    // 1. Kirim via WhatsApp Gateway
+    try {
+      const superAdminUser = await prisma.user.findFirst({
+        where: { role: 'SUPERADMIN' },
+      });
+      const senderId = superAdminUser?.id || 'SYSTEM';
+
+      const whatsappService = new WhatsAppService();
+      await whatsappService.sendMessage(senderId, superAdminPhone, waMessage);
+      console.log(`[AuthService] WhatsApp notification sent to Superadmin (${superAdminPhone}) for new user ${data.email}`);
+    } catch (waErr: any) {
+      console.warn('[AuthService] WhatsApp notification to Superadmin skipped/failed:', waErr?.message || waErr);
+    }
+
+    // 2. Kirim via Telegram Bot (jika sudah dikonfigurasi)
+    try {
+      const bot = getTelegramBot();
+      const chatId = getTelegramChatId();
+      if (bot && chatId) {
+        const tgMessage =
+          `🔔 *Pemberitahuan Pendaftaran Pengguna Baru - HafalanKu*\n\n` +
+          `Pengguna baru baru saja mendaftar dan menunggu aktivasi:\n\n` +
+          `👤 *Nama:* \`${data.name}\`\n` +
+          `📧 *Email:* \`${data.email}\`\n` +
+          `📱 *No. HP:* \`${data.phone}\`\n` +
+          `🏷️ *Role:* *${data.role}*\n` +
+          `🏢 *Lembaga:* ${data.organizationName || 'Perorangan'}\n` +
+          `🕒 *Waktu:* ${timeStr} WIB\n\n` +
+          `_Buka menu Superadmin untuk mengaktifkan akun ini._`;
+
+        await bot.sendMessage(chatId, tgMessage, { parse_mode: 'Markdown' });
+        console.log(`[AuthService] Telegram notification sent to Superadmin for new user ${data.email}`);
+      }
+    } catch (tgErr: any) {
+      console.warn('[AuthService] Telegram notification to Superadmin skipped/failed:', tgErr?.message || tgErr);
+    }
   }
 }
 

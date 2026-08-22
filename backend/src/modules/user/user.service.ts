@@ -229,6 +229,11 @@ export class UserService {
       }
     }
 
+    let targetOrgId: string | null | undefined = undefined;
+    if (currentUser.role === 'SUPERADMIN' && input.organizationId !== undefined) {
+      targetOrgId = input.organizationId ? input.organizationId : null;
+    }
+
     if (input.organizationName) {
       const orgName = input.organizationName.trim();
       if (orgName) {
@@ -237,28 +242,42 @@ export class UserService {
             where: { id: currentUser.orgId },
             data: { name: orgName },
           });
-        } else if (currentUser.role === 'SUPERADMIN' && !input.organizationId) {
-          let existingOrg = await prisma.organization.findFirst({ where: { name: orgName } });
-          if (existingOrg) {
-            input.organizationId = existingOrg.id;
-          } else {
-            const isAlreadyAdmin = await prisma.organization.findUnique({ where: { adminId: id } });
-            if (isAlreadyAdmin) {
-              await prisma.organization.update({
-                where: { id: isAlreadyAdmin.id },
-                data: { name: orgName },
-              });
-              input.organizationId = isAlreadyAdmin.id;
+        } else if (currentUser.role === 'SUPERADMIN') {
+          if (!input.organizationId) {
+            let existingOrg = await prisma.organization.findFirst({ where: { name: orgName } });
+            if (existingOrg) {
+              targetOrgId = existingOrg.id;
             } else {
-              const newOrg = await prisma.organization.create({
-                data: { name: orgName, adminId: id }
-              });
-              input.organizationId = newOrg.id;
+              const isAlreadyAdmin = await prisma.organization.findUnique({ where: { adminId: id } });
+              if (isAlreadyAdmin) {
+                await prisma.organization.update({
+                  where: { id: isAlreadyAdmin.id },
+                  data: { name: orgName },
+                });
+                targetOrgId = isAlreadyAdmin.id;
+              } else {
+                const newOrg = await prisma.organization.create({
+                  data: { name: orgName, adminId: id }
+                });
+                targetOrgId = newOrg.id;
+              }
             }
           }
         }
       }
     }
+
+    let targetActiveUntil: Date | null | undefined = undefined;
+    if (currentUser.role === 'SUPERADMIN' && input.activeUntil !== undefined) {
+      if (!input.activeUntil) {
+        targetActiveUntil = null;
+      } else {
+        const parsedDate = new Date(input.activeUntil);
+        targetActiveUntil = isNaN(parsedDate.getTime()) ? null : parsedDate;
+      }
+    }
+
+    const targetIsActive = typeof input.isActive === 'boolean' ? input.isActive : undefined;
 
     const updatedUser = await prisma.user.update({
       where: { id },
@@ -266,10 +285,10 @@ export class UserService {
         ...(input.name && { name: input.name }),
         ...(input.email && { email: input.email }),
         ...(input.role && { role: input.role }),
-        ...(typeof input.isActive === 'boolean' && { isActive: input.isActive }),
+        ...(targetIsActive !== undefined && { isActive: targetIsActive }),
         ...(input.phone !== undefined && { phone: input.phone }),
-        ...(currentUser.role === 'SUPERADMIN' && input.organizationId !== undefined && { organizationId: input.organizationId }),
-        ...(currentUser.role === 'SUPERADMIN' && input.activeUntil !== undefined && { activeUntil: input.activeUntil ? new Date(input.activeUntil) : null }),
+        ...(currentUser.role === 'SUPERADMIN' && targetOrgId !== undefined && { organizationId: targetOrgId }),
+        ...(currentUser.role === 'SUPERADMIN' && targetActiveUntil !== undefined && { activeUntil: targetActiveUntil }),
         ...(currentUser.role === 'SUPERADMIN' && typeof input.isTrial === 'boolean' && { isTrial: input.isTrial }),
       },
       select: {

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { PaginationMeta } from 'shared';
+import toast from 'react-hot-toast';
 
 export interface UserItem {
   id: string;
@@ -109,10 +110,16 @@ export function useCreateUser() {
       }
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-orgs'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      toast.success(`Pengguna "${data.name}" berhasil ditambahkan`);
     },
+    onError: (error: any) => {
+      toast.error(error.message || 'Gagal membuat pengguna baru');
+    }
   });
 }
 
@@ -127,9 +134,25 @@ export function useUpdateUser() {
       }
       return res.data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-orgs'] });
       queryClient.invalidateQueries({ queryKey: ['user', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      
+      if (variables.data.isActive !== undefined) {
+        if (variables.data.isActive) {
+          toast.success(`Akun "${data.name}" berhasil diaktifkan!`);
+        } else {
+          toast.success(`Akun "${data.name}" berhasil dinonaktifkan.`);
+        }
+      } else {
+        toast.success(`Data pengguna "${data.name}" berhasil diperbarui`);
+      }
     },
+    onError: (error: any) => {
+      toast.error(error.message || 'Gagal memperbarui data pengguna');
+    }
   });
 }
