@@ -37,6 +37,10 @@ model User {
   lockedUntil     DateTime? @map("locked_until")
   activeUntil     DateTime? @map("active_until")
   isTrial         Boolean   @default(false) @map("is_trial")
+  isEmailVerified Boolean   @default(true) @map("is_email_verified")
+  emailOtp        String?   @map("email_otp")
+  emailOtpExpires DateTime? @map("email_otp_expires")
+  googleId        String?   @unique @map("google_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 

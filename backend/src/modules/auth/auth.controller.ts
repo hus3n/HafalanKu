@@ -1,6 +1,14 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { successResponse } from '../../utils/response';
-import { changePasswordSchema, loginSchema, refreshTokenSchema, registerSchema } from './auth.schema';
+import { 
+  changePasswordSchema, 
+  googleAuthSchema, 
+  loginSchema, 
+  refreshTokenSchema, 
+  registerSchema, 
+  resendOtpSchema, 
+  verifyEmailSchema 
+} from './auth.schema';
 import { authService } from './auth.service';
 
 export class AuthController {
@@ -10,7 +18,31 @@ export class AuthController {
     const userAgent = request.headers['user-agent'];
 
     const result = await authService.register(validatedData, ipAddress, userAgent);
-    return reply.status(201).send(successResponse('Registrasi berhasil', result));
+    return reply.status(201).send(successResponse(result.message, result));
+  }
+
+  async verifyEmail(request: FastifyRequest, reply: FastifyReply) {
+    const { email, otp } = verifyEmailSchema.parse(request.body);
+    const ipAddress = request.ip;
+    const userAgent = request.headers['user-agent'];
+
+    const result = await authService.verifyEmail(email, otp, ipAddress, userAgent);
+    return reply.send(successResponse(result.message, result));
+  }
+
+  async resendOtp(request: FastifyRequest, reply: FastifyReply) {
+    const { email } = resendOtpSchema.parse(request.body);
+    const result = await authService.resendOtp(email);
+    return reply.send(successResponse(result.message, result));
+  }
+
+  async googleAuth(request: FastifyRequest, reply: FastifyReply) {
+    const validatedData = googleAuthSchema.parse(request.body);
+    const ipAddress = request.ip;
+    const userAgent = request.headers['user-agent'];
+
+    const result = await authService.googleAuth(validatedData, ipAddress, userAgent);
+    return reply.send(successResponse('Login Google berhasil', result));
   }
 
   async login(request: FastifyRequest, reply: FastifyReply) {

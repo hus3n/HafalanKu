@@ -3,6 +3,9 @@ import { authController } from './auth.controller';
 
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/register', authController.register);
+  fastify.post('/verify-email', authController.verifyEmail);
+  fastify.post('/resend-otp', authController.resendOtp);
+  fastify.post('/google', authController.googleAuth);
   fastify.post('/login', authController.login);
   fastify.post('/refresh', authController.refresh);
 
