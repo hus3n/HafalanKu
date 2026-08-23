@@ -29,12 +29,16 @@ export const bulkImportRowSchema = z.object({
   capaianHafalan: z.string().optional().nullable(),
 });
 
+export const bulkImportModeSchema = z.enum(['MERGE', 'REPLACE']);
+
 export const executeBulkImportSchema = z.object({
   rows: z.array(bulkImportRowSchema).min(1, 'Data import tidak boleh kosong'),
+  mode: bulkImportModeSchema.default('MERGE').optional(),
 });
 
 export type CreateSantriInput = z.infer<typeof createSantriSchema>;
 export type UpdateSantriInput = z.infer<typeof updateSantriSchema>;
 export type CreateKelasInput = z.infer<typeof createKelasSchema>;
 export type BulkImportRow = z.infer<typeof bulkImportRowSchema>;
+export type BulkImportMode = z.infer<typeof bulkImportModeSchema>;
 export type ExecuteBulkImportInput = z.infer<typeof executeBulkImportSchema>;

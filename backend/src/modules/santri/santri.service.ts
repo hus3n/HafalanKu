@@ -4,6 +4,7 @@ import {
   CreateSantriInput, 
   UpdateSantriInput, 
   BulkImportRow, 
+  BulkImportMode,
   surahList, 
   parseHafalanNotation, 
   compressHafalanNotation 
@@ -340,6 +341,20 @@ export class SantriService {
       throw new AppError('File Excel tidak memiliki lembar kerja (worksheet) yang valid.', 400);
     }
 
+    const accessWhere = this.buildAccessWhere(user);
+
+    // Ambil daftar santri aktif yang sudah ada untuk mendeteksi duplikat/match
+    const existingActiveSantri = await prisma.santri.findMany({
+      where: {
+        ...accessWhere,
+        deletedAt: null,
+      },
+      select: { id: true, name: true }
+    });
+    const existingSantriNameSet = new Set(
+      existingActiveSantri.map(s => s.name.trim().toLowerCase())
+    );
+
     const rows: Array<{
       rowNumber: number;
       namaSantri: string;
@@ -349,6 +364,7 @@ export class SantriService {
       capaianHafalan: string;
       parsedHafalanCount: number;
       parsedSurahsSummary: string;
+      isExistingSantri: boolean;
       isValid: boolean;
       errorMessage?: string;
     }> = [];
@@ -396,6 +412,8 @@ export class SantriService {
         errorMessages.push('No HP/WA wali tidak valid');
       }
 
+      const isExisting = Boolean(namaSantri && existingSantriNameSet.has(namaSantri.toLowerCase()));
+
       if (namaSantri) distinctSantriNames.add(namaSantri.toLowerCase());
       if (namaKelas) distinctKelasNames.add(namaKelas.toLowerCase());
 
@@ -412,6 +430,7 @@ export class SantriService {
         capaianHafalan,
         parsedHafalanCount: parsedHafalan.length,
         parsedSurahsSummary: summaryText,
+        isExistingSantri: isExisting,
         isValid,
         errorMessage: errorMessages.length > 0 ? errorMessages.join(', ') : undefined,
       });
@@ -421,19 +440,35 @@ export class SantriService {
       throw new AppError('File Excel tidak memiliki data baris santri.', 400);
     }
 
+    // Hitung match vs new santri
+    let existingMatchCount = 0;
+    let newSantriCount = 0;
+    for (const sName of distinctSantriNames) {
+      if (existingSantriNameSet.has(sName)) {
+        existingMatchCount++;
+      } else {
+        newSantriCount++;
+      }
+    }
+
     // Cek kuota santri perorangan
-    let currentSantriCount = 0;
+    const currentSantriCount = existingActiveSantri.length;
     let remainingQuota = 9999;
-    let isQuotaExceeded = false;
+    let isQuotaExceededMerge = false;
+    let isQuotaExceededReplace = false;
 
     if (user.role === 'USER' && !user.orgId) {
       const MAX_SANTRI_PERORANGAN = 20;
-      currentSantriCount = await prisma.santri.count({
-        where: { userId: user.userId, deletedAt: null }
-      });
       remainingQuota = Math.max(0, MAX_SANTRI_PERORANGAN - currentSantriCount);
-      if (distinctSantriNames.size > remainingQuota) {
-        isQuotaExceeded = true;
+
+      // Mode Merge: Kuota bertambah sebanyak santri yang benar-benar baru
+      if (currentSantriCount + newSantriCount > MAX_SANTRI_PERORANGAN) {
+        isQuotaExceededMerge = true;
+      }
+
+      // Mode Replace: Data lama di-reset, sehingga kuota dicek terhadap total santri dalam file Excel
+      if (distinctSantriNames.size > MAX_SANTRI_PERORANGAN) {
+        isQuotaExceededReplace = true;
       }
     }
 
@@ -447,7 +482,11 @@ export class SantriService {
         totalHafalanRecords,
         currentSantriCount,
         remainingQuota,
-        isQuotaExceeded,
+        existingMatchCount,
+        newSantriCount,
+        isQuotaExceeded: isQuotaExceededMerge, // fallback
+        isQuotaExceededMerge,
+        isQuotaExceededReplace,
       },
       rows,
     };
@@ -455,39 +494,79 @@ export class SantriService {
 
   /**
    * Eksekusi penyimpanan data impor massal ke Prisma DB
+   * Mendukung mode 'MERGE' (pertahankan & gabungkan) atau 'REPLACE' (ganti semua data lama)
    */
   async executeBulkImport(
     user: { userId: string; role: string; orgId?: string | null },
-    rows: BulkImportRow[]
+    rows: BulkImportRow[],
+    mode: BulkImportMode = 'MERGE'
   ) {
     if (!rows || rows.length === 0) {
       throw new AppError('Data impor tidak boleh kosong.', 400);
     }
 
+    const accessWhere = this.buildAccessWhere(user);
+    const distinctRowSantriNames = Array.from(new Set(rows.map(r => r.namaSantri.trim().toLowerCase())));
+
     // 1. Cek Kuota
     if (user.role === 'USER' && !user.orgId) {
       const MAX_SANTRI_PERORANGAN = 20;
-      const currentCount = await prisma.santri.count({
-        where: { userId: user.userId, deletedAt: null }
+      const currentActiveCount = await prisma.santri.count({
+        where: { ...accessWhere, deletedAt: null }
       });
-      const newSantriNames = new Set(rows.map(r => r.namaSantri.trim().toLowerCase()));
-      if (currentCount + newSantriNames.size > MAX_SANTRI_PERORANGAN) {
-        throw new AppError(`Impor ${newSantriNames.size} santri melebihi batas kuota (${MAX_SANTRI_PERORANGAN} santri). Sisa kuota: ${Math.max(0, MAX_SANTRI_PERORANGAN - currentCount)}`, 403);
+
+      if (mode === 'REPLACE') {
+        if (distinctRowSantriNames.length > MAX_SANTRI_PERORANGAN) {
+          throw new AppError(`Impor ${distinctRowSantriNames.length} santri melebihi batas kuota (${MAX_SANTRI_PERORANGAN} santri).`, 403);
+        }
+      } else {
+        // Mode MERGE: hitung hanya santri yang benar-benar baru
+        const existingInDb = await prisma.santri.findMany({
+          where: { ...accessWhere, deletedAt: null },
+          select: { name: true }
+        });
+        const existingNames = new Set(existingInDb.map(s => s.name.trim().toLowerCase()));
+        const netNewCount = distinctRowSantriNames.filter(name => !existingNames.has(name)).length;
+
+        if (currentActiveCount + netNewCount > MAX_SANTRI_PERORANGAN) {
+          throw new AppError(
+            `Penambahan ${netNewCount} santri baru akan melebihi batas kuota ${MAX_SANTRI_PERORANGAN} santri (saat ini ${currentActiveCount} santri aktif). Sisa kuota: ${Math.max(0, MAX_SANTRI_PERORANGAN - currentActiveCount)}`,
+            403
+          );
+        }
       }
     }
 
     let createdKelasCount = 0;
     let createdSantriCount = 0;
+    let updatedSantriCount = 0;
+    let replacedSantriCount = 0;
     let createdHafalanCount = 0;
 
     // Eksekusi Transaction
     await prisma.$transaction(async (tx) => {
-      // A. Kumpulkan dan Buat Kelas jika belum ada
+      // A. Jika mode REPLACE: Soft-delete semua santri aktif lama milik user/organisasi
+      if (mode === 'REPLACE') {
+        const activeSantris = await tx.santri.findMany({
+          where: { ...accessWhere, deletedAt: null },
+          select: { id: true }
+        });
+        if (activeSantris.length > 0) {
+          const idsToDeactivate = activeSantris.map(s => s.id);
+          await tx.santri.updateMany({
+            where: { id: { in: idsToDeactivate } },
+            data: { deletedAt: new Date() }
+          });
+          replacedSantriCount = idsToDeactivate.length;
+        }
+      }
+
+      // B. Kumpulkan dan Buat Kelas jika belum ada
       const kelasCache = new Map<string, string>(); // lowercase name -> id
 
       // Cari kelas yang sudah ada
       const existingKelas = await tx.kelas.findMany({
-        where: { userId: user.userId },
+        where: user.role === 'SUPERADMIN' ? {} : (user.orgId ? { user: { organizationId: user.orgId } } : { userId: user.userId }),
         select: { id: true, name: true }
       });
       existingKelas.forEach(k => kelasCache.set(k.name.trim().toLowerCase(), k.id));
@@ -509,15 +588,17 @@ export class SantriService {
         }
       }
 
-      // B. Kumpulkan dan Buat/Update Santri
+      // C. Kumpulkan dan Buat/Update Santri
       const santriCache = new Map<string, string>(); // lowercase name -> id
 
-      // Cari santri yang sudah ada
-      const existingSantri = await tx.santri.findMany({
-        where: { userId: user.userId, deletedAt: null },
-        select: { id: true, name: true }
-      });
-      existingSantri.forEach(s => santriCache.set(s.name.trim().toLowerCase(), s.id));
+      if (mode === 'MERGE') {
+        // Cari santri aktif yang sudah ada
+        const existingSantri = await tx.santri.findMany({
+          where: { ...accessWhere, deletedAt: null },
+          select: { id: true, name: true }
+        });
+        existingSantri.forEach(s => santriCache.set(s.name.trim().toLowerCase(), s.id));
+      }
 
       const hafalanRecordsToCreate: Array<{
         santriId: string;
@@ -545,6 +626,7 @@ export class SantriService {
         cleanPhone = cleanPhone.replace(/[^0-9+]/g, '');
 
         if (!santriId) {
+          // Buat santri baru
           const newSantri = await tx.santri.create({
             data: {
               name: row.namaSantri.trim(),
@@ -557,9 +639,20 @@ export class SantriService {
           santriId = newSantri.id;
           santriCache.set(santriKey, santriId);
           createdSantriCount++;
+        } else if (mode === 'MERGE') {
+          // Santri lama: perbarui data wali & kelas
+          await tx.santri.update({
+            where: { id: santriId },
+            data: {
+              parentName: row.namaWali.trim(),
+              parentPhone: encrypt(cleanPhone),
+              ...(kelasId ? { kelasId } : {}),
+            }
+          });
+          updatedSantriCount++;
         }
 
-        // Parse & siapkan hafalan
+        // Parse & siapkan catatan hafalan
         if (row.capaianHafalan?.trim()) {
           const parsedList = parseHafalanNotation(row.capaianHafalan);
           const now = new Date();
@@ -580,7 +673,7 @@ export class SantriService {
         }
       }
 
-      // C. Insert Hafalan Records (Cegah duplikat)
+      // D. Insert Hafalan Records (Cegah duplikat)
       if (hafalanRecordsToCreate.length > 0) {
         // Find existing to avoid exact duplicate surahs for santri
         const santriIds = Array.from(new Set(hafalanRecordsToCreate.map(h => h.santriId)));
@@ -606,11 +699,18 @@ export class SantriService {
     // Invalidate Redis dashboard cache
     await DashboardService.invalidateCache(user.userId);
 
+    const message = mode === 'REPLACE'
+      ? `Impor berhasil: ${replacedSantriCount} data santri lama diganti, ${createdSantriCount} santri baru, ${createdKelasCount} kelas, dan ${createdHafalanCount} catatan hafalan dibuat.`
+      : `Impor berhasil: ${createdSantriCount} santri baru, ${updatedSantriCount} santri diperbarui, ${createdKelasCount} kelas, dan ${createdHafalanCount} catatan hafalan disimpan.`;
+
     return {
       success: true,
-      message: `Impor berhasil diselesaikan: ${createdSantriCount} santri, ${createdKelasCount} kelas, dan ${createdHafalanCount} catatan hafalan.`,
+      message,
       stats: {
+        mode,
         createdSantriCount,
+        updatedSantriCount,
+        replacedSantriCount,
         createdKelasCount,
         createdHafalanCount,
       }

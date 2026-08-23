@@ -105,9 +105,9 @@ export class SantriController {
 
   static async executeImport(req: FastifyRequest, reply: FastifyReply) {
     const user = req.user!;
-    const { rows } = req.body as { rows: any[] };
+    const { rows, mode = 'MERGE' } = req.body as { rows: any[]; mode?: 'MERGE' | 'REPLACE' };
 
-    const result = await santriService.executeBulkImport(user, rows);
+    const result = await santriService.executeBulkImport(user, rows, mode);
 
     return reply.send({
       success: true,

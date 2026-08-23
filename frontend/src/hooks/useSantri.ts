@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, API_BASE_URL } from '../lib/api';
-import { CreateSantriInput, UpdateSantriInput, BulkImportRow } from 'shared';
+import { CreateSantriInput, UpdateSantriInput, BulkImportRow, BulkImportMode } from 'shared';
 
 export interface SantriItem {
   id: string;
@@ -153,7 +153,11 @@ export interface BulkImportPreviewResult {
     totalHafalanRecords: number;
     currentSantriCount: number;
     remainingQuota: number;
+    existingMatchCount?: number;
+    newSantriCount?: number;
     isQuotaExceeded: boolean;
+    isQuotaExceededMerge?: boolean;
+    isQuotaExceededReplace?: boolean;
   };
   rows: Array<{
     rowNumber: number;
@@ -164,9 +168,19 @@ export interface BulkImportPreviewResult {
     capaianHafalan: string;
     parsedHafalanCount: number;
     parsedSurahsSummary: string;
+    isExistingSantri?: boolean;
     isValid: boolean;
     errorMessage?: string;
   }>;
+}
+
+export interface BulkImportExecutionStats {
+  mode: BulkImportMode;
+  createdSantriCount: number;
+  updatedSantriCount: number;
+  replacedSantriCount: number;
+  createdKelasCount: number;
+  createdHafalanCount: number;
 }
 
 export function useBulkImportPreview() {
@@ -185,10 +199,10 @@ export function useBulkImportExecute() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (rows: BulkImportRow[]) => {
-      const res = await api.post<{ createdSantriCount: number; createdKelasCount: number; createdHafalanCount: number }>(
+    mutationFn: async ({ rows, mode = 'MERGE' }: { rows: BulkImportRow[]; mode?: BulkImportMode }) => {
+      const res = await api.post<BulkImportExecutionStats>(
         '/santri/execute-import',
-        { rows }
+        { rows, mode }
       );
       if (!res.success) {
         throw new Error(res.message || 'Gagal menyimpan data impor');

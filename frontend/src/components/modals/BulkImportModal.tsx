@@ -9,20 +9,23 @@ import {
   CheckCircle2, 
   AlertTriangle, 
   X, 
-  Users, 
-  Building, 
-  BookOpen, 
   Loader2, 
-  ArrowRight, 
   Info,
-  RefreshCw
+  Layers,
+  RotateCcw,
+  ShieldAlert,
+  Sparkles,
+  UserCheck,
+  UserPlus
 } from 'lucide-react';
 import { 
   useBulkImportPreview, 
   useBulkImportExecute, 
   downloadImportTemplate, 
-  BulkImportPreviewResult 
+  BulkImportPreviewResult,
+  BulkImportExecutionStats
 } from '../../hooks/useSantri';
+import { BulkImportMode } from 'shared';
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -36,8 +39,12 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
   const [fileBase64, setFileBase64] = useState<string | null>(null);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [previewData, setPreviewData] = useState<BulkImportPreviewResult | null>(null);
-  const [executionResult, setExecutionResult] = useState<{ createdSantriCount: number; createdKelasCount: number; createdHafalanCount: number } | null>(null);
+  const [executionResult, setExecutionResult] = useState<BulkImportExecutionStats | null>(null);
   const [dragActive, setDragActive] = useState(false);
+
+  // Mode Impor State
+  const [importMode, setImportMode] = useState<BulkImportMode>('MERGE');
+  const [replaceConfirmed, setReplaceConfirmed] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,6 +57,8 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
     setFileBase64(null);
     setPreviewData(null);
     setExecutionResult(null);
+    setImportMode('MERGE');
+    setReplaceConfirmed(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -115,6 +124,11 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
   const handleExecuteImport = async () => {
     if (!previewData || previewData.rows.length === 0) return;
 
+    if (importMode === 'REPLACE' && !replaceConfirmed) {
+      alert('Silakan centang persetujuan penggantian data lama terlebih dahulu.');
+      return;
+    }
+
     const validRows = previewData.rows
       .filter((r) => r.isValid)
       .map((r) => ({
@@ -126,7 +140,10 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
       }));
 
     try {
-      const res = await executeMutation.mutateAsync(validRows);
+      const res = await executeMutation.mutateAsync({
+        rows: validRows,
+        mode: importMode,
+      });
       setExecutionResult(res.data);
       setStep('success');
       if (onSuccess) onSuccess();
@@ -136,6 +153,11 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
   };
 
   if (!isOpen) return null;
+
+  // Cek kuota berdasarkan mode yang sedang aktif
+  const isQuotaExceeded = importMode === 'REPLACE'
+    ? Boolean(previewData?.summary.isQuotaExceededReplace)
+    : Boolean(previewData?.summary.isQuotaExceededMerge ?? previewData?.summary.isQuotaExceeded);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -267,13 +289,13 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
           </div>
         )}
 
-        {/* STEP 2: PREVIEW TABLE */}
+        {/* STEP 2: PREVIEW & MODE SELECTION */}
         {step === 'preview' && previewData && (
           <div className="space-y-6">
             {/* Stats Overview Badges */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-2xl bg-card border border-border shadow-sm text-center">
-                <p className="text-xs text-muted-foreground font-medium">Total Santri</p>
+                <p className="text-xs text-muted-foreground font-medium">Total Santri di File</p>
                 <p className="text-lg font-bold text-primary font-outfit mt-0.5">{previewData.summary.totalSantri}</p>
               </div>
               <div className="p-3.5 rounded-2xl bg-card border border-border shadow-sm text-center">
@@ -285,21 +307,148 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                 <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-outfit mt-0.5">{previewData.summary.totalHafalanRecords}</p>
               </div>
               <div className="p-3.5 rounded-2xl bg-card border border-border shadow-sm text-center">
-                <p className="text-xs text-muted-foreground font-medium">Status Baris</p>
+                <p className="text-xs text-muted-foreground font-medium">Baris Valid</p>
                 <p className="text-lg font-bold font-outfit mt-0.5 text-emerald-600">
                   {previewData.summary.validRows} / {previewData.summary.totalRows}
                 </p>
               </div>
             </div>
 
+            {/* SELEKSI MODE IMPOR: PERTAHANKAN VS GANTI SEMUA */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold font-outfit text-foreground flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  Pilih Strategi Penyimpanan Data:
+                </h4>
+                <span className="text-xs text-muted-foreground">
+                  Santri aktif saat ini: <strong className="text-foreground">{previewData.summary.currentSantriCount}</strong>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {/* Opsi 1: Pertahankan Data Lama (MERGE) */}
+                <div
+                  onClick={() => setImportMode('MERGE')}
+                  className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                    importMode === 'MERGE'
+                      ? 'border-primary bg-primary/10 shadow-md ring-2 ring-primary/20'
+                      : 'border-border bg-card hover:border-border/80 hover:bg-muted/30'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`p-2 rounded-xl ${importMode === 'MERGE' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                          <Layers className="w-4 h-4" />
+                        </div>
+                        <span className="font-bold text-sm text-foreground">Pertahankan Data Lama</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                        Rekomendasi
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                      Data santri lama <strong>tetap dipertahankan</strong>. Santri baru akan ditambahkan, dan santri yang cocok akan diperbarui tanpa menghapus murid lain.
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                      <UserPlus className="w-3.5 h-3.5" /> +{previewData.summary.newSantriCount ?? previewData.summary.totalSantri} Santri Baru
+                    </span>
+                    <span className="flex items-center gap-1 font-semibold text-primary">
+                      <UserCheck className="w-3.5 h-3.5" /> {previewData.summary.existingMatchCount ?? 0} Cocok/Update
+                    </span>
+                  </div>
+                </div>
+
+                {/* Opsi 2: Ganti Semua Data Lama (REPLACE) */}
+                <div
+                  onClick={() => setImportMode('REPLACE')}
+                  className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                    importMode === 'REPLACE'
+                      ? 'border-amber-500 dark:border-amber-400 bg-amber-500/10 shadow-md ring-2 ring-amber-500/20'
+                      : 'border-border bg-card hover:border-border/80 hover:bg-muted/30'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`p-2 rounded-xl ${importMode === 'REPLACE' ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'}`}>
+                          <RotateCcw className="w-4 h-4" />
+                        </div>
+                        <span className="font-bold text-sm text-foreground">Ganti Semua Data Lama</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                        Reset Total
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                      <strong>Menonaktifkan semua {previewData.summary.currentSantriCount} santri lama</strong> dan menggantinya secara bersih dengan santri dari file Excel ini.
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1 font-semibold text-rose-600 dark:text-rose-400">
+                      <AlertTriangle className="w-3.5 h-3.5" /> Reset {previewData.summary.currentSantriCount} Data Lama
+                    </span>
+                    <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                      ✓ {previewData.summary.totalSantri} Santri Pengganti
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* REPLACE WARNING & SAFETY CHECKBOX */}
+              {importMode === 'REPLACE' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 space-y-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1 text-xs">
+                      <p className="font-bold text-amber-900 dark:text-amber-200">
+                        Konfirmasi Penggantian Seluruh Data Santri
+                      </p>
+                      <p className="text-amber-800 dark:text-amber-300">
+                        Sebanyak <strong>{previewData.summary.currentSantriCount} santri lama</strong> yang terdaftar saat ini akan dinonaktifkan dan digantikan dengan <strong>{previewData.summary.totalSantri} santri baru</strong> dari file Excel. Mode ini sangat tepat untuk pergantian tahun ajaran atau perbaikan kesalahan input impor sebelumnya.
+                      </p>
+                    </div>
+                  </div>
+
+                  <label className="flex items-center gap-2.5 pt-2 border-t border-amber-500/20 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={replaceConfirmed}
+                      onChange={(e) => setReplaceConfirmed(e.target.checked)}
+                      className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
+                    />
+                    <span className="text-xs font-semibold text-foreground">
+                      Saya mengerti dan menyetujui data santri lama digantikan dengan data baru dari file Excel ini
+                    </span>
+                  </label>
+                </motion.div>
+              )}
+            </div>
+
             {/* Quota Warning if applicable */}
-            {previewData.summary.isQuotaExceeded && (
+            {isQuotaExceeded && (
               <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                 <div>
                   <p className="font-bold">Batas Kuota Santri Terlampaui!</p>
                   <p className="mt-0.5">
-                    Pengguna perorangan memiliki batas maksimal 20 santri. Saat ini Anda memiliki {previewData.summary.currentSantriCount} santri (sisa kuota: {previewData.summary.remainingQuota}). File ini berisi {previewData.summary.totalSantri} santri baru.
+                    Pengguna perorangan memiliki batas maksimal 20 santri. 
+                    {importMode === 'MERGE' ? (
+                      ` Anda saat ini memiliki ${previewData.summary.currentSantriCount} santri aktif (sisa kuota: ${previewData.summary.remainingQuota}). Menambahkan ${previewData.summary.newSantriCount} santri baru melebihi kuota.`
+                    ) : (
+                      ` File Excel ini berisi ${previewData.summary.totalSantri} santri, melebihi kuota 20 santri.`
+                    )}
                   </p>
                 </div>
               </div>
@@ -313,10 +462,11 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                     <tr>
                       <th className="py-3 px-4 text-center w-12">No</th>
                       <th className="py-3 px-4">Nama Santri</th>
+                      <th className="py-3 px-4">Tipe Data</th>
                       <th className="py-3 px-4">Wali Murid</th>
                       <th className="py-3 px-4">No HP / WA</th>
                       <th className="py-3 px-4">Kelas</th>
-                      <th className="py-3 px-4">Capaian Hafalan Terdeteksi</th>
+                      <th className="py-3 px-4">Capaian Hafalan</th>
                       <th className="py-3 px-4 text-center">Status</th>
                     </tr>
                   </thead>
@@ -325,6 +475,21 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                       <tr key={idx} className={row.isValid ? 'hover:bg-muted/30' : 'bg-rose-500/5'}>
                         <td className="py-3 px-4 text-center font-medium text-muted-foreground">{idx + 1}</td>
                         <td className="py-3 px-4 font-bold text-foreground">{row.namaSantri || '-'}</td>
+                        <td className="py-3 px-4">
+                          {importMode === 'REPLACE' ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-[10px]">
+                              Pengganti Baru
+                            </span>
+                          ) : row.isExistingSantri ? (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold text-[10px]" title="Nama cocok dengan santri lama di sistem">
+                              Sudah Ada (Update)
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-[10px]">
+                              Santri Baru
+                            </span>
+                          )}
+                        </td>
                         <td className="py-3 px-4 font-medium text-foreground">{row.namaWali || '-'}</td>
                         <td className="py-3 px-4 font-mono text-muted-foreground">{row.noHpWali || '-'}</td>
                         <td className="py-3 px-4">
@@ -378,15 +543,28 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
 
               <button
                 onClick={handleExecuteImport}
-                disabled={executeMutation.isPending || previewData.summary.validRows === 0 || previewData.summary.isQuotaExceeded}
-                className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
+                disabled={
+                  executeMutation.isPending ||
+                  previewData.summary.validRows === 0 ||
+                  isQuotaExceeded ||
+                  (importMode === 'REPLACE' && !replaceConfirmed)
+                }
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer ${
+                  importMode === 'REPLACE'
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/25'
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/25'
+                }`}
               >
                 {executeMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : importMode === 'REPLACE' ? (
+                  <RotateCcw className="w-4 h-4" />
                 ) : (
                   <CheckCircle2 className="w-4 h-4" />
                 )}
-                Konfirmasi & Simpan ({previewData.summary.validRows} Baris)
+                {importMode === 'REPLACE'
+                  ? `Konfirmasi & Ganti Semua (${previewData.summary.validRows} Baris)`
+                  : `Konfirmasi & Gabungkan (${previewData.summary.validRows} Baris)`}
               </button>
             </div>
           </div>
@@ -401,25 +579,60 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
 
             <div className="space-y-1">
               <h4 className="text-xl font-bold font-outfit text-foreground">
-                Impor Data Berhasil Disimpan!
+                Impor Data Berhasil Diselesaikan!
               </h4>
               <p className="text-xs text-muted-foreground font-medium max-w-md mx-auto">
-                Seluruh data santri, kelas, dan riwayat hafalan telah tersimpan aman di sistem database HafalanKu.
+                {executionResult.mode === 'REPLACE'
+                  ? 'Seluruh data santri lama telah digantikan secara bersih dengan santri dari file Excel baru.'
+                  : 'Santri baru telah ditambahkan dan santri yang cocok telah diperbarui tanpa menghapus data santri lama.'}
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2">
-              <div className="p-3 rounded-2xl bg-card border border-border text-center">
-                <p className="text-xs text-muted-foreground font-medium">Santri Ditambah</p>
-                <p className="text-lg font-bold text-primary font-outfit mt-0.5">{executionResult.createdSantriCount}</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-card border border-border text-center">
+            {/* Dynamic Results Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto pt-2">
+              {executionResult.mode === 'REPLACE' ? (
+                <>
+                  <div className="p-3.5 rounded-2xl bg-card border border-border text-center">
+                    <p className="text-xs text-muted-foreground font-medium">Santri Diganti</p>
+                    <p className="text-lg font-bold text-amber-600 dark:text-amber-400 font-outfit mt-0.5">
+                      {executionResult.replacedSantriCount}
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-card border border-border text-center">
+                    <p className="text-xs text-muted-foreground font-medium">Santri Baru</p>
+                    <p className="text-lg font-bold text-primary font-outfit mt-0.5">
+                      {executionResult.createdSantriCount}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3.5 rounded-2xl bg-card border border-border text-center">
+                    <p className="text-xs text-muted-foreground font-medium">Santri Ditambah</p>
+                    <p className="text-lg font-bold text-primary font-outfit mt-0.5">
+                      {executionResult.createdSantriCount}
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-card border border-border text-center">
+                    <p className="text-xs text-muted-foreground font-medium">Santri Diperbarui</p>
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-outfit mt-0.5">
+                      {executionResult.updatedSantriCount}
+                    </p>
+                  </div>
+                </>
+              )}
+
+              <div className="p-3.5 rounded-2xl bg-card border border-border text-center">
                 <p className="text-xs text-muted-foreground font-medium">Kelas Dibuat</p>
-                <p className="text-lg font-bold text-foreground font-outfit mt-0.5">{executionResult.createdKelasCount}</p>
+                <p className="text-lg font-bold text-foreground font-outfit mt-0.5">
+                  {executionResult.createdKelasCount}
+                </p>
               </div>
-              <div className="p-3 rounded-2xl bg-card border border-border text-center">
+              <div className="p-3.5 rounded-2xl bg-card border border-border text-center">
                 <p className="text-xs text-muted-foreground font-medium">Hafalan Dicatat</p>
-                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-outfit mt-0.5">{executionResult.createdHafalanCount}</p>
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-outfit mt-0.5">
+                  {executionResult.createdHafalanCount}
+                </p>
               </div>
             </div>
 
