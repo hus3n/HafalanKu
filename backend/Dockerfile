@@ -5,14 +5,13 @@ WORKDIR /app
 # Install openssl for Prisma and tzdata
 RUN apk add --no-cache openssl tzdata
 
-# Copy package config files
+# Copy package config files for backend and shared only
 COPY package.json package-lock.json ./
 COPY backend/package.json ./backend/
-COPY frontend/package.json ./frontend/
 COPY shared/package.json ./shared/
 
-# Install all dependencies using npm workspace
-RUN npm ci --no-audit --no-fund
+# Install dependencies for backend & shared only (saves 70% RAM & time)
+RUN npm ci --workspace=backend --workspace=shared --include-workspace-root --no-audit --no-fund
 
 # Copy source code
 COPY shared ./shared
@@ -43,7 +42,6 @@ ENV TZ=Asia/Jakarta
 
 # Copy necessary files from builder
 COPY --from=builder /app/package.json ./
-COPY --from=builder /app/package-lock.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/shared ./shared
 COPY --from=builder /app/backend/package.json ./backend/

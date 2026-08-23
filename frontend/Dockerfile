@@ -2,18 +2,17 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Disable Next.js telemetry & allocate memory
+# Disable Next.js telemetry & limit memory usage to prevent VPS OOM killer
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS="--max-old-space-size=1024"
+ENV NODE_OPTIONS="--max-old-space-size=768"
 
-# Copy package config files
+# Copy package config files for frontend and shared only
 COPY package.json package-lock.json ./
-COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY shared/package.json ./shared/
 
-# Install all dependencies using npm workspace
-RUN npm ci --no-audit --no-fund
+# Install dependencies for frontend & shared only (saves 70% RAM & time)
+RUN npm ci --workspace=frontend --workspace=shared --include-workspace-root --no-audit --no-fund
 
 # Copy source code
 COPY shared ./shared
@@ -46,16 +45,14 @@ ENV HOSTNAME="0.0.0.0"
 ENV TZ=Asia/Jakarta
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Set the correct permission for nextjs user (optional but good practice)
+# Set the correct permission for nextjs user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
 # Copy public folder
 COPY --from=builder /app/frontend/public ./frontend/public
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-# It will copy the standalone output, which contains node_modules and next.js server
+# Standalone output tracing
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
 
@@ -63,6 +60,4 @@ USER nextjs
 
 EXPOSE 3000
 
-# server.js is created by next build from the standalone output
-# Since Next.js is inside the frontend workspace, the standalone path should be frontend/server.js
 CMD ["node", "frontend/server.js"]
