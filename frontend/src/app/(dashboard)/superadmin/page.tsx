@@ -16,7 +16,8 @@ import { useSuperadminUsers, useSuperadminOrgs } from '../../../hooks/useSuperad
 import { AdminTable } from '../../../components/tables/AdminTable';
 import { OrgTable } from '../../../components/tables/OrgTable';
 import { UserForm } from '../../../components/forms/UserForm';
-import { useUpdateUser, UpdateUserInput } from '../../../hooks/useUsers';
+import { SendWhatsAppModal } from '../../../components/modals/SendWhatsAppModal';
+import { useUpdateUser, UpdateUserInput, UserItem } from '../../../hooks/useUsers';
 import { AlertCircle, X } from 'lucide-react';
 
 export default function SuperadminPage() {
@@ -27,6 +28,7 @@ export default function SuperadminPage() {
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [whatsappUser, setWhatsappUser] = useState<UserItem | null>(null);
 
   const isSuperadmin = currentUser?.role === 'SUPERADMIN';
 
@@ -173,6 +175,7 @@ export default function SuperadminPage() {
             users={usersData?.data || []} 
             isLoading={isLoadingUsers} 
             onEditUser={(user) => setEditingUser(user)}
+            onSendWhatsApp={(user) => setWhatsappUser(user)}
           />
 
           {/* Pagination Controls */}
@@ -260,6 +263,13 @@ export default function SuperadminPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Send WhatsApp Message Modal */}
+      <SendWhatsAppModal
+        user={whatsappUser}
+        isOpen={!!whatsappUser}
+        onClose={() => setWhatsappUser(null)}
+      />
     </div>
   );
 }

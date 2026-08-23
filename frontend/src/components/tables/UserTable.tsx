@@ -15,7 +15,8 @@ import {
   XCircle,
   Shield,
   User as UserIcon,
-  Loader2
+  Loader2,
+  MessageSquare
 } from 'lucide-react';
 import { UserItem, useUpdateUser } from '../../hooks/useUsers';
 import { useAuth } from '../../hooks/useAuth';
@@ -24,9 +25,10 @@ interface UserTableProps {
   users: UserItem[];
   isLoading: boolean;
   onEditUser?: (user: UserItem) => void;
+  onSendWhatsApp?: (user: UserItem) => void;
 }
 
-export function UserTable({ users, isLoading, onEditUser }: UserTableProps) {
+export function UserTable({ users, isLoading, onEditUser, onSendWhatsApp }: UserTableProps) {
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const { mutate: updateUser } = useUpdateUser();
   const { user: currentUser } = useAuth();
@@ -240,11 +242,22 @@ export function UserTable({ users, isLoading, onEditUser }: UserTableProps) {
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
+                        {/* Send WhatsApp Message Button */}
+                        {onSendWhatsApp && (
+                          <button
+                            onClick={() => onSendWhatsApp(user)}
+                            className="p-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer"
+                            title={`Kirim Pesan WhatsApp ke ${user.name}`}
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+                        )}
+
                         {/* Edit button */}
                         {onEditUser && (
                           <button
                             onClick={() => onEditUser(user)}
-                            className="p-1.5 rounded-lg border border-border/60 bg-background/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
+                            className="p-1.5 rounded-lg border border-border/60 bg-background/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer"
                             title="Edit Data User"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -255,7 +268,7 @@ export function UserTable({ users, isLoading, onEditUser }: UserTableProps) {
                         <button
                           disabled={updatingUserId === user.id}
                           onClick={() => handleToggleStatus(user)}
-                          className={`p-1.5 rounded-lg border transition-all ${
+                          className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
                             user.isActive
                               ? 'border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400'
                               : 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'

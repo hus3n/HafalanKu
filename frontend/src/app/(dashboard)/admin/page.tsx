@@ -14,16 +14,17 @@ import {
   X,
   Building
 } from 'lucide-react';
-import { useAuth } from '../../../hooks/useAuth';
 import { useUsers, useUpdateUser, UserItem, UpdateUserInput } from '../../../hooks/useUsers';
 import { UserTable } from '../../../components/tables/UserTable';
 import { UserForm } from '../../../components/forms/UserForm';
+import { SendWhatsAppModal } from '../../../components/modals/SendWhatsAppModal';
 
 export default function AdminUsersPage() {
   const { user: currentUser } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
+  const [whatsappUser, setWhatsappUser] = useState<UserItem | null>(null);
 
   const isAuthorized = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPERADMIN';
 
@@ -116,6 +117,7 @@ export default function AdminUsersPage() {
         users={data?.data || []}
         isLoading={isLoading}
         onEditUser={(user) => setEditingUser(user)}
+        onSendWhatsApp={(user) => setWhatsappUser(user)}
       />
 
       {/* Pagination Controls */}
@@ -192,6 +194,13 @@ export default function AdminUsersPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Send WhatsApp Message Modal */}
+      <SendWhatsAppModal
+        user={whatsappUser}
+        isOpen={!!whatsappUser}
+        onClose={() => setWhatsappUser(null)}
+      />
     </div>
   );
 }

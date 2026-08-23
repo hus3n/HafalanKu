@@ -1,8 +1,11 @@
+import fs from 'fs';
+import path from 'path';
 import bcrypt from 'bcrypt';
 import { prisma } from '../../config/database';
 import { AppError } from '../../utils/AppError';
 import { formatPaginationMeta, PaginationParams } from '../../utils/pagination';
 import { AuditTrail } from '../audit/audit.model';
+import { WhatsAppSession, WhatsAppAuthKey } from '../whatsapp/whatsapp.model';
 import { CreateUserInput, UpdateAvatarInput, UpdateProfileInput, UpdateUserInput } from './user.schema';
 
 const BCRYPT_SALT_ROUNDS = 12;
@@ -391,26 +394,89 @@ export class UserService {
   }
 
   async deleteUser(currentUser: CurrentUserContext, id: string, ipAddress?: string, userAgent?: string) {
-    const existing = await prisma.user.findUnique({ where: { id } });
+    const existing = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        ownedOrg: {
+          include: {
+            members: true,
+          },
+        },
+      },
+    });
 
     if (!existing) {
       throw new AppError('User tidak ditemukan', 404);
-    }
-
-    if (currentUser.role === 'ADMIN') {
-      if (existing.organizationId !== currentUser.orgId) {
-        throw new AppError('Akses ditolak: User tidak berada di organisasi Anda', 403);
-      }
-      if (existing.role === 'SUPERADMIN') {
-        throw new AppError('Akses ditolak: Admin tidak dapat menghapus Superadmin', 403);
-      }
     }
 
     if (existing.id === currentUser.userId) {
       throw new AppError('Anda tidak dapat menghapus akun Anda sendiri', 400);
     }
 
-    await prisma.user.delete({ where: { id } });
+    if (currentUser.role === 'ADMIN') {
+      if (existing.organizationId !== currentUser.orgId) {
+        throw new AppError('Akses ditolak: User tidak berada di organisasi Anda', 403);
+      }
+      if (existing.role === 'SUPERADMIN' || existing.role === 'ADMIN') {
+        throw new AppError('Akses ditolak: Admin tidak dapat menghapus Superadmin atau Admin lainnya', 403);
+      }
+    }
+
+    // Aturan Superadmin & Admin: Hanya boleh menghapus akun yang berstatus nonaktif (isActive === false)
+    if (existing.isActive) {
+      throw new AppError(
+        `Akun "${existing.name}" (${existing.role}) masih berstatus AKTIF. Silakan nonaktifkan akun terlebih dahulu sebelum menghapus dari platform.`,
+        400
+      );
+    }
+
+    // Eksekusi cascade deletion terpadu dalam satu transaksi Prisma
+    await prisma.$transaction(async (tx: any) => {
+      // 1. Jika user adalah pemilik (Admin) dari Organisasi (ownedOrg)
+      if (existing.ownedOrg) {
+        const orgId = existing.ownedOrg.id;
+
+        // Lepas relasi semua member santri/ustadz dari organisasi ini
+        await tx.user.updateMany({
+          where: { organizationId: orgId },
+          data: { organizationId: null },
+        });
+
+        // Hapus organisasi
+        await tx.organization.delete({
+          where: { id: orgId },
+        });
+      }
+
+      // 2. Lepas relasi organisasi user jika terdaftar sebagai member
+      await tx.user.update({
+        where: { id },
+        data: { organizationId: null },
+      });
+
+      // 3. Hapus data relasi anak
+      await tx.passwordHistory.deleteMany({ where: { userId: id } });
+      await tx.murajaahHistory.deleteMany({ where: { userId: id } });
+      await tx.murajaahSchedule.deleteMany({ where: { userId: id } });
+      await tx.hafalan.deleteMany({ where: { userId: id } });
+      await tx.santri.deleteMany({ where: { userId: id } });
+      await tx.kelas.deleteMany({ where: { userId: id } });
+
+      // 4. Hapus user utama
+      await tx.user.delete({ where: { id } });
+    });
+
+    // 5. Bersihkan data session MongoDB & Disk jika ada
+    try {
+      await WhatsAppAuthKey.deleteMany({ userId: id });
+      await WhatsAppSession.deleteMany({ userId: id });
+      const sessionDir = path.resolve(process.cwd(), `./whatsapp_sessions/${id}`);
+      if (fs.existsSync(sessionDir)) {
+        fs.rmSync(sessionDir, { recursive: true, force: true });
+      }
+    } catch (sessionErr) {
+      console.warn(`[UserService] Session cleanup error for user ${id}:`, sessionErr);
+    }
 
     await AuditTrail.create({
       userId: currentUser.userId,
@@ -418,6 +484,7 @@ export class UserService {
       action: 'DELETE',
       entity: 'USER',
       entityId: id,
+      oldData: { name: existing.name, role: existing.role, email: existing.email },
       ipAddress,
       userAgent,
     });

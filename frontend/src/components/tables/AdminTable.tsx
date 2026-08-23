@@ -25,9 +25,10 @@ interface AdminTableProps {
   users: UserItem[];
   isLoading: boolean;
   onEditUser?: (user: UserItem) => void;
+  onSendWhatsApp?: (user: UserItem) => void;
 }
 
-export function AdminTable({ users, isLoading, onEditUser }: AdminTableProps) {
+export function AdminTable({ users, isLoading, onEditUser, onSendWhatsApp }: AdminTableProps) {
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserItem | null>(null);
 
@@ -234,11 +235,22 @@ export function AdminTable({ users, isLoading, onEditUser }: AdminTableProps) {
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Send WhatsApp Message Button */}
+                          {onSendWhatsApp && (
+                            <button
+                              onClick={() => onSendWhatsApp(user)}
+                              className="p-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer"
+                              title={`Kirim Pesan WhatsApp ke ${user.name}`}
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                            </button>
+                          )}
+
                           {/* Edit User Button */}
                           {onEditUser && (
                             <button
                               onClick={() => onEditUser(user)}
-                              className="p-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-all"
+                              className="p-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-all cursor-pointer"
                               title="Edit Pengguna"
                             >
                               <UserCheck className="w-4 h-4 opacity-0 hidden" />
@@ -250,7 +262,7 @@ export function AdminTable({ users, isLoading, onEditUser }: AdminTableProps) {
                           <button
                             disabled={updatingUserId === user.id}
                             onClick={() => handleToggleStatus(user)}
-                            className={`p-1.5 rounded-lg border transition-all ${
+                            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
                               user.isActive
                                 ? 'border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400'
                                 : 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
@@ -269,7 +281,7 @@ export function AdminTable({ users, isLoading, onEditUser }: AdminTableProps) {
                           {/* Delete User from Platform Button */}
                           <button
                             onClick={() => setDeletingUser(user)}
-                            className="p-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition-all"
+                            className="p-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition-all cursor-pointer"
                             title="Hapus Pengguna Dari Platform"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -309,22 +321,43 @@ export function AdminTable({ users, isLoading, onEditUser }: AdminTableProps) {
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300">
-                ⚠️ Tindakan ini akan menghapus akun pengguna secara permanen dari basis data platform.
-              </div>
+              {deletingUser.isActive ? (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-300 space-y-2">
+                  <p className="font-semibold flex items-center gap-1.5">
+                    ⚠️ Akun Masih Berstatus Aktif
+                  </p>
+                  <p className="leading-relaxed">
+                    Untuk perlindungan data, sistem hanya mengizinkan penghapusan pada akun yang telah nonaktif. Silakan nonaktifkan akun terlebih dahulu sebelum melanjutkan penghapusan.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleToggleStatus(deletingUser);
+                      setDeletingUser((prev) => prev ? { ...prev, isActive: false } : null);
+                    }}
+                    className="mt-1 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <UserX className="w-3.5 h-3.5" /> Nonaktifkan Akun Ini Sekarang
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300">
+                  ⚠️ Akun telah nonaktif. Tindakan ini akan menghapus akun dan seluruh data terkait secara permanen dari basis data platform.
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   disabled={isDeleting}
                   onClick={() => setDeletingUser(null)}
-                  className="px-4 py-2.5 rounded-xl border border-input text-xs font-medium hover:bg-secondary transition-all disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl border border-input text-xs font-medium hover:bg-secondary transition-all disabled:opacity-50 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
-                  disabled={isDeleting}
+                  disabled={isDeleting || deletingUser.isActive}
                   onClick={handleConfirmDelete}
-                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium flex items-center gap-2 shadow-lg shadow-rose-600/20 transition-all disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium flex items-center gap-2 shadow-lg shadow-rose-600/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isDeleting ? (
                     <>
