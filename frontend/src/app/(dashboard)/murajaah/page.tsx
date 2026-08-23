@@ -61,33 +61,23 @@ export default function MurajaahPage() {
   const { data: santriData } = useSantriList({ limit: 100 });
   const allSantri = santriData?.santri || [];
 
-  // Filter Classes strictly for Teacher if role is not SUPERADMIN
-  const teacherKelasList = useMemo(() => {
-    if (currentUser?.role === 'SUPERADMIN') {
-      return allKelasList;
-    }
-    return allKelasList.slice(0, 1);
-  }, [allKelasList, currentUser]);
-
-  const activeKelasId = selectedKelasId || (teacherKelasList.length > 0 ? teacherKelasList[0].id : '');
-
-  // Filter santri strictly belonging to teacher's allowed class
+  // Filter santri belonging to selected class (or all santri if no class is selected)
   const allowedSantri = useMemo(() => {
-    if (currentUser?.role === 'SUPERADMIN' && !activeKelasId) {
+    if (!selectedKelasId) {
       return allSantri;
     }
-    return allSantri.filter(s => s.kelasId === activeKelasId || s.kelas?.id === activeKelasId);
-  }, [allSantri, activeKelasId, currentUser]);
+    return allSantri.filter(s => s.kelasId === selectedKelasId || s.kelas?.id === selectedKelasId);
+  }, [allSantri, selectedKelasId]);
 
   // Fetch murajaah items
   const { data: schedules = [], isLoading: isLoadingSchedules } = useMurajaahList({
-    kelasId: activeKelasId,
-    santriId: selectedSantriId,
+    kelasId: selectedKelasId || undefined,
+    santriId: selectedSantriId || undefined,
   });
 
   const { data: histories = [], isLoading: isLoadingHistories } = useMurajaahHistory({
-    kelasId: activeKelasId,
-    santriId: selectedSantriId,
+    kelasId: selectedKelasId || undefined,
+    santriId: selectedSantriId || undefined,
   });
 
   // Fetch hafalan for the manual form dropdown
@@ -302,9 +292,9 @@ export default function MurajaahPage() {
               <History className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
               Kelola Murajaah Kelompok Ustadz
             </h1>
-            {currentUser?.role !== 'SUPERADMIN' && (
+            {allKelasList.length > 0 && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                <Lock className="w-3.5 h-3.5" /> Kelompok Terkunci
+                <Building2 className="w-3.5 h-3.5" /> {allKelasList.length} Kelompok Bimbingan
               </span>
             )}
           </div>
@@ -348,7 +338,9 @@ export default function MurajaahPage() {
             >
               <option value="">-- Pilih Santri --</option>
               {allowedSantri.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id}>
+                  {s.name} {s.kelas?.name ? `(${s.kelas.name})` : ''}
+                </option>
               ))}
             </select>
           </div>
@@ -411,18 +403,18 @@ export default function MurajaahPage() {
               <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Kelompok Bimbingan
             </label>
             <select
-              value={activeKelasId}
+              value={selectedKelasId}
               onChange={(e) => {
                 setSelectedKelasId(e.target.value);
                 setSelectedSantriId('');
                 setSelectedSantriIds([]);
               }}
-              disabled={currentUser?.role !== 'SUPERADMIN'}
-              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all cursor-pointer font-medium disabled:opacity-80"
+              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all cursor-pointer font-medium"
             >
-              {teacherKelasList.map((k) => (
+              <option value="">-- Semua Kelompok ({allKelasList.length} Kelas) --</option>
+              {allKelasList.map((k) => (
                 <option key={k.id} value={k.id}>
-                  {k.name} {k.description ? `(${k.description})` : ''}
+                  {k.name} {k.description ? `(${k.description})` : ''} {k.totalSantri !== undefined ? `• ${k.totalSantri} Santri` : ''}
                 </option>
               ))}
             </select>
@@ -438,9 +430,11 @@ export default function MurajaahPage() {
               onChange={(e) => setSelectedSantriId(e.target.value)}
               className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all cursor-pointer font-medium"
             >
-              <option value="">-- Semua Santri --</option>
+              <option value="">-- Semua Santri ({allowedSantri.length} Santri) --</option>
               {allowedSantri.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id}>
+                  {s.name} {s.kelas?.name ? `(${s.kelas.name})` : ''}
+                </option>
               ))}
             </select>
           </div>
