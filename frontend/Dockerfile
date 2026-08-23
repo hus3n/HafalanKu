@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Disable Next.js telemetry & allocate memory
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 
 # Copy package config files
 COPY package.json package-lock.json ./

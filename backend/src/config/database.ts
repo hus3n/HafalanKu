@@ -11,14 +11,10 @@ export const prisma = new PrismaClient({
 export async function connectMongoDB() {
   try {
     mongoose.set('strictQuery', true);
-    const isDocker = require('fs').existsSync('/.dockerenv');
-    const mongoUrl = (env.MONGODB_URL.includes('mongodb://mongo') && !isDocker) 
-      ? 'mongodb://127.0.0.1:27017/hafalanku' 
-      : env.MONGODB_URL;
-    await mongoose.connect(mongoUrl, { serverSelectionTimeoutMS: 3000 });
+    await mongoose.connect(env.MONGODB_URL, { serverSelectionTimeoutMS: 5000 });
     console.log('✅ Connected to MongoDB successfully.');
   } catch (error: any) {
-    console.warn('⚠️ MongoDB connection fallback (local mode active):', error.message || error);
+    console.warn('⚠️ MongoDB connection notice:', error.message || error);
   }
 }
 
