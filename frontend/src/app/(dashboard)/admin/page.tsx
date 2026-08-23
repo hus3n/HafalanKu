@@ -14,6 +14,7 @@ import {
   X,
   Building
 } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
 import { useUsers, useUpdateUser, UserItem, UpdateUserInput } from '../../../hooks/useUsers';
 import { UserTable } from '../../../components/tables/UserTable';
 import { UserForm } from '../../../components/forms/UserForm';

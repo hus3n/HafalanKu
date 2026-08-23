@@ -16,7 +16,8 @@ import {
   Shield,
   User as UserIcon,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  MessageSquare
 } from 'lucide-react';
 import { UserItem, useUpdateUser } from '../../hooks/useUsers';
 import { useDeleteUser } from '../../hooks/useSuperadmin';
