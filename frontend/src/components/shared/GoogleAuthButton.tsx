@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import Script from 'next/script';
+import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -33,14 +34,12 @@ export function GoogleAuthButton({
   const router = useRouter();
   const { setAuth } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const [hasRenderedNative, setHasRenderedNative] = useState(false);
-  const googleBtnRef = useRef<HTMLDivElement>(null);
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
   const handleCredentialResponse = async (response: any) => {
-    if (!response?.credential) {
+    const token = response?.credential || response?.access_token;
+    if (!token) {
       onError?.('Gagal mendapatkan token kredensial Google.');
       return;
     }
@@ -48,7 +47,7 @@ export function GoogleAuthButton({
     setIsLoading(true);
     try {
       const res = await api.post<any>('/auth/google', {
-        credential: response.credential,
+        credential: token,
         accountType,
         organizationName,
         phone,
@@ -74,89 +73,74 @@ export function GoogleAuthButton({
     }
   };
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.google && googleClientId && googleBtnRef.current) {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleCredentialResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
-
-        // Render official Google button inside container
-        window.google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: 'outline',
-          size: 'large',
-          type: 'standard',
-          shape: 'rectangular',
-          text: mode === 'register' ? 'signup_with' : 'signin_with',
-          logo_alignment: 'left',
-          width: 320,
-        });
-
-        setHasRenderedNative(true);
-
-        // Also prompt One-Tap dialog
-        window.google.accounts.id.prompt();
-      } catch (err) {
-        console.warn('[Google Auth Init]', err);
-      }
-    }
-  }, [isScriptLoaded, googleClientId, mode]);
-
-  const handleCustomClick = () => {
+  const handleGoogleClick = () => {
     if (!googleClientId) {
       onError?.(
-        'Google Client ID belum diatur di server. Pastikan variabel NEXT_PUBLIC_GOOGLE_CLIENT_ID sudah diisi di Coolify.'
+        'Google Client ID belum diatur di server Coolify (NEXT_PUBLIC_GOOGLE_CLIENT_ID). Silakan gunakan pendaftaran formulir email di bawah.'
       );
       return;
     }
 
-    if (typeof window !== 'undefined' && window.google) {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleCredentialResponse,
-        });
-        window.google.accounts.id.prompt();
-      } catch (e: any) {
-        onError?.('Gagal memuat Google Sign-In.');
-      }
-    } else {
-      onError?.('Layanan Google Sign-In sedang dimuat. Silakan tunggu sebentar.');
+    if (typeof window === 'undefined' || !window.google) {
+      onError?.('Layanan Google Sign-In sedang dimuat. Silakan tunggu sebentar atau muat ulang halaman.');
+      return;
+    }
+
+    try {
+      // 1. Inisialisasi Google GIS
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      // 2. Tampilkan One-Tap / Pop-up OAuth
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          try {
+            const tokenClient = window.google.accounts.oauth2.initTokenClient({
+              client_id: googleClientId,
+              scope: 'email profile openid',
+              callback: (tokenResponse: any) => {
+                if (tokenResponse?.access_token) {
+                  handleCredentialResponse({ credential: tokenResponse.access_token });
+                }
+              },
+            });
+            tokenClient.requestAccessToken();
+          } catch (oauthErr) {
+            console.error('[Google OAuth Popup Error]', oauthErr);
+          }
+        }
+      });
+    } catch (e: any) {
+      console.error('[Google Auth Error]', e);
+      onError?.('Gagal memproses login Google. Pastikan domain terdaftar di Google Cloud Console.');
     }
   };
 
   return (
     <>
-      <Script
-        src="https://accounts.google.com/gsi/client"
-        strategy="afterInteractive"
-        onLoad={() => setIsScriptLoaded(true)}
-      />
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
 
-      <div className="w-full flex flex-col items-center justify-center">
-        {/* Container for official Google GIS button */}
-        <div
-          ref={googleBtnRef}
-          className={`w-full flex justify-center [&>div]:!w-full [&_iframe]:!w-full ${
-            hasRenderedNative ? 'block' : 'hidden'
-          }`}
-        />
-
-        {/* Fallback button if native button is not rendered yet */}
-        {!hasRenderedNative && (
-          <button
-            type="button"
-            onClick={handleCustomClick}
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl border border-border bg-card/80 hover:bg-muted text-foreground font-semibold text-xs flex items-center justify-center gap-3 transition-all shadow-sm cursor-pointer disabled:opacity-60"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
-            ) : (
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
+      <motion.button
+        type="button"
+        whileHover={{ scale: 1.015 }}
+        whileTap={{ scale: 0.985 }}
+        onClick={handleGoogleClick}
+        disabled={isLoading}
+        className="w-full h-12 rounded-2xl bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-3 transition-all shadow-md shadow-black/20 border border-slate-200/90 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed select-none"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin text-[#0E8991]" />
+            <span className="text-slate-600 font-medium">Menghubungkan ke Google...</span>
+          </>
+        ) : (
+          <>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -174,13 +158,13 @@ export function GoogleAuthButton({
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-            )}
-            <span>
+            </div>
+            <span className="font-semibold text-slate-800 tracking-tight">
               {mode === 'register' ? 'Daftar dengan Akun Google' : 'Lanjutkan dengan Google'}
             </span>
-          </button>
+          </>
         )}
-      </div>
+      </motion.button>
     </>
   );
 }

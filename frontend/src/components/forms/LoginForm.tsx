@@ -106,9 +106,9 @@ export function LoginForm() {
             onSuccessMessage={(msg) => setSuccessMsg(msg)}
           />
 
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-border w-full" />
-            <span className="bg-card px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider relative">
+          <div className="relative flex items-center justify-center my-3">
+            <div className="w-full border-t border-border/40" />
+            <span className="absolute bg-[#0C313A] px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider rounded-md">
               atau masuk dengan email
             </span>
           </div>
