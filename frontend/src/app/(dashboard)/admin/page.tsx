@@ -121,11 +121,11 @@ export default function AdminUsersPage() {
       />
 
       {/* Pagination Controls */}
-      {data?.meta && data.meta.totalPages > 1 && (
+      {data?.meta && (data.meta.totalPages || 0) > 1 && (
         <div className="flex items-center justify-between pt-4 border-t border-border/40">
           <p className="text-xs text-muted-foreground">
-            Menampilkan <span className="font-semibold text-foreground">{data.data.length}</span> dari{' '}
-            <span className="font-semibold text-foreground">{data.meta.total}</span> pengguna
+            Menampilkan <span className="font-semibold text-foreground">{data?.data?.length || 0}</span> dari{' '}
+            <span className="font-semibold text-foreground">{data?.meta?.total || 0}</span> pengguna
           </p>
 
           <div className="flex items-center gap-2">
@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
               {page} / {data.meta.totalPages}
             </span>
             <button
-              disabled={page >= data.meta.totalPages}
+              disabled={page >= (data.meta.totalPages || 1)}
               onClick={() => setPage((p) => p + 1)}
               className="p-2 rounded-lg border border-input bg-background/50 text-muted-foreground disabled:opacity-40 hover:bg-secondary transition-all"
             >

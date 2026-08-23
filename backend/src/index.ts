@@ -23,6 +23,7 @@ import { reportRoutes } from './modules/report/report.routes';
 import { backupRoutes } from './modules/backup/backup.routes';
 import { masterRoutes } from './modules/master/master.routes';
 import { settingsRoutes } from './modules/settings/settings.route';
+import { publicRoutes } from './modules/public/public.routes';
 import { startAutoBackupJob } from './jobs/autoBackup';
 import { startSubscriptionNotifierJob } from './jobs/subscriptionNotifier';
 import { startTrialCleanerJob } from './jobs/trialCleaner';
@@ -73,6 +74,7 @@ async function main() {
     await fastify.register(backupRoutes, { prefix: '/api/v1/backup' });
     await fastify.register(masterRoutes, { prefix: '/api/v1/master' });
     await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
+    await fastify.register(publicRoutes, { prefix: '/api/v1/public' });
     // Start Fastify server
     const listenPort = env.PORT || env.BACKEND_PORT || 4000;
     const address = await fastify.listen({

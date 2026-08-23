@@ -3,12 +3,14 @@
 import React, { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowRight, Play, ShieldCheck, Smartphone, Users, BookOpen, Bell } from 'lucide-react';
+import { ArrowRight, Play, ShieldCheck, Smartphone, Users, BookOpen, Bell, Building2 } from 'lucide-react';
 
 import { useLandingAuth } from '../../contexts/LandingAuthContext';
+import { useLandingStats } from '../../hooks/useLandingStats';
 
 export function Hero() {
   const { openAuth } = useLandingAuth();
+  const { data: stats } = useLandingStats();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const { scrollYProgress } = useScroll({
@@ -19,6 +21,11 @@ export function Hero() {
   // Smooth Parallax
   const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
   const opacityHero = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const totalSantriDisplay = (stats?.totalSantri ?? 0).toLocaleString('id-ID');
+  const todayHafalanDisplay = (stats?.todayHafalan ?? 0).toLocaleString('id-ID');
+  const totalOrgsDisplay = (stats?.totalOrganizations ?? 0).toLocaleString('id-ID');
+  const recentHafalan = stats?.recentHafalan || [];
 
   return (
     <section ref={containerRef} className="relative min-h-[100svh] flex flex-col items-center justify-center pt-28 pb-20 overflow-hidden">
@@ -47,7 +54,9 @@ export function Hero() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0E8991] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0E8991]"></span>
             </span>
-            <span className="text-xs font-bold text-foreground tracking-wide uppercase">Telah Hadir: HafalanKu v2.0</span>
+            <span className="text-xs font-bold text-foreground tracking-wide uppercase">
+              {stats?.totalOrganizations ? `${totalOrgsDisplay} Lembaga Terhubung Real-Time` : 'Platform Manajemen Tahfidz Modern'}
+            </span>
           </motion.div>
 
           <motion.h1
@@ -91,7 +100,7 @@ export function Hero() {
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl border border-border bg-card text-foreground font-bold text-sm shadow-md hover:bg-muted transition-all"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl border border-border bg-card text-foreground font-bold text-sm shadow-md hover:bg-muted transition-all cursor-pointer"
               >
                 <Play className="w-4 h-4 text-[#0E8991] dark:text-[#1bb2bd] fill-[#0E8991] dark:fill-[#1bb2bd]" />
                 <span>Pelajari Lebih Lanjut</span>
@@ -116,7 +125,7 @@ export function Hero() {
               <div className="w-3 h-3 rounded-full bg-[#EAA27C]" />
               <div className="w-3 h-3 rounded-full bg-[#0E8991]" />
               <div className="mx-auto flex items-center gap-2 px-3 py-1 rounded-md bg-background border border-border text-[11px] text-muted-foreground font-mono">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#0E8991] dark:text-[#1bb2bd]" /> app.hafalanku.com
+                <ShieldCheck className="w-3.5 h-3.5 text-[#0E8991] dark:text-[#1bb2bd]" /> hafalanku.forapp.id
               </div>
             </div>
 
@@ -130,8 +139,8 @@ export function Hero() {
                   {/* Total Santri Card */}
                   <div className="p-5 rounded-2xl bg-[#0E8991]/10 border border-[#0E8991]/20 flex items-center justify-between">
                     <div className="space-y-1">
-                      <span className="text-xs font-bold text-[#0E8991] dark:text-[#1bb2bd] uppercase tracking-wider">Total Santri</span>
-                      <div className="text-3xl font-extrabold font-outfit text-foreground">1,248</div>
+                      <span className="text-xs font-bold text-[#0E8991] dark:text-[#1bb2bd] uppercase tracking-wider">Total Santri Terdaftar</span>
+                      <div className="text-3xl font-extrabold font-outfit text-foreground">{totalSantriDisplay}</div>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-[#0E8991] text-white flex items-center justify-center shadow-lg shadow-[#0E8991]/20">
                       <Users className="w-6 h-6" />
@@ -143,8 +152,8 @@ export function Hero() {
                     <div className="space-y-1">
                       <span className="text-xs font-bold text-[#EAA27C] uppercase tracking-wider">Setoran Hari Ini</span>
                       <div className="flex items-baseline gap-2">
-                        <div className="text-3xl font-extrabold font-outfit text-foreground">432</div>
-                        <span className="text-xs font-bold text-[#0E8991] dark:text-[#1bb2bd]">+12%</span>
+                        <div className="text-3xl font-extrabold font-outfit text-foreground">{todayHafalanDisplay}</div>
+                        <span className="text-xs font-bold text-[#0E8991] dark:text-[#1bb2bd]">Tercatat</span>
                       </div>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-[#EAA27C] text-white flex items-center justify-center shadow-lg shadow-[#EAA27C]/20">
@@ -158,54 +167,33 @@ export function Hero() {
                 <div className="p-5 rounded-2xl bg-muted/40 border border-border space-y-3">
                   <div className="flex items-center justify-between border-b border-border/60 pb-2">
                     <span className="text-sm font-bold text-foreground">Setoran Hafalan Terbaru</span>
-                    <span className="text-xs text-[#0E8991] dark:text-[#1bb2bd] font-bold">Hari Ini</span>
+                    <span className="text-xs text-[#0E8991] dark:text-[#1bb2bd] font-bold">Data Real-Time</span>
                   </div>
 
                   <div className="space-y-2.5">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#0E8991] text-white font-bold text-xs flex items-center justify-center">
-                          AZ
+                    {recentHafalan.length > 0 ? (
+                      recentHafalan.map((h) => (
+                        <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-[#0E8991] text-white font-bold text-xs flex items-center justify-center">
+                              {h.initials}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-foreground">{h.santriName}</p>
+                              <p className="text-[11px] text-muted-foreground">{h.surahName}: {h.ayatRange}</p>
+                            </div>
+                          </div>
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border border-[#0E8991]/30">
+                            {h.predikat}
+                          </span>
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-foreground">Ahmad Zaki</p>
-                          <p className="text-[11px] text-muted-foreground">Surah Al-Mulk: Ayat 1 - 15</p>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="p-6 text-center text-xs text-muted-foreground space-y-1">
+                        <p className="font-semibold text-foreground">Belum ada setoran hafalan hari ini.</p>
+                        <p>Daftarkan santri dan mulai catat setoran untuk melihat laporan langsung di sini!</p>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border border-[#0E8991]/30">
-                        Mumtaz
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#8DB6BC] text-white font-bold text-xs flex items-center justify-center">
-                          SN
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-foreground">Siti Nurhaliza</p>
-                          <p className="text-[11px] text-muted-foreground">Surah An-Naba: Ayat 1 - 30</p>
-                        </div>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border border-[#0E8991]/30">
-                        Mumtaz
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#EAA27C] text-white font-bold text-xs flex items-center justify-center">
-                          MR
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-foreground">Muhammad Rizky</p>
-                          <p className="text-[11px] text-muted-foreground">Surah Ar-Rahman: Ayat 1 - 20</p>
-                        </div>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#EAA27C]/15 text-[#EAA27C] border border-[#EAA27C]/30">
-                        Jayyid Jiddan
-                      </span>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>

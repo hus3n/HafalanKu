@@ -93,7 +93,7 @@ export default function SuperadminPage() {
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Pengguna Platform ({usersData?.data.length || 0})</span>
+          <span>Pengguna Platform ({usersData?.data?.length || 0})</span>
         </button>
 
         <button
@@ -105,7 +105,7 @@ export default function SuperadminPage() {
           }`}
         >
           <Building className="w-4 h-4" />
-          <span>Lembaga & Organisasi ({orgsData.length})</span>
+          <span>Lembaga & Organisasi ({orgsData?.length || 0})</span>
         </button>
       </div>
 
@@ -179,11 +179,11 @@ export default function SuperadminPage() {
           />
 
           {/* Pagination Controls */}
-          {usersData?.meta && usersData.meta.totalPages > 1 && (
+          {usersData?.meta && (usersData.meta.totalPages || 0) > 1 && (
             <div className="flex items-center justify-between pt-4 border-t border-border/40">
               <p className="text-xs text-muted-foreground">
-                Menampilkan <span className="font-semibold text-foreground">{usersData.data.length}</span> dari{' '}
-                <span className="font-semibold text-foreground">{usersData.meta.total}</span> pengguna
+                Menampilkan <span className="font-semibold text-foreground">{usersData?.data?.length || 0}</span> dari{' '}
+                <span className="font-semibold text-foreground">{usersData?.meta?.total || 0}</span> pengguna
               </p>
 
               <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export default function SuperadminPage() {
                   {page} / {usersData.meta.totalPages}
                 </span>
                 <button
-                  disabled={page >= usersData.meta.totalPages}
+                  disabled={page >= (usersData.meta.totalPages || 1)}
                   onClick={() => setPage((p) => p + 1)}
                   className="p-2 rounded-lg border border-input bg-background/50 text-muted-foreground disabled:opacity-40 hover:bg-secondary transition-all"
                 >
