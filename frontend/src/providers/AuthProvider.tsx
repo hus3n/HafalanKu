@@ -17,10 +17,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        // Assume backend has a /auth/me endpoint to verify token and return user
-        const response = await api.get<{ user: User }>('/auth/me');
+        // Endpoint /auth/me mengembalikan user object di response.data
+        const response = await api.get<any>('/auth/me');
         if (response.success && response.data) {
-          setAuth(response.data.user, token);
+          const userData = response.data.user || response.data;
+          setAuth(userData, token);
         } else {
           clearAuth();
         }
