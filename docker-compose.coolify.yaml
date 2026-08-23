@@ -58,6 +58,14 @@ services:
       UPLOAD_DIR: ${UPLOAD_DIR:-./uploads}
       MAX_FILE_SIZE: ${MAX_FILE_SIZE:-2097152}
       FRONTEND_URL: ${FRONTEND_URL:-https://hafalanku.vipsin.my.id}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-HafalanKu}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     ports:
       - "${BACKEND_PORT:-4000}:4000"
     expose:
@@ -80,10 +88,12 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.vipsin.my.id/api/v1}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
     environment:
       NODE_ENV: production
       TZ: Asia/Jakarta
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.vipsin.my.id/api/v1}
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
       PORT: 3000
       FRONTEND_PORT: ${FRONTEND_PORT:-3000}
     ports:
