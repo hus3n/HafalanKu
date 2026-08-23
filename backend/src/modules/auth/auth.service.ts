@@ -292,17 +292,35 @@ export class AuthService {
     try {
       // Verifikasi token via Google TokenInfo API resmi
       const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(input.credential)}`);
-      if (!response.ok) {
-        throw new Error('Google token verification failed');
+      if (response.ok) {
+        const data: any = await response.json();
+        payload = {
+          sub: data.sub,
+          email: data.email?.toLowerCase(),
+          name: data.name,
+          picture: data.picture,
+        };
+      } else {
+        // Coba alternatif via access_token jika token berjenis access_token
+        const altResponse = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(input.credential)}`);
+        if (altResponse.ok) {
+          const altData: any = await altResponse.json();
+          const userinfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${input.credential}` },
+          });
+          const userinfo: any = userinfoRes.ok ? await userinfoRes.json() : {};
+          payload = {
+            sub: altData.user_id || userinfo.sub,
+            email: (altData.email || userinfo.email)?.toLowerCase(),
+            name: userinfo.name || userinfo.given_name,
+            picture: userinfo.picture,
+          };
+        } else {
+          throw new Error('Google token verification failed');
+        }
       }
-      const data: any = await response.json();
-      payload = {
-        sub: data.sub,
-        email: data.email?.toLowerCase(),
-        name: data.name,
-        picture: data.picture,
-      };
     } catch (err: any) {
+      console.error('[Google Auth Verification Error]', err);
       throw new AppError('Verifikasi akun Google gagal. Pastikan token Google valid.', 401);
     }
 
