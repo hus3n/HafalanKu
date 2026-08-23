@@ -394,15 +394,19 @@ export class AuthService {
       });
 
       // Audit Trail
-      await AuditTrail.create({
-        userId: user.id,
-        userName: user.name,
-        action: 'CREATE',
-        entity: 'USER_GOOGLE',
-        entityId: user.id,
-        ipAddress,
-        userAgent,
-      });
+      try {
+        await AuditTrail.create({
+          userId: user.id,
+          userName: user.name,
+          action: 'CREATE_GOOGLE',
+          entity: 'USER',
+          entityId: user.id,
+          ipAddress,
+          userAgent,
+        });
+      } catch (auditErr) {
+        console.warn('[GoogleAuth] Audit log skipped:', auditErr);
+      }
 
       // Notifikasi ke Superadmin
       this.notifySuperadminNewRegistration({
@@ -439,7 +443,13 @@ export class AuthService {
     }
 
     if (!user.isActive) {
-      throw new AppError('Akun Google Anda berhasil terdaftar dan sedang menunggu persetujuan / aktivasi oleh Superadmin.', 403);
+      const { passwordHash: _, emailOtp: __, emailOtpExpires: ___, ...userWithoutPassword } = user as any;
+      return {
+        user: userWithoutPassword,
+        isNewUser: true,
+        requiresActivation: true,
+        message: 'Akun Google berhasil terdaftar & email terverifikasi! Akun sedang menunggu aktivasi oleh Superadmin.',
+      };
     }
 
     // Checking active period
@@ -453,15 +463,19 @@ export class AuthService {
     }
 
     // Log Audit
-    await AuditTrail.create({
-      userId: user.id,
-      userName: user.name,
-      action: 'LOGIN_GOOGLE',
-      entity: 'USER',
-      entityId: user.id,
-      ipAddress,
-      userAgent,
-    });
+    try {
+      await AuditTrail.create({
+        userId: user.id,
+        userName: user.name,
+        action: 'LOGIN_GOOGLE',
+        entity: 'USER',
+        entityId: user.id,
+        ipAddress,
+        userAgent,
+      });
+    } catch (auditErr) {
+      console.warn('[GoogleAuth] Audit log skipped:', auditErr);
+    }
 
     const tokenPayload = {
       userId: user.id,

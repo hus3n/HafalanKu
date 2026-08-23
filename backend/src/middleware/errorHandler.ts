@@ -39,9 +39,9 @@ export function errorHandler(error: FastifyError, request: FastifyRequest, reply
     return reply.status(404).send(errorResponse(error.message || 'Resource tidak ditemukan'));
   }
 
-  // Fallback Internal Server Error
+  // Fallback Error Response
   const statusCode = error.statusCode || 500;
-  const message = statusCode === 500 ? 'Terjadi kesalahan internal pada server' : error.message;
+  const message = error.message || 'Terjadi kesalahan internal pada server';
 
   return reply.status(statusCode).send(errorResponse(message));
 }
