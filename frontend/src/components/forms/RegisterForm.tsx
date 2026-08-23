@@ -6,7 +6,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Lock, Mail, User as UserIcon, Building2, Eye, EyeOff, Phone } from 'lucide-react';
+import {
+  Loader2,
+  Lock,
+  Mail,
+  User as UserIcon,
+  Building2,
+  Eye,
+  EyeOff,
+  Phone,
+  Sparkles,
+  CheckCircle2,
+} from 'lucide-react';
 import { RegisterInput, registerSchema } from 'shared';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -41,16 +52,23 @@ export function RegisterForm() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       accountType: 'personal',
+      subscriptionPlan: 'TRIAL_14_DAYS',
     },
   });
 
   const accountType = watch('accountType');
   const organizationName = watch('organizationName');
   const phone = watch('phone');
+  const selectedPlan = watch('subscriptionPlan') || 'TRIAL_14_DAYS';
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterInput) => {
-      const res = await api.post<{ user: User; message?: string; requiresEmailVerification?: boolean; email?: string }>('/auth/register', data);
+      const res = await api.post<{
+        user: User;
+        message?: string;
+        requiresEmailVerification?: boolean;
+        email?: string;
+      }>('/auth/register', data);
       return { res, originalData: data };
     },
     onSuccess: ({ res, originalData }) => {
@@ -79,9 +97,15 @@ export function RegisterForm() {
 
     if (pendingRegistrationData) {
       const waNumber = '6285229925593';
-      const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar dan memverifikasi email akun HafalanKu saya:\n\nNama: ${pendingRegistrationData.name}\nEmail: ${pendingRegistrationData.email}\nTipe Akun: ${pendingRegistrationData.accountType === 'organization' ? 'Admin Organisasi' : 'Pengajar/User'}\n\nMohon untuk segera diaktifkan. Terima kasih.`;
+      let planText = 'Trial Gratis (14 Hari)';
+      if (pendingRegistrationData.subscriptionPlan === '1_MONTH') planText = 'Paket 1 Bulan';
+      else if (pendingRegistrationData.subscriptionPlan === '6_MONTHS') planText = 'Paket 6 Bulan';
+      else if (pendingRegistrationData.subscriptionPlan === '12_MONTHS') planText = 'Paket 1 Tahun (12 Bulan)';
+      else if (pendingRegistrationData.subscriptionPlan === 'LIFETIME') planText = 'Paket Lifetime / Permanen';
+
+      const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar dan memverifikasi email akun HafalanKu saya:\n\nNama: ${pendingRegistrationData.name}\nEmail: ${pendingRegistrationData.email}\nNo. WhatsApp: ${pendingRegistrationData.phone}\nTipe Akun: ${pendingRegistrationData.accountType === 'organization' ? 'Admin Organisasi' : 'Pengajar/User'}\nPilihan Paket: ${planText}\n\nMohon untuk segera diaktifkan. Terima kasih.`;
       const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
-      
+
       try {
         window.open(waUrl, '_blank');
       } catch (e) {}
@@ -99,7 +123,7 @@ export function RegisterForm() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ type: 'spring', duration: 0.6 }}
-        className="glass-card p-8 w-full max-w-md mx-auto border border-primary/20"
+        className="glass-card p-6 sm:p-8 w-full max-w-md mx-auto border border-primary/20"
       >
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold font-outfit text-gradient">Buat Akun</h1>
@@ -113,6 +137,7 @@ export function RegisterForm() {
             accountType={accountType}
             organizationName={organizationName}
             phone={phone}
+            subscriptionPlan={selectedPlan}
             onError={(msg) => setErrorMsg(msg)}
             onSuccessMessage={(msg) => setSuccessMsg(msg)}
           />
@@ -221,11 +246,13 @@ export function RegisterForm() {
               <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 {...register('name')}
-                placeholder="Nama lengkap Anda"
+                placeholder="Nama Lengkap Anda"
                 className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-input bg-background/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
               />
             </div>
-            {errors.name && <p className="text-[11px] text-destructive">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-[11px] text-destructive">{errors.name.message}</p>
+            )}
           </motion.div>
 
           {/* Email Field */}
@@ -235,37 +262,42 @@ export function RegisterForm() {
             transition={{ delay: 0.2 }}
             className="space-y-1.5"
           >
-            <label className="text-xs font-medium text-foreground">Alamat Email Aktif</label>
+            <label className="text-xs font-medium text-foreground">Alamat Email</label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 {...register('email')}
                 type="email"
-                placeholder="email@anda.com"
+                placeholder="email@domain.com"
                 className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-input bg-background/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
               />
             </div>
-            {errors.email && <p className="text-[11px] text-destructive">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-[11px] text-destructive">{errors.email.message}</p>
+            )}
           </motion.div>
 
-          {/* Phone Field */}
+          {/* WhatsApp / Phone Field */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
             className="space-y-1.5"
           >
-            <label className="text-xs font-medium text-foreground">Nomor WhatsApp</label>
+            <label className="text-xs font-medium text-foreground">Nomor WhatsApp / HP</label>
             <div className="relative">
-              <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Phone className="absolute left-3 top-3 h-4 w-4 text-[#0E8991]" />
               <input
                 {...register('phone')}
                 type="tel"
-                placeholder="08123456789"
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-input bg-background/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                inputMode="numeric"
+                placeholder="Contoh: 08123456789"
+                className="w-full pl-9 pr-4 py-2 text-xs font-mono rounded-xl border border-input bg-background/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
               />
             </div>
-            {errors.phone && <p className="text-[11px] text-destructive">{errors.phone.message}</p>}
+            {errors.phone && (
+              <p className="text-[11px] text-destructive">{errors.phone.message}</p>
+            )}
           </motion.div>
 
           {/* Password Field */}
@@ -297,10 +329,96 @@ export function RegisterForm() {
             )}
           </motion.div>
 
+          {/* Pilihan Paket Masa Aktif / Trial */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
+            transition={{ delay: 0.33 }}
+            className="space-y-2 pt-1"
+          >
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#EAA27C]" />
+                Pilihan Masa Aktif
+              </label>
+              <span className="text-[10px] text-muted-foreground">Pilih paket awal</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setValue('subscriptionPlan', 'TRIAL_14_DAYS')}
+                className={cn(
+                  'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                  selectedPlan === 'TRIAL_14_DAYS'
+                    ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                    : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs font-bold text-foreground">🎁 Trial Gratis</span>
+                  {selectedPlan === 'TRIAL_14_DAYS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                </div>
+                <p className="text-[10px] text-muted-foreground">14 Hari Penuh Fitur</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setValue('subscriptionPlan', '1_MONTH')}
+                className={cn(
+                  'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                  selectedPlan === '1_MONTH'
+                    ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                    : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs font-bold text-foreground">💎 1 Bulan</span>
+                  {selectedPlan === '1_MONTH' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                </div>
+                <p className="text-[10px] text-muted-foreground">Langganan Berbayar</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setValue('subscriptionPlan', '12_MONTHS')}
+                className={cn(
+                  'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                  selectedPlan === '12_MONTHS'
+                    ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                    : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs font-bold text-foreground">💎 1 Tahun</span>
+                  {selectedPlan === '12_MONTHS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                </div>
+                <p className="text-[10px] text-[#EAA27C] font-medium">12 Bulan (Populer)</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setValue('subscriptionPlan', 'LIFETIME')}
+                className={cn(
+                  'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                  selectedPlan === 'LIFETIME'
+                    ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                    : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs font-bold text-foreground">👑 Lifetime</span>
+                  {selectedPlan === 'LIFETIME' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                </div>
+                <p className="text-[10px] text-muted-foreground">Akses Selamanya</p>
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.38 }}
           >
             <motion.button
               whileHover={{ scale: 1.02 }}

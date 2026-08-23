@@ -12,9 +12,10 @@ export const registerSchema = z.object({
   accountType: z.enum(['personal', 'organization'], {
     required_error: 'Tipe akun wajib dipilih',
   }),
-  phone: z.string().min(10, 'Nomor WhatsApp / HP tidak valid (minimal 10 digit)'),
+  phone: z.string().min(9, 'Nomor WhatsApp / HP tidak valid (minimal 9 digit)'),
   organizationName: z.string().optional(),
   trialPeriod: z.string().optional(),
+  subscriptionPlan: z.string().optional(),
 }).refine((data) => {
   if (data.accountType === 'organization' && (!data.organizationName || data.organizationName.trim() === '')) {
     return false;

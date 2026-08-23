@@ -65,28 +65,36 @@ export class AuthService {
     let activeUntil: Date | null = null;
     let isTrial = false;
 
-    const period = (input as any).trialPeriod || '14_DAYS';
+    const plan = (input as any).subscriptionPlan || (input as any).trialPeriod || 'TRIAL_14_DAYS';
     const now = new Date();
-    if (period === '7_DAYS') {
+    if (plan === '7_DAYS') {
       now.setDate(now.getDate() + 7);
       activeUntil = now;
       isTrial = true;
-    } else if (period === '14_DAYS') {
+    } else if (plan === '14_DAYS' || plan === 'TRIAL_14_DAYS' || plan === 'TRIAL') {
       now.setDate(now.getDate() + 14);
       activeUntil = now;
       isTrial = true;
-    } else if (period === '30_DAYS') {
-      now.setDate(now.getDate() + 30);
-      activeUntil = now;
-      isTrial = true;
-    } else if (period === '1_MONTH') {
+    } else if (plan === '30_DAYS' || plan === '1_MONTH') {
       now.setMonth(now.getMonth() + 1);
       activeUntil = now;
       isTrial = false;
-    } else if (period === '1_YEAR') {
+    } else if (plan === '6_MONTHS') {
+      now.setMonth(now.getMonth() + 6);
+      activeUntil = now;
+      isTrial = false;
+    } else if (plan === '1_YEAR' || plan === '12_MONTHS') {
       now.setFullYear(now.getFullYear() + 1);
       activeUntil = now;
       isTrial = false;
+    } else if (plan === 'LIFETIME') {
+      now.setFullYear(now.getFullYear() + 100);
+      activeUntil = now;
+      isTrial = false;
+    } else {
+      now.setDate(now.getDate() + 14);
+      activeUntil = now;
+      isTrial = true;
     }
 
     // Generate 6-digit OTP code
@@ -355,8 +363,33 @@ export class AuthService {
       const randomPassword = `Ggl_${Math.random().toString(36).slice(-10)}_${Date.now()}`;
       const passwordHash = await bcrypt.hash(randomPassword, BCRYPT_SALT_ROUNDS);
 
+      const plan = input.subscriptionPlan || 'TRIAL_14_DAYS';
       const now = new Date();
-      now.setDate(now.getDate() + 14); // 14 days trial
+      let activeUntil: Date | null = null;
+      let isTrial = false;
+
+      if (plan === '1_MONTH') {
+        now.setMonth(now.getMonth() + 1);
+        activeUntil = now;
+        isTrial = false;
+      } else if (plan === '6_MONTHS') {
+        now.setMonth(now.getMonth() + 6);
+        activeUntil = now;
+        isTrial = false;
+      } else if (plan === '12_MONTHS' || plan === '1_YEAR') {
+        now.setFullYear(now.getFullYear() + 1);
+        activeUntil = now;
+        isTrial = false;
+      } else if (plan === 'LIFETIME') {
+        now.setFullYear(now.getFullYear() + 100);
+        activeUntil = now;
+        isTrial = false;
+      } else {
+        // Default Trial 14 Hari
+        now.setDate(now.getDate() + 14);
+        activeUntil = now;
+        isTrial = true;
+      }
 
       user = await prisma.$transaction(async (tx: any) => {
         const newUser = await tx.user.create({
@@ -370,8 +403,8 @@ export class AuthService {
             googleId: payload.sub,
             isEmailVerified: true, // Google accounts are pre-verified
             isActive: false, // Pending Superadmin approval
-            isTrial: true,
-            activeUntil: now,
+            isTrial,
+            activeUntil,
           },
         });
 
@@ -415,6 +448,8 @@ export class AuthService {
         phone: user.phone || '-',
         role: user.role,
         organizationName: input.organizationName || 'Perorangan',
+        subscriptionPlan: plan,
+        isTrial,
         createdAt: user.createdAt,
       }).catch((err) => {
         console.error('[AuthService] Error notifying superadmin of Google registration:', err);
@@ -744,20 +779,39 @@ export class AuthService {
     phone: string;
     role: string;
     organizationName?: string;
+    subscriptionPlan?: string;
+    isTrial?: boolean;
     createdAt: Date;
   }) {
     const timeStr = new Date(data.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
     
+    // Format teks pilihan paket langganan
+    let planText = '🎁 Trial Gratis (14 Hari Percobaan Bebas Fitur)';
+    if (data.subscriptionPlan === '1_MONTH') {
+      planText = '💎 Langganan Berbayar: Paket 1 Bulan';
+    } else if (data.subscriptionPlan === '6_MONTHS') {
+      planText = '💎 Langganan Berbayar: Paket 6 Bulan (Hemat)';
+    } else if (data.subscriptionPlan === '12_MONTHS' || data.subscriptionPlan === '1_YEAR') {
+      planText = '💎 Langganan Berbayar: Paket 1 Tahun / 12 Bulan (Populer)';
+    } else if (data.subscriptionPlan === 'LIFETIME') {
+      planText = '👑 Langganan Berbayar: Paket Lifetime / Permanen';
+    } else if (data.subscriptionPlan && data.subscriptionPlan !== 'TRIAL_14_DAYS') {
+      planText = data.subscriptionPlan;
+    } else if (data.isTrial === false) {
+      planText = '💎 Langganan Berbayar (Paket Standar)';
+    }
+
     // 1. Kirim via WhatsApp ke Superadmin
     try {
       const waMessage = 
         `📢 *NOTIFIKASI PENDAFTARAN BARU HAFALANKU*\n\n` +
-        `Ada pengguna baru yang baru saja mendaftar dan menyelesaikan verifikasi email:\n\n` +
+        `Ada pengguna baru yang baru saja mendaftar & terverifikasi:\n\n` +
         `👤 *Nama:* ${data.name}\n` +
         `📧 *Email:* ${data.email}\n` +
         `📱 *WhatsApp:* ${data.phone}\n` +
         `🔑 *Role:* ${data.role}\n` +
         `🏢 *Lembaga/TPQ:* ${data.organizationName || 'Perorangan'}\n` +
+        `⏳ *Pilihan Masa Aktif:* ${planText}\n` +
         `🕒 *Waktu Daftar:* ${timeStr} WIB\n\n` +
         `Silakan login ke *Dashboard Superadmin* (Menu Pengguna Platform) untuk mengaktifkan akun pengguna tersebut.\n\n` +
         `_Pesan otomatis dikirim oleh Sistem HafalanKu._`;
@@ -787,6 +841,7 @@ export class AuthService {
           `📱 *No. HP:* \`${data.phone}\`\n` +
           `🔑 *Role:* \`${data.role}\`\n` +
           `🏢 *Lembaga:* ${data.organizationName || 'Perorangan'}\n` +
+          `⏳ *Paket Dipilih:* ${planText}\n` +
           `🕒 *Waktu:* ${timeStr} WIB\n\n` +
           `_Buka menu Superadmin untuk mengaktifkan akun ini._`;
 

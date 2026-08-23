@@ -26,6 +26,7 @@ export const googleAuthSchema = z.object({
   accountType: z.enum(['personal', 'organization']).default('personal'),
   organizationName: z.string().optional(),
   phone: z.string().optional(),
+  subscriptionPlan: z.string().optional(),
 });
 
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;

@@ -3,16 +3,18 @@
 import React, { useState } from 'react';
 import Script from 'next/script';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Phone, Building2, CheckCircle2, AlertCircle, X, ArrowRight } from 'lucide-react';
+import { Loader2, Phone, Building2, CheckCircle2, AlertCircle, X, ArrowRight, Sparkles } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { cn } from '../../lib/utils';
 
 interface GoogleAuthButtonProps {
   mode?: 'login' | 'register';
   accountType?: 'personal' | 'organization';
   organizationName?: string;
   phone?: string;
+  subscriptionPlan?: string;
   onError?: (msg: string) => void;
   onSuccessMessage?: (msg: string) => void;
 }
@@ -28,6 +30,7 @@ export function GoogleAuthButton({
   accountType = 'personal',
   organizationName = '',
   phone = '',
+  subscriptionPlan = 'TRIAL_14_DAYS',
   onError,
   onSuccessMessage,
 }: GoogleAuthButtonProps) {
@@ -40,11 +43,17 @@ export function GoogleAuthButton({
   const [pendingGoogleToken, setPendingGoogleToken] = useState<string | null>(null);
   const [inputPhone, setInputPhone] = useState(phone || '');
   const [inputOrgName, setInputOrgName] = useState(organizationName || '');
+  const [inputPlan, setInputPlan] = useState(subscriptionPlan || 'TRIAL_14_DAYS');
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
-  const submitGoogleAuth = async (token: string, phoneToSubmit: string, orgNameToSubmit: string) => {
+  const submitGoogleAuth = async (
+    token: string,
+    phoneToSubmit: string,
+    orgNameToSubmit: string,
+    planToSubmit: string
+  ) => {
     setIsLoading(true);
     try {
       const res = await api.post<any>('/auth/google', {
@@ -52,6 +61,7 @@ export function GoogleAuthButton({
         accountType,
         organizationName: orgNameToSubmit || undefined,
         phone: phoneToSubmit || undefined,
+        subscriptionPlan: planToSubmit || 'TRIAL_14_DAYS',
       });
 
       if (res.success && res.data) {
@@ -69,7 +79,13 @@ export function GoogleAuthButton({
           // Susun link WhatsApp konfirmasi ke Superadmin
           if (phoneToSubmit) {
             const waNumber = '6285229925593';
-            const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar akun HafalanKu via Google:\n\nEmail: ${res.data?.user?.email || '-'}\nNama: ${res.data?.user?.name || '-'}\nWhatsApp: ${phoneToSubmit}\nTipe Akun: ${accountType === 'organization' ? 'Admin Organisasi' : 'Pengajar/User'}\n\nMohon untuk diaktifkan. Terima kasih.`;
+            let planName = 'Trial Gratis (14 Hari)';
+            if (planToSubmit === '1_MONTH') planName = 'Paket 1 Bulan';
+            else if (planToSubmit === '6_MONTHS') planName = 'Paket 6 Bulan';
+            else if (planToSubmit === '12_MONTHS') planName = 'Paket 1 Tahun (12 Bulan)';
+            else if (planToSubmit === 'LIFETIME') planName = 'Paket Lifetime / Permanen';
+
+            const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar akun HafalanKu via Google:\n\nEmail: ${res.data?.user?.email || '-'}\nNama: ${res.data?.user?.name || '-'}\nWhatsApp: ${phoneToSubmit}\nTipe Akun: ${accountType === 'organization' ? 'Admin Organisasi' : 'Pengajar/User'}\nPilihan Paket: ${planName}\n\nMohon untuk diaktifkan. Terima kasih.`;
             const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
             try {
               window.open(waUrl, '_blank');
@@ -97,14 +113,19 @@ export function GoogleAuthButton({
       return;
     }
 
-    // Jika mode registrasi dan nomor WA belum diisi, minta user melengkapi nomor WA terlebih dahulu
+    // Jika mode registrasi dan nomor WA belum diisi, tampilkan modal pelengkap data
     if (mode === 'register' && (!phone && !inputPhone)) {
       setPendingGoogleToken(token);
       setShowPhoneModal(true);
       return;
     }
 
-    await submitGoogleAuth(token, phone || inputPhone, organizationName || inputOrgName);
+    await submitGoogleAuth(
+      token,
+      phone || inputPhone,
+      organizationName || inputOrgName,
+      subscriptionPlan || inputPlan
+    );
   };
 
   const handleGoogleClick = () => {
@@ -168,7 +189,7 @@ export function GoogleAuthButton({
 
     setPhoneError(null);
     if (pendingGoogleToken) {
-      submitGoogleAuth(pendingGoogleToken, cleanPhone, inputOrgName);
+      submitGoogleAuth(pendingGoogleToken, cleanPhone, inputOrgName, inputPlan);
     }
   };
 
@@ -218,7 +239,7 @@ export function GoogleAuthButton({
         )}
       </motion.button>
 
-      {/* Modal Lengkapi Nomor WhatsApp untuk Pendaftar Akun Google */}
+      {/* Modal Lengkapi Nomor WhatsApp & Pilihan Paket untuk Pendaftar Akun Google */}
       <AnimatePresence>
         {showPhoneModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
@@ -227,7 +248,7 @@ export function GoogleAuthButton({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 15 }}
               transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
-              className="w-full max-w-md rounded-3xl border border-[#0E8991]/30 bg-card/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl shadow-black/40 text-foreground relative overflow-hidden"
+              className="w-full max-w-md rounded-3xl border border-[#0E8991]/30 bg-card/95 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl shadow-black/40 text-foreground relative overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               {/* Top Accent Glow */}
               <div className="absolute top-0 right-0 w-48 h-48 bg-[#0E8991]/20 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -250,7 +271,7 @@ export function GoogleAuthButton({
                     Satu Langkah Lagi!
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Masukkan nomor WhatsApp aktif Anda agar Admin dapat mengirimkan notifikasi saat akun Anda telah diaktifkan.
+                    Masukkan nomor WhatsApp aktif dan pilih paket masa aktif akun Anda.
                   </p>
                 </div>
 
@@ -292,9 +313,84 @@ export function GoogleAuthButton({
                         className="w-full pl-9 pr-4 py-2.5 text-xs font-mono rounded-xl border border-input bg-background/80 focus:border-[#0E8991] focus:ring-1 focus:ring-[#0E8991] outline-none transition-all"
                       />
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      *Notifikasi aktivasi akun dan reminder hafalan santri akan dikirim ke nomor ini.
-                    </p>
+                  </div>
+
+                  {/* Pilihan Masa Aktif Akun */}
+                  <div className="space-y-2 pt-1">
+                    <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#EAA27C]" />
+                      Pilihan Masa Aktif
+                    </label>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setInputPlan('TRIAL_14_DAYS')}
+                        className={cn(
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                          inputPlan === 'TRIAL_14_DAYS'
+                            ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                            : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-bold text-foreground">🎁 Trial Gratis</span>
+                          {inputPlan === 'TRIAL_14_DAYS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">14 Hari Penuh Fitur</p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setInputPlan('1_MONTH')}
+                        className={cn(
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                          inputPlan === '1_MONTH'
+                            ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                            : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-bold text-foreground">💎 1 Bulan</span>
+                          {inputPlan === '1_MONTH' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Langganan Berbayar</p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setInputPlan('12_MONTHS')}
+                        className={cn(
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                          inputPlan === '12_MONTHS'
+                            ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                            : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-bold text-foreground">💎 1 Tahun</span>
+                          {inputPlan === '12_MONTHS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                        </div>
+                        <p className="text-[10px] text-[#EAA27C] font-medium">12 Bulan (Populer)</p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setInputPlan('LIFETIME')}
+                        className={cn(
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                          inputPlan === 'LIFETIME'
+                            ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                            : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-bold text-foreground">👑 Lifetime</span>
+                          {inputPlan === 'LIFETIME' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Akses Selamanya</p>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="pt-2">
