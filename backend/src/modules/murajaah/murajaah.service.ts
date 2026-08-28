@@ -510,9 +510,11 @@ export class MurajaahService {
         });
       }
 
-      // Anti-spam staggered delay (1.5 seconds between sends) if more items remain
+      // Anti-spam staggered delay (randomly 10, 15, or 20 seconds) if more items remain
       if (i < santriIds.length - 1) {
-        await new Promise((r) => setTimeout(r, 1500));
+        const delays = [10, 15, 20];
+        const randomDelay = delays[Math.floor(Math.random() * delays.length)];
+        await new Promise((r) => setTimeout(r, randomDelay * 1000));
       }
     }
 

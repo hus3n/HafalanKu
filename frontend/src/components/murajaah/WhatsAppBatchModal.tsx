@@ -31,6 +31,8 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
   const [isFinished, setIsFinished] = useState(false);
   const [successCount, setSuccessCount] = useState(0);
   const [failCount, setFailCount] = useState(0);
+  const [delayStrategy, setDelayStrategy] = useState<'random' | 'fixed-5' | 'fixed-10' | 'fixed-15' | 'fixed-20'>('random');
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   if (!isOpen) return null;
 
@@ -50,6 +52,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
     setCurrentIndex(0);
     setLogs([]);
     setIsFinished(false);
+    setCountdown(null);
     let succ = 0;
     let fail = 0;
 
@@ -78,9 +81,25 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
         setLogs((prev) => [errorLog, ...prev.slice(1)]);
       }
 
-      // Anti-Spam Staggered Delay (2 seconds per message)
+      // Anti-Spam Staggered Delay
       if (i < selectedGroups.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        let nextDelaySeconds = 5;
+        if (delayStrategy === 'random') {
+          const delays = [10, 15, 20];
+          nextDelaySeconds = delays[Math.floor(Math.random() * delays.length)];
+        } else {
+          nextDelaySeconds = parseInt(delayStrategy.split('-')[1], 10);
+        }
+
+        const delayLog = `[JEDA] ⏳ Menunggu ${nextDelaySeconds} detik sebelum mengirim pesan berikutnya...`;
+        setLogs((prev) => [delayLog, ...prev]);
+
+        setCountdown(nextDelaySeconds);
+        for (let seconds = nextDelaySeconds; seconds > 0; seconds--) {
+          setCountdown(seconds);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        setCountdown(null);
       }
     }
 
@@ -88,6 +107,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
     setFailCount(fail);
     setIsSending(false);
     setIsFinished(true);
+    setCountdown(null);
     queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
   };
 
@@ -111,7 +131,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
                   Kirim Pengingat WA Massal Anti-Spam
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Diproses otomatis melalui WhatsApp Gateway terhubung dengan jeda 2 detik per pesan agar aman dari pemblokiran.
+                  Diproses otomatis melalui WhatsApp Gateway terhubung dengan jeda waktu aman dan bervariasi agar terhindar dari pemblokiran.
                 </p>
               </div>
             </div>
@@ -133,7 +153,7 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
               <span>Total Santri Terpilih: <strong>{selectedGroups.length} Murid</strong></span>
             </div>
             <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 px-2.5 py-1 rounded-md">
-              Anti-Spam Active (2s Delay)
+              {delayStrategy === 'random' ? 'Anti-Spam: Acak (10s/15s/20s)' : `Anti-Spam: ${delayStrategy.split('-')[1]}s`}
             </span>
           </div>
 
@@ -162,11 +182,43 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
                 />
               </div>
               {isSending && (
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium animate-pulse flex items-center gap-1.5 pt-1">
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 pt-1">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Mengirimkan pesan ke nomor WhatsApp Wali Murid...
+                  {countdown !== null ? (
+                    <span>Menunggu jeda aman {countdown} detik sebelum mengirim pesan berikutnya...</span>
+                  ) : (
+                    <span className="animate-pulse">Mengirimkan pesan ke nomor WhatsApp Wali Murid...</span>
+                  )}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Settings Section (Before Sending) */}
+          {!isSending && !isFinished && (
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border space-y-2">
+              <label className="text-xs font-extrabold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                ⚙️ Pengaturan Jeda Pengiriman (Anti-Spam)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                <select
+                  value={delayStrategy}
+                  onChange={(e) => setDelayStrategy(e.target.value as any)}
+                  className="w-full h-10 px-3 rounded-xl border border-input bg-background text-foreground text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all cursor-pointer shadow-sm"
+                >
+                  <option value="random">🔄 Jeda Acak (10s, 15s, 20s) - Rekomendasi</option>
+                  <option value="fixed-5">⏱️ Jeda Tetap 5 Detik (Minimal)</option>
+                  <option value="fixed-10">⏱️ Jeda Tetap 10 Detik</option>
+                  <option value="fixed-15">⏱️ Jeda Tetap 15 Detik</option>
+                  <option value="fixed-20">⏱️ Jeda Tetap 20 Detik</option>
+                </select>
+                <div className="text-[11px] text-muted-foreground leading-relaxed">
+                  {delayStrategy === 'random' 
+                    ? 'Variasi jeda acak (10, 15, atau 20 detik) untuk mengamankan pengiriman dan meminimalkan resiko banned WhatsApp.'
+                    : `Mengirim pesan dengan jeda waktu tetap ${delayStrategy.split('-')[1]} detik antar pesan.`
+                  }
+                </div>
+              </div>
             </div>
           )}
 
