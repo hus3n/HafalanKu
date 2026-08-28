@@ -28,6 +28,7 @@ import { startAutoBackupJob } from './jobs/autoBackup';
 import { startSubscriptionNotifierJob } from './jobs/subscriptionNotifier';
 import { startTrialCleanerJob } from './jobs/trialCleaner';
 import { startMurajaahCleanerJob } from './jobs/murajaahCleaner';
+import './workers/whatsapp.worker';
 
 const fastify = Fastify({
   logger: loggerConfig,

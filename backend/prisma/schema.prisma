@@ -127,6 +127,8 @@ model Hafalan {
   @@index([userId])
   @@index([surahNumber])
   @@index([date])
+  @@index([santriId, date])
+  @@index([santriId, surahNumber])
   @@map("hafalan")
 }
 
@@ -135,6 +137,7 @@ model MurajaahSchedule {
   santriId       String   @map("santri_id")
   surahNumber    Int      @map("surah_number")
   surahName      String   @map("surah_name")
+  ayatRange      String?  @map("ayat_range")
   isSelected     Boolean  @default(true) @map("is_selected")
   lastReviewDate DateTime? @map("last_review_date")
   priorityScore  Float    @default(0) @map("priority_score") 
@@ -147,6 +150,7 @@ model MurajaahSchedule {
 
   @@unique([santriId, surahNumber])
   @@index([userId])
+  @@index([santriId, isSelected])
   @@map("murajaah_schedules")
 }
 
@@ -155,6 +159,7 @@ model MurajaahHistory {
   santriId       String   @map("santri_id")
   surahNumber    Int      @map("surah_number")
   surahName      String   @map("surah_name")
+  ayatRange      String?  @map("ayat_range")
   status         String   @default("BELUM") 
   date           DateTime @default(now())
   userId         String   @map("user_id")

@@ -1,2 +1,0 @@
-- ada bug pesan jadwal murajaah tidak terkirim ke wali murid padahal wa ustadz  sudah connect
-- belu ada fitur untuk tampilan full aplikasi

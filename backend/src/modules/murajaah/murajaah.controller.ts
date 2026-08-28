@@ -31,9 +31,9 @@ export class MurajaahController {
 
   static async createSchedule(req: FastifyRequest, reply: FastifyReply) {
     const userId = req.user!.userId;
-    const { santriId, surahNumber, surahName } = req.body as { santriId: string; surahNumber: number; surahName: string };
+    const { santriId, surahNumber, surahName, ayatRange } = req.body as { santriId: string; surahNumber: number; surahName: string; ayatRange?: string };
     
-    const result = await murajaahService.createSchedule(userId, santriId, surahNumber, surahName);
+    const result = await murajaahService.createSchedule(userId, santriId, surahNumber, surahName, ayatRange);
     
     return reply.send({ success: true, data: result });
   }
@@ -50,9 +50,9 @@ export class MurajaahController {
   static async updateSchedule(req: FastifyRequest, reply: FastifyReply) {
     const userId = req.user!.userId;
     const { id } = req.params as { id: string };
-    const { surahNumber, surahName } = req.body as { surahNumber: number; surahName: string };
+    const { surahNumber, surahName, ayatRange } = req.body as { surahNumber: number; surahName: string; ayatRange?: string };
 
-    const result = await murajaahService.updateScheduleSurah(userId, id, surahNumber, surahName);
+    const result = await murajaahService.updateScheduleSurah(userId, id, surahNumber, surahName, ayatRange);
     return reply.send({ success: true, message: 'Jadwal murajaah berhasil diperbarui', data: result });
   }
 

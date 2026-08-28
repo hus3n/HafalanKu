@@ -55,6 +55,7 @@ export default function MurajaahPage() {
   // Form State
   const [formSantriId, setFormSantriId] = useState('');
   const [formSurahNumber, setFormSurahNumber] = useState('');
+  const [formAyatRange, setFormAyatRange] = useState('');
 
   // Queries
   const { data: allKelasList = [] } = useKelasList();
@@ -223,9 +224,11 @@ export default function MurajaahPage() {
         santriId: formSantriId,
         surahNumber: selectedSurah.surahNumber,
         surahName: selectedSurah.surahName,
+        ayatRange: formAyatRange || undefined,
       });
       setFormSantriId('');
       setFormSurahNumber('');
+      setFormAyatRange('');
     } catch (err: any) {
       alert(err.message || 'Gagal menambahkan jadwal.');
     }
@@ -324,7 +327,7 @@ export default function MurajaahPage() {
           <span>Tambah Jadwal Murajaah Hari Ini</span>
         </div>
         
-        <form onSubmit={handleCreateSchedule} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <form onSubmit={handleCreateSchedule} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground">Pilih Santri</label>
             <select
@@ -361,6 +364,17 @@ export default function MurajaahPage() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">Rentang Ayat (Opsional)</label>
+            <input
+              type="text"
+              placeholder="Contoh: 1-155"
+              value={formAyatRange}
+              onChange={(e) => setFormAyatRange(e.target.value)}
+              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all font-medium"
+            />
           </div>
 
           <div>
@@ -570,7 +584,7 @@ export default function MurajaahPage() {
                           </div>
                         </td>
                         <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2">
                             <select
                               value={item.selectedSurahNumber}
                               onChange={(e) => handleSelectMemorizedSurahChange(item, e.target.value)}
@@ -582,6 +596,27 @@ export default function MurajaahPage() {
                                 </option>
                               ))}
                             </select>
+                            <input
+                              type="text"
+                              placeholder="Rentang Ayat (Contoh: 1-155)"
+                              defaultValue={item.ayatRange || ''}
+                              onBlur={(e) => {
+                                if (e.target.value !== (item.ayatRange || '')) {
+                                  changeSurahMutation.mutate({
+                                    id: item.id,
+                                    surahNumber: item.selectedSurahNumber,
+                                    surahName: item.selectedSurahName,
+                                    ayatRange: e.target.value,
+                                  });
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              className="w-full h-8 px-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-foreground font-semibold text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 transition-all placeholder:text-muted-foreground/60"
+                            />
                           </div>
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">

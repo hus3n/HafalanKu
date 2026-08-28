@@ -3,6 +3,7 @@ import { decrypt } from '../../utils/encryption';
 import { AppError } from '../../utils/AppError';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { NotificationLog } from '../notification/notification.model';
+import { whatsappQueue } from '../../config/queue';
 
 const whatsappService = new WhatsAppService();
 
@@ -38,6 +39,7 @@ export class MurajaahService {
                 santriId: item.santriId,
                 surahNumber: item.surahNumber,
                 surahName: item.surahName,
+                ayatRange: item.ayatRange,
                 status,
                 date: item.createdAt,
                 userId: item.userId,
@@ -203,6 +205,7 @@ export class MurajaahService {
         selectedSurahName: item.surahName,
         surahNumber: item.surahNumber,
         surahName: item.surahName,
+        ayatRange: item.ayatRange,
         isSelected: item.isSelected,
         priorityScore: item.priorityScore,
         lastReviewDate: item.lastReviewDate,
@@ -219,7 +222,7 @@ export class MurajaahService {
     });
   }
 
-  async updateScheduleSurah(userId: string, id: string, surahNumber: number, surahName: string) {
+  async updateScheduleSurah(userId: string, id: string, surahNumber: number, surahName: string, ayatRange?: string) {
     const existing = await prisma.murajaahSchedule.findFirst({
       where: { id, userId },
     });
@@ -233,6 +236,7 @@ export class MurajaahService {
       data: {
         surahNumber,
         surahName,
+        ayatRange,
         updatedAt: new Date(),
       },
     });
@@ -260,7 +264,7 @@ export class MurajaahService {
     return updated;
   }
 
-  async createSchedule(userId: string, santriId: string, surahNumber: number, surahName: string) {
+  async createSchedule(userId: string, santriId: string, surahNumber: number, surahName: string, ayatRange?: string) {
     // 1. Move all previous days' schedules to history before checking/creating
     await this.cleanupExpiredSchedules();
 
@@ -283,6 +287,7 @@ export class MurajaahService {
         santriId,
         surahNumber,
         surahName,
+        ayatRange,
         isSelected: false,
       }
     });
@@ -364,6 +369,7 @@ export class MurajaahService {
       kelasName: h.santri?.kelas?.name || '-',
       surahNumber: h.surahNumber,
       surahName: h.surahName,
+      ayatRange: h.ayatRange,
       status: h.status,
     }));
   }
@@ -444,7 +450,7 @@ export class MurajaahService {
       orderBy: { priorityScore: 'desc' },
     });
 
-    const surahNameText = selectedSchedule ? `Surah #${selectedSchedule.surahNumber} ${selectedSchedule.surahName}` : 'Surah Pilihan';
+    const surahNameText = selectedSchedule ? `Surah #${selectedSchedule.surahNumber} ${selectedSchedule.surahName}${selectedSchedule.ayatRange ? ` (Ayat ${selectedSchedule.ayatRange})` : ''}` : 'Surah Pilihan';
 
     const messageText = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${santri.parentName}* (Wali dari Ananda *${santri.name}* - ${santri.kelas?.name || 'Kelompok Ustadz'})\n\nBerikut adalah laporan capaian hafalan dan jadwal murajaah ananda hari ini:\n\n📜 *Setoran Hafalan Hari Ini:*\n${hafalanText}\n\n📖 *Target Murajaah di Rumah:*\n*${surahNameText}*\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan dampingi ananda mengulang murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih atas perhatian dan kerja samanya.\n_HafalanKu Automatic Gateway_`;
 
@@ -495,37 +501,29 @@ export class MurajaahService {
   }
 
   async sendBatchScheduleToWhatsApp(userId: string, santriIds: string[]) {
-    const results = [];
-    for (let i = 0; i < santriIds.length; i++) {
-      const santriId = santriIds[i];
-      try {
-        const res = await this.sendScheduleToWhatsApp(userId, santriId);
-        results.push({ santriId, ...res });
-      } catch (err: any) {
-        results.push({
-          santriId,
-          success: false,
-          status: 'FAILED',
-          error: err.message || 'Gagal memproses pengiriman WhatsApp',
-        });
+    // Memasukkan seluruh permintaan ke antrean (Queue) agar tidak memblokir HTTP Response
+    const jobs = santriIds.map((santriId) => ({
+      name: 'send-whatsapp',
+      data: { userId, santriId },
+      opts: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
       }
+    }));
+    
+    await whatsappQueue.addBulk(jobs);
 
-      // Anti-spam staggered delay (randomly 10, 15, or 20 seconds) if more items remain
-      if (i < santriIds.length - 1) {
-        const delays = [10, 15, 20];
-        const randomDelay = delays[Math.floor(Math.random() * delays.length)];
-        await new Promise((r) => setTimeout(r, randomDelay * 1000));
-      }
-    }
-
-    const successful = results.filter((r) => r.success).length;
-    const failed = results.filter((r) => !r.success).length;
-
+    // Mengembalikan response "QUEUED" seketika
     return {
       total: santriIds.length,
-      successful,
-      failed,
-      details: results,
+      successful: 0, // Akan di-update via Job Completion (optional)
+      failed: 0,
+      details: santriIds.map(santriId => ({
+        santriId,
+        success: true,
+        status: 'QUEUED',
+        error: null
+      })),
     };
   }
 

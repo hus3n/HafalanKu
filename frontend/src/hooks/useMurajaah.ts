@@ -101,7 +101,30 @@ export function useChangeSurahMurajaah() {
       }
       return res.data;
     },
-    onSuccess: () => {
+    onMutate: async ({ id, surahNumber, surahName, ayatRange }) => {
+      await queryClient.cancelQueries({ queryKey: ['murajaah-list'] });
+      
+      const previousQueries = queryClient.getQueriesData({ queryKey: ['murajaah-list'] });
+      
+      queryClient.setQueriesData({ queryKey: ['murajaah-list'] }, (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((item: any) => 
+          item.id === id 
+            ? { ...item, selectedSurahNumber: surahNumber, selectedSurahName: surahName, ayatRange: ayatRange || item.ayatRange } 
+            : item
+        );
+      });
+      
+      return { previousQueries };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
     },
   });
@@ -119,7 +142,28 @@ export function useSimulateWaReply() {
       }
       return res;
     },
-    onSuccess: () => {
+    onMutate: async (santriId) => {
+      await queryClient.cancelQueries({ queryKey: ['murajaah-list'] });
+      
+      const previousQueries = queryClient.getQueriesData({ queryKey: ['murajaah-list'] });
+      
+      queryClient.setQueriesData({ queryKey: ['murajaah-list'] }, (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((item: any) => 
+          item.santriId === santriId ? { ...item, murajaahStatus: 'SUDAH' } : item
+        );
+      });
+      
+      return { previousQueries };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
     },
   });
@@ -147,8 +191,8 @@ export function useCreateMurajaah() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ santriId, surahNumber, surahName }: { santriId: string; surahNumber: number; surahName: string }) => {
-      const res = await api.post<MurajaahItem>('/murajaah', { santriId, surahNumber, surahName });
+    mutationFn: async ({ santriId, surahNumber, surahName, ayatRange }: { santriId: string; surahNumber: number; surahName: string; ayatRange?: string }) => {
+      const res = await api.post<MurajaahItem>('/murajaah', { santriId, surahNumber, surahName, ayatRange });
       if (!res.success) {
         throw new Error(res.message || 'Gagal menambahkan jadwal murajaah');
       }

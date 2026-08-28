@@ -72,7 +72,33 @@ export function useCreateHafalan() {
       }
       return res.data;
     },
-    onSuccess: () => {
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['hafalan-list'] });
+      const previousQueries = queryClient.getQueriesData({ queryKey: ['hafalan-list'] });
+      
+      queryClient.setQueriesData({ queryKey: ['hafalan-list'] }, (old: any) => {
+        if (!old || !old.hafalan) return old;
+        const optimisticItem = {
+          ...data,
+          id: `temp-${Date.now()}`,
+          date: data.date || new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        };
+        return {
+          ...old,
+          hafalan: [optimisticItem, ...old.hafalan]
+        };
+      });
+      return { previousQueries };
+    },
+    onError: (err, newHafalan, context) => {
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['hafalan-list'] });
       queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
@@ -91,7 +117,27 @@ export function useDeleteHafalan() {
       }
       return res;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['hafalan-list'] });
+      const previousQueries = queryClient.getQueriesData({ queryKey: ['hafalan-list'] });
+      
+      queryClient.setQueriesData({ queryKey: ['hafalan-list'] }, (old: any) => {
+        if (!old || !old.hafalan) return old;
+        return {
+          ...old,
+          hafalan: old.hafalan.filter((item: any) => item.id !== id)
+        };
+      });
+      return { previousQueries };
+    },
+    onError: (err, newHafalan, context) => {
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['hafalan-list'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
@@ -109,7 +155,27 @@ export function useUpdateHafalan() {
       }
       return res.data;
     },
-    onSuccess: () => {
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['hafalan-list'] });
+      const previousQueries = queryClient.getQueriesData({ queryKey: ['hafalan-list'] });
+      
+      queryClient.setQueriesData({ queryKey: ['hafalan-list'] }, (old: any) => {
+        if (!old || !old.hafalan) return old;
+        return {
+          ...old,
+          hafalan: old.hafalan.map((item: any) => item.id === id ? { ...item, ...data } : item)
+        };
+      });
+      return { previousQueries };
+    },
+    onError: (err, newHafalan, context) => {
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['hafalan-list'] });
       queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
