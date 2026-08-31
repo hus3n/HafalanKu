@@ -271,6 +271,18 @@ export class WhatsappService {
                     });
 
                     console.log(`[WA Gateway] Automatically marked Murajaah status for santri [${matchedSantris.map(s => s.name).join(', ')}] as DONE (🟢 Sudah Dimurajaah)! Updated records: ${updateResult.count}`);
+
+                    // Send auto-reply to the parent
+                    if (senderJid) {
+                      try {
+                        const santriNames = matchedSantris.map((s) => s.name).join(', ');
+                        const replyMessage = `Alhamdulillah, laporan murajaah ananda ${santriNames} telah kami terima dan statusnya sudah diperbarui. Jazakumullah khairan.`;
+                        await sock.sendMessage(senderJid, { text: replyMessage });
+                        console.log(`[WA Gateway] Auto-reply sent to ${senderJid} for santri ${santriNames}`);
+                      } catch (replyErr) {
+                        console.error(`[WA Gateway] Failed to send auto-reply to ${senderJid}:`, replyErr);
+                      }
+                    }
                   } else {
                     console.warn(`[WA Gateway] No matching santri found for sender candidate numbers [${cleanCandidateSenders.join(', ')}] under user ${userId}. Total checked santri: ${allSantri.length}`);
                   }
