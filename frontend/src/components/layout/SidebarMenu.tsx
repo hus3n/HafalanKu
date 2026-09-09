@@ -15,7 +15,8 @@ import {
   Building,
   QrCode,
   Bell,
-  Server
+  Server,
+  UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../lib/utils';
@@ -48,6 +49,12 @@ export function SidebarMenu({ isCollapsed = false, isMobile = false }: SidebarMe
       title: 'Kelas',
       href: '/kelas',
       icon: <Building className="w-5 h-5" />,
+      roles: ['ADMIN', 'USER'],
+    },
+    {
+      title: 'Absensi',
+      href: '/absensi',
+      icon: <UserCheck className="w-5 h-5" />,
       roles: ['ADMIN', 'USER'],
     },
     {

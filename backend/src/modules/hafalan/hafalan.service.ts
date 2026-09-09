@@ -253,6 +253,81 @@ export class HafalanService {
     return { success: true, count: records.length, totalSelected: data.surahs.length };
   }
 
+  async createBulkAdvanced(user: { userId: string; role: string; orgId?: string | null }, data: { 
+    santriId: string, 
+    date: string,
+    predikat: string,
+    records: Array<{ surahNumber: number, ayatStart: number, ayatEnd: number, type: string, notes?: string }> 
+  }) {
+    const santriAccessWhere = this.buildSantriAccessWhere(user);
+    const santri = await prisma.santri.findFirst({
+      where: { id: data.santriId, ...santriAccessWhere, deletedAt: null },
+    });
+
+    if (!santri) {
+      throw new AppError('Santri tidak ditemukan atau Anda tidak memiliki akses.', 404);
+    }
+
+    if (!data.records || !Array.isArray(data.records) || data.records.length === 0) {
+      throw new AppError('Daftar surat tidak boleh kosong.', 400);
+    }
+
+    const hafalanDate = new Date(data.date);
+
+    const dbRecords = [];
+    for (const record of data.records) {
+      const surahInfo = surahList.find((s) => s.number === record.surahNumber);
+      if (!surahInfo) continue;
+
+      dbRecords.push({
+        santriId: data.santriId,
+        surahNumber: record.surahNumber,
+        surahName: surahInfo.latinName,
+        ayatStart: record.ayatStart,
+        ayatEnd: record.ayatEnd,
+        predikat: data.predikat as any,
+        date: hafalanDate,
+        notes: record.notes || null,
+        type: record.type,
+        userId: user.userId,
+      });
+    }
+
+    if (dbRecords.length > 0) {
+      await prisma.hafalan.createMany({
+        data: dbRecords as any,
+      });
+
+      await DashboardService.invalidateCache(user.userId);
+      
+      // If it's murajaah, we should also update MurajaahSchedules lastReviewDate
+      const murajaahRecords = dbRecords.filter(r => r.type === 'MURAJAAH');
+      if (murajaahRecords.length > 0) {
+        for(const m of murajaahRecords) {
+           await prisma.murajaahSchedule.updateMany({
+             where: { santriId: data.santriId, surahNumber: m.surahNumber },
+             data: { lastReviewDate: hafalanDate }
+           });
+           
+           // Can also add to murajaah_histories for backward compatibility
+           await prisma.murajaahHistory.create({
+             data: {
+               santriId: data.santriId,
+               surahNumber: m.surahNumber,
+               surahName: m.surahName,
+               ayatRange: `${m.ayatStart}-${m.ayatEnd}`,
+               status: 'LANCAR', // Map appropriately or hardcode for now
+               date: hafalanDate,
+               userId: user.userId
+             }
+           });
+        }
+      }
+    }
+
+    return { success: true, count: dbRecords.length };
+  }
+
   async getRekapGlobal(user: { userId: string, role: string, orgId?: string | null }, page: number = 1, limit: number = 10, search?: string, kelasId?: string) {
     const skip = (page - 1) * limit;
 

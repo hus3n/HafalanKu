@@ -8,6 +8,7 @@ import { useSantriList } from '../../hooks/useSantri';
 import { motion } from 'motion/react';
 import { User, BookOpen, Award, Calendar, FileText, Loader2, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { SingleSelectSurah } from './SingleSelectSurah';
 
 interface HafalanFormProps {
   onSubmit?: (data: CreateHafalanInput) => void;
@@ -62,8 +63,7 @@ export function HafalanForm({ onSubmit, onSubmitUpdate, initialData, isLoading =
   const selectedPredikat = watch('predikat');
   const selectedSurah = surahList.find((s) => s.number === Number(selectedSurahNumber));
 
-  const handleSurahChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const num = Number(e.target.value);
+  const handleSurahChange = (num: number) => {
     setValue('surahNumber', num);
     const s = surahList.find((item) => item.number === num);
     if (s) {
@@ -115,17 +115,10 @@ export function HafalanForm({ onSubmit, onSubmitUpdate, initialData, isLoading =
             <BookOpen className="w-4 h-4 text-primary" />
             Nama Surat
           </label>
-          <select
-            value={selectedSurahNumber}
-            onChange={handleSurahChange}
-            className="flex h-11 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
-          >
-            {surahList.map((s) => (
-              <option key={s.number} value={s.number}>
-                {s.number}. {s.latinName} ({s.numberOfAyah} ayat)
-              </option>
-            ))}
-          </select>
+          <SingleSelectSurah 
+            value={Number(selectedSurahNumber)}
+            onChange={(num) => handleSurahChange(num)}
+          />
         </div>
 
         {/* Ayat Mulai */}

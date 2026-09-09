@@ -90,6 +90,24 @@ export class HafalanController {
     });
   }
 
+  static async createBulkAdvanced(req: FastifyRequest, reply: FastifyReply) {
+    const user = req.user!;
+    const data = req.body as { 
+      santriId: string, 
+      date: string,
+      predikat: string,
+      records: Array<{ surahNumber: number, ayatStart: number, ayatEnd: number, type: string, notes?: string }> 
+    };
+
+    const result = await hafalanService.createBulkAdvanced(user, data);
+
+    return reply.status(201).send({
+      success: true,
+      message: `${result.count} catatan berhasil ditambahkan ke hafalan santri`,
+      data: result,
+    });
+  }
+
   static async getRekapGlobal(req: FastifyRequest, reply: FastifyReply) {
     const user = req.user!;
     const { page = 1, limit = 10, search, kelasId } = req.query as any;

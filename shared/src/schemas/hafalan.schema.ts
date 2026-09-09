@@ -10,6 +10,7 @@ export const createHafalanSchema = z.object({
   }),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD').or(z.date()),
   notes: z.string().max(500, 'Catatan maksimal 500 karakter').optional().nullable(),
+  type: z.enum(['ZIYADAH', 'MURAJAAH']).optional().default('ZIYADAH'),
 }).refine((data) => data.ayatEnd >= data.ayatStart, {
   message: 'Ayat selesai tidak boleh lebih kecil dari ayat mulai',
   path: ['ayatEnd'],

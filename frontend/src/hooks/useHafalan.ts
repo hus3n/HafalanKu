@@ -229,6 +229,31 @@ export function useRekapGlobalList(params: { page?: number; limit?: number; sear
   });
 }
 
+export function useCreateBulkAdvancedHafalan() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { 
+      santriId: string, 
+      date: string,
+      predikat: string,
+      notes?: string,
+      records: Array<{ surahNumber: number, ayatStart: number, ayatEnd: number, type: string, notes?: string }> 
+    }) => {
+      const res = await api.post<{ count: number }>('/hafalan/bulk-advanced', data);
+      if (!res.success) {
+        throw new Error(res.message || 'Gagal menyimpan hafalan murajaah bulk');
+      }
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hafalan-list'] });
+      queryClient.invalidateQueries({ queryKey: ['hafalan-rekap-global'] });
+      queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+  });
+}
 export function useCreateBulkHafalan() {
   const queryClient = useQueryClient();
 

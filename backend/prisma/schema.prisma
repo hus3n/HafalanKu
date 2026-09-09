@@ -52,6 +52,7 @@ model User {
   murajaah        MurajaahSchedule[]
   murajaahHistory MurajaahHistory[]
   passwordHistory PasswordHistory[]
+  absensi         Absensi[]
 
   @@map("users")
 }
@@ -85,6 +86,7 @@ model Santri {
   hafalan  Hafalan[]
   murajaah MurajaahSchedule[]
   murajaahHistory MurajaahHistory[]
+  absensi  Absensi[]
 
   @@index([userId])
   @@index([kelasId])
@@ -114,6 +116,7 @@ model Hafalan {
   ayatStart   Int      @map("ayat_start")
   ayatEnd     Int      @map("ayat_end")
   predikat    Predikat
+  type        String   @default("ZIYADAH")
   date        DateTime
   notes       String?
   isHafalanAwal Boolean  @default(false) @map("is_hafalan_awal")
@@ -185,4 +188,31 @@ model PasswordHistory {
 
   @@index([userId])
   @@map("password_history")
+}
+
+enum AbsensiStatus {
+  HADIR
+  IZIN
+  SAKIT
+  ALPA
+}
+
+model Absensi {
+  id        String   @id @default(uuid())
+  santriId  String   @map("santri_id")
+  date      DateTime @db.Date
+  status    AbsensiStatus
+  notes     String?
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([santriId])
+  @@index([userId])
+  @@index([date])
+  @@unique([santriId, date])
+  @@map("absensi")
 }

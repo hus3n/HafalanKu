@@ -17,6 +17,7 @@ export async function hafalanRoutes(fastify: FastifyInstance) {
 
   fastify.post('/', HafalanController.create);
   fastify.post('/bulk', HafalanController.createBulk);
+  fastify.post('/bulk-advanced', HafalanController.createBulkAdvanced);
   fastify.get('/rekap-global', HafalanController.getRekapGlobal);
   fastify.get('/', HafalanController.getList);
   fastify.get('/:id', HafalanController.getById);
