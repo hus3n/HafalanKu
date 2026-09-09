@@ -32,3 +32,11 @@ Untuk memastikan bot Google merayapi halaman baru dari URL tertinggi:
 
 ---
 *Catatan Dokumen:* Rencana ini disimpan untuk sewaktu-waktu bisa dieksekusi agar meningkatkan lalu lintas organik pendaftaran secara masif lewat Search Engine.
+## 6. Intelijen Kompetitor & Strategi Positionig Lawan (Analisis hafalanku.com)
+Kompetitor bernama serupa berfokus pada "Super Multi-Tenant" dengan tambahan fitur yang lebar (Audio, Keuangan/Tagihan SPP, Chat, Kalender). Berdasarkan instruksi, **HafalanKu forApp** akan MEMPERTAHANKAN PUSAT KEKUATANNYA (Core Focus) tanpa ikut menumpuk fitur (bloated). 
+Strategi perlawanannya adalah:
+
+- **Fokus Otomatisasi (Simplicity & Real-Time):** Mengedepankan integrasi WhatsApp Interaktif yang langsung dan tanpa hambatan. Input mudah, wali murid langsung terima laporan tanpa perlu repot login, aplikasi tak bikin HP Ustadz hang/lemot.
+- **Keunggulan Teknis SEO (Next.js vs React SPA):** Aplikasi kita (`hafalanku.forapp.id`) dirakit menggunakan Next.js Server Side Rendering (SSR), yang notabenenya jauh lebih mudah diindeks oleh mesin perayap Google dibandingkan dengan arsitektur React SPA standar milik lawannya.
+- **Strategi Artikel Perbandingan (Versus Tool):** Dalam jangka panjang, kita dapat merilis artikel informasional di bagian Blog untuk mengedukasi target pasar mengenai kelemahan sistem "Too Many Features" yang merepotkan dan merugikan manajemen TPQ, sembari memposisikan HafalanKu forApp sebagai solusi yang tuntas, spesifik, dan elegan.
+- **Re-Branding Tagline Makro:** Menanamkan semantik SEO "HafalanKu - Sistem Setoran Tahfidz Otomatis via WhatsApp Interaktif" untuk menang secara tajam pada niche automasi komunikasi pesantren.
