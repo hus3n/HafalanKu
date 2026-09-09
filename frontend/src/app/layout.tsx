@@ -4,6 +4,7 @@ import './globals.css';
 import { ThemeProvider } from '../providers/ThemeProvider';
 import QueryProvider from '../providers/QueryProvider';
 import { AuthProvider } from '../providers/AuthProvider';
+import { ToastProvider } from '../components/shared/Toast';
 
 const inter = Inter({
   variable: '--font-sans',
@@ -90,6 +91,7 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               {children}
+              <ToastProvider />
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
