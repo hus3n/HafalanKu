@@ -18,6 +18,9 @@ import {
 export const metadata: Metadata = {
   title: 'Kebijakan Privasi — HafalanKu',
   description: 'Kebijakan Privasi aplikasi platform HafalanKu. Pelajari bagaimana kami melindungi data pribadi, hafalan santri, dan kontak wali murid.',
+  alternates: {
+    canonical: '/privacy',
+  },
 };
 
 export default function PrivacyPage() {

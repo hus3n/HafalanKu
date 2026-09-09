@@ -18,7 +18,10 @@ import {
 
 export const metadata: Metadata = {
   title: 'Syarat & Ketentuan — HafalanKu',
-  description: 'Syarat & Ketentuan penggunaan platform HafalanKu. Ketentuan layanan pencatatan hafalan Quran, lisensi penggunaan, dan hak akses akun.',
+  description: 'Syarat dan Ketentuan penggunaan aplikasi platform HafalanKu. Aturan, hak, dan kewajiban pengguna dalam menggunakan layanan kami.',
+  alternates: {
+    canonical: '/terms',
+  },
 };
 
 export default function TermsPage() {

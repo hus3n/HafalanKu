@@ -34,8 +34,25 @@ export function FAQ() {
     setOpenIdx(openIdx === idx ? null : idx);
   };
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(faq => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a,
+      }
+    }))
+  };
+
   return (
     <section id="faq" className="py-32 relative">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="max-w-3xl mx-auto px-4 md:px-8 space-y-16">
         
         {/* Header */}
