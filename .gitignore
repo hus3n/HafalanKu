@@ -141,3 +141,7 @@ graphify-out/
 skills-lock.json
 *.md
 !README.md
+
+# WhatsApp Sessions
+backend/whatsapp_sessions/
+

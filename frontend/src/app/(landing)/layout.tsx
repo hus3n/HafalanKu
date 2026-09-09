@@ -7,7 +7,22 @@ export const metadata: Metadata = {
   title: "HafalanKu — Platform Manajemen Hafalan Al-Qur'an & Notifikasi WA Wali Murid",
   description:
     "Aplikasi managemen hafalan Al-Qur'an modern dengan pencatatan setoran instan, kalkulasi jadwal murajaah otomatis, notifikasi WhatsApp ke wali murid, dan enkripsi data AES-256.",
-  keywords: ["HafalanKu", "Hafalan Quran", "Tahfidz", "Aplikasi Pesantren", "Murajaah", "WhatsApp Bot Quran"],
+  keywords: ["HafalanKu", "Hafalan Quran", "Tahfidz", "Aplikasi Pesantren", "Murajaah", "WhatsApp Bot Quran", "Tahfidz Online"],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "HafalanKu — Platform Manajemen Hafalan Al-Qur'an",
+    description: "Aplikasi managemen hafalan Al-Qur'an modern dengan pencatatan setoran instan dan notifikasi WhatsApp ke wali murid.",
+    url: 'https://hafalanku.forapp.id',
+    siteName: 'HafalanKu',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "HafalanKu — Platform Manajemen Hafalan Al-Qur'an",
+    description: "Aplikasi managemen hafalan Al-Qur'an modern dengan pencatatan setoran instan dan notifikasi WhatsApp ke wali murid.",
+  }
 };
 
 import { LandingAuthProvider } from '../../contexts/LandingAuthContext';

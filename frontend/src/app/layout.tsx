@@ -27,8 +27,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'HafalanKu - Manajemen Tahfidz & Murajaah',
-  description: 'Aplikasi manajemen hafalan Al-Qur\'an modern dengan notifikasi WhatsApp otomatis.',
+  metadataBase: new URL('https://hafalanku.forapp.id'),
+  title: {
+    default: 'HafalanKu - Manajemen Tahfidz & Murajaah',
+    template: '%s | HafalanKu',
+  },
+  description: 'Aplikasi manajemen hafalan Al-Qur\'an modern dengan notifikasi WhatsApp otomatis untuk wali murid dan ustadz.',
   applicationName: 'HafalanKu',
   manifest: '/manifest.json',
   appleWebApp: {
@@ -45,6 +49,30 @@ export const metadata: Metadata = {
     ],
     shortcut: '/favicon.ico',
     apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    title: 'HafalanKu - Manajemen Tahfidz & Murajaah',
+    description: 'Aplikasi manajemen hafalan Al-Qur\'an modern dengan notifikasi WhatsApp otomatis.',
+    url: 'https://hafalanku.forapp.id',
+    siteName: 'HafalanKu',
+    locale: 'id_ID',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HafalanKu - Manajemen Tahfidz & Murajaah',
+    description: 'Aplikasi manajemen hafalan Al-Qur\'an modern dengan notifikasi WhatsApp otomatis.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
