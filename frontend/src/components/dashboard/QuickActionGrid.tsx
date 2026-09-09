@@ -44,6 +44,16 @@ export function QuickActionGrid() {
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
     {
+      title: 'Absensi Harian',
+      desc: 'Kehadiran santri',
+      href: '/absensi',
+      icon: <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
+      bgIcon: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
+      badge: 'Absen',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+      accentGlow: 'hover:border-emerald-500/50 hover:shadow-emerald-500/10',
+    },
+    {
       title: 'Manajemen Santri',
       desc: 'Data & wali murid',
       href: '/santri',
@@ -117,6 +127,16 @@ export function QuickActionGrid() {
       accentGlow: 'hover:border-[#EAA27C]/50 hover:shadow-[#EAA27C]/10',
     },
     {
+      title: 'Absensi Harian',
+      desc: 'Kehadiran santri',
+      href: '/absensi',
+      icon: <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
+      bgIcon: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
+      badge: 'Absen',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+      accentGlow: 'hover:border-emerald-500/50 hover:shadow-emerald-500/10',
+    },
+    {
       title: 'Jadwal Murajaah',
       desc: 'Target pengulangan',
       href: '/murajaah',
@@ -179,6 +199,16 @@ export function QuickActionGrid() {
       badgeColor: 'bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border-[#0E8991]/30',
       accentGlow: 'hover:border-[#0E8991]/50 hover:shadow-[#0E8991]/10',
     },
+    {
+      title: 'Absensi Harian',
+      desc: 'Seluruh Lembaga',
+      href: '/absensi',
+      icon: <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
+      bgIcon: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400',
+      badge: 'Absen',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+      accentGlow: 'hover:border-emerald-500/50 hover:shadow-emerald-500/10',
+    },
   ];
 
   const actions = role === 'SUPERADMIN' ? superadminActions : role === 'ADMIN' ? adminActions : ustadzActions;
@@ -196,8 +226,8 @@ export function QuickActionGrid() {
         </span>
       </div>
 
-      {/* Responsive Compact Grid - 2 cols on mobile, 3 on tablet, 5 on desktop */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
+      {/* Responsive Compact Grid - 2 cols on mobile, 3 on tablet, 6 on desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3.5">
         {actions.map((item, idx) => (
           <Link key={item.href} href={item.href} className="block group">
             <motion.div

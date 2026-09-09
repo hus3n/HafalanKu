@@ -105,20 +105,20 @@ export function Features() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"
         >
           {features.map((item, idx) => (
             <motion.div
               key={idx}
               variants={itemVariants}
               whileHover={{ 
-                y: -8, 
-                rotateX: 3, 
-                rotateY: -3,
-                boxShadow: "0 25px 50px rgba(0,0,0,0.25)"
+                y: -5, 
+                rotateX: 2, 
+                rotateY: -2,
+                boxShadow: "0 20px 40px rgba(0,0,0,0.15)"
               }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="p-8 rounded-3xl border border-border bg-card text-card-foreground shadow-md hover:shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] transform-style-3d group relative overflow-hidden transition-all duration-300"
+              className="p-6 md:p-8 rounded-[2rem] border border-border/60 bg-card/60 backdrop-blur-xl text-card-foreground shadow-sm hover:shadow-lg dark:hover:shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-card transform-style-3d group relative overflow-hidden transition-all duration-300"
             >
               <div className={`p-4 rounded-2xl border ${item.bg} w-fit mb-6 shadow-inner transition-transform duration-500 ease-out group-hover:scale-110`}>
                 {item.icon}

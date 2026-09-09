@@ -16,7 +16,7 @@ export default function DashboardPage() {
       {/* Welcome Banner */}
       <WelcomeCard />
 
-      {/* 5 Core Compact Quick Actions Menu (Pencatatan, Pairing WA, Santri, Kelas, Murajaah) */}
+      {/* 6 Core Compact Quick Actions Menu */}
       <QuickActionGrid />
 
       {/* Role-Aware Stat Cards */}

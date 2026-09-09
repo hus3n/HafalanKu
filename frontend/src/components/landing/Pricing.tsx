@@ -118,7 +118,7 @@ export function Pricing() {
         </motion.div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch perspective-1000">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-stretch perspective-1000">
           {plans.map((plan, idx) => (
             <motion.div
               key={idx}
@@ -127,13 +127,13 @@ export function Pricing() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.8, delay: idx * 0.15, type: "spring", bounce: 0.4 }}
               whileHover={{
-                y: -15,
+                y: -10,
                 scale: 1.02,
                 boxShadow: plan.popular
-                  ? "0 40px 80px rgba(14,137,145,0.25)"
-                  : "0 30px 60px rgba(0,0,0,0.1)"
+                  ? "0 30px 60px rgba(14,137,145,0.2)"
+                  : "0 20px 40px rgba(0,0,0,0.1)"
               }}
-              className={`rounded-[2rem] p-8 flex flex-col justify-between relative transition-all duration-500 ease-out transform-style-3d shadow-lg ${plan.popular
+              className={`rounded-[2rem] p-6 lg:p-8 flex flex-col justify-between relative transition-all duration-500 ease-out transform-style-3d shadow-md ${plan.popular
                   ? 'border-2 border-[#0E8991] bg-gradient-to-b from-[#0E8991]/15 via-card to-card dark:from-[#0E8991]/20 dark:via-[#0C313A] dark:to-[#0C313A] z-10 shadow-[#0E8991]/15'
                   : 'border border-border bg-card dark:bg-[#0C313A] text-card-foreground'
                 }`}

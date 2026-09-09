@@ -29,10 +29,29 @@ import { LandingAuthProvider } from '../../contexts/LandingAuthContext';
 import { LandingAuthWrapper } from '../../components/landing/LandingAuthWrapper';
 
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'HafalanKu',
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Any',
+    url: 'https://hafalanku.forapp.id',
+    description: "Platform web progresif untuk pencatatan setoran hafalan Al-Qur'an, manajemen murajaah, dan integrasi WhatsApp untuk laporan otomatis wali santri.",
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'IDR'
+    }
+  };
+
   return (
     <LandingAuthProvider>
       <LandingAuthWrapper>
         <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-x-hidden selection:bg-primary/20 selection:text-primary">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
