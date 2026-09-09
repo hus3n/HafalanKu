@@ -137,7 +137,7 @@ export default function AbsensiPage() {
             className="w-full px-4 py-2 bg-background border border-input rounded-xl text-sm"
           >
             <option value="">-- Semua Kelas --</option>
-            {kelasiData?.kelas.map((k: any) => (
+            {kelasiData?.map((k: any) => (
               <option key={k.id} value={k.id}>{k.name}</option>
             ))}
           </select>
