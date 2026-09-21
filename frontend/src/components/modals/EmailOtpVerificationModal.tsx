@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, CheckCircle2, AlertCircle, RefreshCw, X, ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
+import { Mail, CheckCircle2, AlertCircle, RefreshCw, X, ArrowRight, Loader2, ShieldCheck, Info } from 'lucide-react';
 import { api } from '../../lib/api';
 
 interface EmailOtpVerificationModalProps {
@@ -239,6 +239,14 @@ export function EmailOtpVerificationModal({
                   className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold font-mono rounded-xl border border-input bg-background/80 focus:border-[#0E8991] focus:ring-2 focus:ring-[#0E8991]/30 transition-all outline-none text-foreground shadow-inner disabled:opacity-50"
                 />
               ))}
+            </div>
+
+            {/* Spam Folder Reminder Notice */}
+            <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-3 text-left flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+              <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <p className="leading-relaxed">
+                Belum menerima email? Mohon periksa folder <strong className="font-semibold text-amber-900 dark:text-amber-200">Spam</strong> atau <strong className="font-semibold text-amber-900 dark:text-amber-200">Junk</strong> di email Anda karena kode OTP terkadang masuk ke sana.
+              </p>
             </div>
 
             {/* Submit Action Button */}

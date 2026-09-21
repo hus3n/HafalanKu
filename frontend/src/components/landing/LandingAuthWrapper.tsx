@@ -26,18 +26,18 @@ export function LandingAuthWrapper({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-background flex">
-      {/* LEFT: Landing Page Container with 1.0s Compression Animation */}
+      {/* LEFT: Landing Page Container with Split Screen Animation */}
       <motion.div
         layout="position"
         animate={{
           width: isOpen ? '54%' : '100%',
         }}
         transition={{
-          duration: 1.0,
-          ease: [0.16, 1, 0.3, 1], // Smooth Apple / Emil Kowalski physics
+          duration: 0.4,
+          ease: [0.16, 1, 0.3, 1], // Snappy & natural Apple/Emil Kowalski deceleration curve
         }}
         className={cn(
-          'min-h-screen flex flex-col relative transition-all origin-left will-change-[width]',
+          'min-h-screen flex flex-col relative origin-left will-change-[width]',
           isOpen && 'max-lg:w-full'
         )}
       >
@@ -47,7 +47,7 @@ export function LandingAuthWrapper({ children }: { children: React.ReactNode }) 
         </div>
       </motion.div>
 
-      {/* RIGHT: Auth Slide-in Panel with 1.0s Slide Animation */}
+      {/* RIGHT: Auth Slide-in Panel */}
       <motion.div
         initial={false}
         animate={{
@@ -55,7 +55,7 @@ export function LandingAuthWrapper({ children }: { children: React.ReactNode }) 
           opacity: isOpen ? 1 : 0,
         }}
         transition={{
-          duration: 1.0,
+          duration: 0.4,
           ease: [0.16, 1, 0.3, 1],
         }}
         className={cn(
