@@ -4,6 +4,7 @@ export * from './types/santri';
 export * from './types/hafalan';
 export * from './types/murajaah';
 export * from './types/notification';
+export * from './types/review';
 export * from './types/api';
 
 // Export Constants

@@ -25,6 +25,7 @@ import { masterRoutes } from './modules/master/master.routes';
 import { settingsRoutes } from './modules/settings/settings.route';
 import { publicRoutes } from './modules/public/public.routes';
 import { absensiRoutes } from './modules/absensi/absensi.routes';
+import { reviewRoutes } from './modules/review/review.routes';
 import { startAutoBackupJob } from './jobs/autoBackup';
 import { startSubscriptionNotifierJob } from './jobs/subscriptionNotifier';
 import { startTrialCleanerJob } from './jobs/trialCleaner';
@@ -78,6 +79,7 @@ async function main() {
     await fastify.register(settingsRoutes, { prefix: '/api/v1/settings' });
     await fastify.register(publicRoutes, { prefix: '/api/v1/public' });
     await fastify.register(absensiRoutes, { prefix: '/api/v1/absensi' });
+    await fastify.register(reviewRoutes, { prefix: '/api/v1/reviews' });
     // Start Fastify server
     const listenPort = env.PORT || env.BACKEND_PORT || 4000;
     const address = await fastify.listen({

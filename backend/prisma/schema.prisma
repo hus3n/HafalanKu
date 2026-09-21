@@ -53,6 +53,7 @@ model User {
   murajaahHistory MurajaahHistory[]
   passwordHistory PasswordHistory[]
   absensi         Absensi[]
+  reviews         Review[]
 
   @@map("users")
 }
@@ -215,4 +216,25 @@ model Absensi {
   @@index([date])
   @@unique([santriId, date])
   @@map("absensi")
+}
+
+model Review {
+  id            String    @id @default(uuid())
+  name          String
+  roleOrTitle   String?   @map("role_or_title")
+  rating        Int       @default(5)
+  comment       String    @db.Text
+  imageUrl      String?   @map("image_url") @db.Text
+  userAvatarUrl String?   @map("user_avatar_url") @db.Text
+  userId        String?   @map("user_id")
+  isApproved    Boolean   @default(true) @map("is_approved")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([isApproved])
+  @@index([rating])
+  @@map("reviews")
 }

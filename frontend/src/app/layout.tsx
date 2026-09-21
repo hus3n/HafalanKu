@@ -5,6 +5,7 @@ import { ThemeProvider } from '../providers/ThemeProvider';
 import QueryProvider from '../providers/QueryProvider';
 import { AuthProvider } from '../providers/AuthProvider';
 import { ToastProvider } from '../components/shared/Toast';
+import { ReviewFloatingButton } from '../components/shared/ReviewFloatingButton';
 
 const inter = Inter({
   variable: '--font-sans',
@@ -94,6 +95,7 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               {children}
+              <ReviewFloatingButton />
               <ToastProvider />
             </AuthProvider>
           </QueryProvider>

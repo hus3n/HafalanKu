@@ -66,6 +66,41 @@ async function main() {
         console.warn('⚠️ Syarif Superadmin seed notice:', e?.message || e);
     }
 
+    // Seed default approved reviews if empty
+    try {
+        const reviewCount = await prisma.review.count();
+        if (reviewCount === 0) {
+            await prisma.review.createMany({
+                data: [
+                    {
+                        name: 'Ustadz Faisal Ridwan',
+                        roleOrTitle: 'Koordinator Tahfidz TPQ Baitul Qur\'an',
+                        rating: 5,
+                        comment: 'Alhamdulillah, HafalanKu sangat mempermudah pemantauan setoran dan jadwal murajaah santri kami. Fitur integrasi WhatsApp ke wali santri membuat orang tua lebih proaktif mendampingi ananda di rumah.',
+                        isApproved: true,
+                    },
+                    {
+                        name: 'Ibu Hj. Siti Nurhaliza',
+                        roleOrTitle: 'Wali Santri Kelas Juz \'Amma',
+                        rating: 5,
+                        comment: 'Sangat bersyukur dengan adanya HafalanKu. Setiap kali anak saya setor hafalan di madrasah, langsung ada laporan rekap dan notifikasi murajaah di WhatsApp. Tampilan aplikasinya sangat rapi dan mudah dimengerti.',
+                        isApproved: true,
+                    },
+                    {
+                        name: 'Ustadz M. Syarif Hidayatullah',
+                        roleOrTitle: 'Pengasuh Pesantren Tahfidz Nurul Huda',
+                        rating: 5,
+                        comment: 'Platform manajemen tahfidz paling lengkap dan modern. Rekap mutabaah otomatis, sistem penilaian mumtaz hingga maqbul sangat terstruktur. Sangat kami rekomendasikan untuk pondok pesantren dan rumah tahfidz.',
+                        isApproved: true,
+                    },
+                ],
+            });
+            console.log('✅ Seeded initial customer reviews');
+        }
+    } catch (e) {
+        console.warn('⚠️ Review seed notice:', e?.message || e);
+    }
+
     console.log('🌱 Seeding finished successfully.');
 }
 
