@@ -13,5 +13,8 @@ export async function murajaahRoutes(fastify: FastifyInstance) {
   fastify.put('/:id/toggle', MurajaahController.toggle);
   fastify.post('/send/:santriId', MurajaahController.sendWhatsApp);
   fastify.post('/send-batch', MurajaahController.sendBatchWhatsApp);
+  fastify.get('/batch-status', MurajaahController.getBatchStatus);
+  fastify.get('/batch-status/:batchId', MurajaahController.getBatchStatus);
+  fastify.post('/batch-cancel/:batchId', MurajaahController.cancelBatch);
   fastify.post('/simulate-reply/:santriId', MurajaahController.simulateReply);
 }

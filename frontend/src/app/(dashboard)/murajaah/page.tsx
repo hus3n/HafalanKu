@@ -10,6 +10,7 @@ import {
   useMarkNotificationSent,
   useDeleteMurajaah,
   useSendWhatsAppMurajaah,
+  useMurajaahBatchStatus,
   MurajaahItem, 
   MurajaahStatusType 
 } from '../../../hooks/useMurajaah';
@@ -51,6 +52,10 @@ export default function MurajaahPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSantriIds, setSelectedSantriIds] = useState<string[]>([]);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [modalBatchId, setModalBatchId] = useState<string | null>(null);
+
+  // Queries
+  const { data: activeBatch } = useMurajaahBatchStatus();
 
   // Form State
   const [formSantriId, setFormSantriId] = useState('');
@@ -162,6 +167,7 @@ export default function MurajaahPage() {
       );
       if (!proceed) return;
     }
+    setModalBatchId(null);
     setIsBatchModalOpen(true);
   };
 
@@ -319,6 +325,42 @@ export default function MurajaahPage() {
           </motion.button>
         </div>
       </div>
+
+      {/* Active Server Batch Notification Banner */}
+      {activeBatch && (activeBatch.status === 'QUEUED' || activeBatch.status === 'IN_PROGRESS') && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-primary/15 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <Loader2 className="w-5 h-5 animate-spin" />
+            </div>
+            <div>
+              <div className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                <span>Pengiriman WhatsApp Massal Sedang Berjalan di Server</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold">
+                  {activeBatch.sent + activeBatch.failed} / {activeBatch.total} Selesai
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Dikelola otomatis di latar belakang server. Anda aman meninggalkan atau menutup halaman ini.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setModalBatchId(activeBatch.batchId);
+              setIsBatchModalOpen(true);
+            }}
+            className="px-4 py-2 rounded-xl bg-card border border-emerald-500/40 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1.5"
+          >
+            <span>Pantau Status Antrean</span>
+          </button>
+        </motion.div>
+      )}
 
       {/* Manual Input Form */}
       <div className="p-5 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 shadow-md">
@@ -787,8 +829,12 @@ export default function MurajaahPage() {
 
       <WhatsAppBatchModal
         isOpen={isBatchModalOpen}
-        onClose={() => setIsBatchModalOpen(false)}
+        onClose={() => {
+          setIsBatchModalOpen(false);
+          setModalBatchId(null);
+        }}
         selectedGroups={selectedGroupsForBatch}
+        existingBatchId={modalBatchId}
       />
     </div>
   );

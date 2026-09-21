@@ -1,9 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, ShieldCheck, CheckCircle2, Loader2, Smartphone, AlertCircle, RefreshCw } from 'lucide-react';
-import { MurajaahItem, useSendWhatsAppMurajaah } from '../../hooks/useMurajaah';
+import {
+  X,
+  Send,
+  ShieldCheck,
+  CheckCircle2,
+  Loader2,
+  Smartphone,
+  AlertCircle,
+  ExternalLink,
+  Ban,
+  Clock,
+  Check,
+  AlertTriangle,
+} from 'lucide-react';
+import {
+  MurajaahItem,
+  useSendBatchWhatsAppMurajaah,
+  useMurajaahBatchStatus,
+  useCancelMurajaahBatch,
+} from '../../hooks/useMurajaah';
 import { useQueryClient } from '@tanstack/react-query';
 
 export interface BatchSantriGroup {
@@ -19,96 +37,94 @@ interface WhatsAppBatchModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedGroups: BatchSantriGroup[];
+  existingBatchId?: string | null;
 }
 
-export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsAppBatchModalProps) {
+export function WhatsAppBatchModal({
+  isOpen,
+  onClose,
+  selectedGroups,
+  existingBatchId,
+}: WhatsAppBatchModalProps) {
   const queryClient = useQueryClient();
-  const sendWhatsAppMutation = useSendWhatsAppMurajaah();
+  const sendBatchMutation = useSendBatchWhatsAppMurajaah();
+  const cancelBatchMutation = useCancelMurajaahBatch();
 
-  const [isSending, setIsSending] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [isFinished, setIsFinished] = useState(false);
-  const [successCount, setSuccessCount] = useState(0);
-  const [failCount, setFailCount] = useState(0);
-  const [delayStrategy, setDelayStrategy] = useState<'random' | 'fixed-5' | 'fixed-10' | 'fixed-15' | 'fixed-20'>('random');
-  const [countdown, setCountdown] = useState<number | null>(null);
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(existingBatchId || null);
+  const [delayStrategy, setDelayStrategy] = useState<
+    'random' | 'fixed-5' | 'fixed-10' | 'fixed-15' | 'fixed-20'
+  >('random');
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Poll batch status from server
+  const { data: batchStatus, isLoading: isLoadingStatus } = useMurajaahBatchStatus(
+    activeBatchId || undefined
+  );
+
+  useEffect(() => {
+    if (existingBatchId) {
+      setActiveBatchId(existingBatchId);
+    }
+  }, [existingBatchId]);
 
   if (!isOpen) return null;
 
-  const total = selectedGroups.length;
-  const progressPercent = total > 0 ? Math.round(((currentIndex) / total) * 100) : 0;
+  const total = batchStatus ? batchStatus.total : selectedGroups.length;
+  const sentCount = batchStatus ? batchStatus.sent : 0;
+  const failCount = batchStatus ? batchStatus.failed : 0;
+  const pendingCount = batchStatus ? batchStatus.pending : total;
+
+  const isSending =
+    batchStatus?.status === 'QUEUED' ||
+    batchStatus?.status === 'IN_PROGRESS' ||
+    sendBatchMutation.isPending;
+
+  const isFinished =
+    batchStatus?.status === 'COMPLETED' || batchStatus?.status === 'CANCELLED';
+
+  const progressPercent = total > 0 ? Math.round(((sentCount + failCount) / total) * 100) : 0;
 
   const generateMarkdownMessage = (group: BatchSantriGroup) => {
     const item = group.surahs[0];
-    const hafalanInfo = item?.hafalanTodayText ? `📜 *Setoran Hafalan Hari Ini:*\n✨ *${item.hafalanTodayText}*` : '📜 *Setoran Hafalan Hari Ini:*\n_Belum ada setoran baru hari ini_';
-    const surahText = item ? `*Surah #${item.selectedSurahNumber || item.surahNumber} ${item.selectedSurahName || item.surahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}` : '*Surah Pilihan*';
+    const hafalanInfo = item?.hafalanTodayText
+      ? `📜 *Setoran Hafalan Hari Ini:*\n✨ *${item.hafalanTodayText}*`
+      : '📜 *Setoran Hafalan Hari Ini:*\n_Belum ada setoran baru hari ini_';
+    const surahText = item
+      ? `*Surah #${item.selectedSurahNumber || item.surahNumber} ${
+          item.selectedSurahName || item.surahName
+        }* ${item.ayatRange ? `(${item.ayatRange})` : ''}`
+      : '*Surah Pilihan*';
 
     return `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${group.parentName}* (Wali dari Ananda *${group.santriName}* - ${group.kelasName})\n\nBerikut adalah laporan capaian hafalan dan jadwal murajaah ananda hari ini:\n\n${hafalanInfo}\n\n📖 *Target Murajaah di Rumah:*\n${surahText}\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan dampingi ananda mengulang murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* ke nomor Ustadz agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih atas perhatian dan kerja samanya.\n_HafalanKu Automatic Gateway_`;
   };
 
   const handleStartBatchSend = async () => {
-    setIsSending(true);
-    setCurrentIndex(0);
-    setLogs([]);
-    setIsFinished(false);
-    setCountdown(null);
-    let succ = 0;
-    let fail = 0;
+    setSubmitError(null);
+    try {
+      const santriIds = selectedGroups.map((g) => g.santriId);
+      const res = await sendBatchMutation.mutateAsync({
+        santriIds,
+        delayStrategy,
+      });
 
-    for (let i = 0; i < selectedGroups.length; i++) {
-      const group = selectedGroups[i];
-      setCurrentIndex(i + 1);
-
-      const waitMsg = `[WAIT] Mengirim pesan (${i + 1}/${total}) ke Wali ${group.santriName} (${group.parentPhone})...`;
-      setLogs((prev) => [waitMsg, ...prev]);
-
-      try {
-        const res = await sendWhatsAppMutation.mutateAsync(group.santriId);
-        if (res.success || res.status === 'SENT' || res.status === 'DELIVERED') {
-          succ++;
-          const successLog = `[OK] ✅ Sukses terkirim ke ${group.parentName} (${group.parentPhone})`;
-          setLogs((prev) => [successLog, ...prev.slice(1)]);
-        } else {
-          fail++;
-          const failLog = `[GAGAL] ❌ Gagal kirim ke ${group.parentName}: ${res.error || 'WhatsApp belum terhubung'}`;
-          setLogs((prev) => [failLog, ...prev.slice(1)]);
-        }
-      } catch (err: any) {
-        fail++;
-        const errorMsg = err.message || 'Gagal mengirim pesan via WhatsApp Gateway';
-        const errorLog = `[GAGAL] ❌ Gagal kirim ke ${group.parentName} (${group.parentPhone}): ${errorMsg}`;
-        setLogs((prev) => [errorLog, ...prev.slice(1)]);
+      if (res.batchId) {
+        setActiveBatchId(res.batchId);
       }
+      queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
+    } catch (err: any) {
+      setSubmitError(err.message || 'Gagal mendaftarkan antrean pengiriman massal ke server');
+    }
+  };
 
-      // Anti-Spam Staggered Delay
-      if (i < selectedGroups.length - 1) {
-        let nextDelaySeconds = 5;
-        if (delayStrategy === 'random') {
-          const delays = [10, 15, 20];
-          nextDelaySeconds = delays[Math.floor(Math.random() * delays.length)];
-        } else {
-          nextDelaySeconds = parseInt(delayStrategy.split('-')[1], 10);
-        }
-
-        const delayLog = `[JEDA] ⏳ Menunggu ${nextDelaySeconds} detik sebelum mengirim pesan berikutnya...`;
-        setLogs((prev) => [delayLog, ...prev]);
-
-        setCountdown(nextDelaySeconds);
-        for (let seconds = nextDelaySeconds; seconds > 0; seconds--) {
-          setCountdown(seconds);
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-        setCountdown(null);
+  const handleCancelBatch = async () => {
+    if (!activeBatchId) return;
+    if (window.confirm('Apakah Anda yakin ingin membatalkan sisa antrean pengiriman WhatsApp ini?')) {
+      try {
+        await cancelBatchMutation.mutateAsync(activeBatchId);
+      } catch (err: any) {
+        alert(err.message || 'Gagal membatalkan batch');
       }
     }
-
-    setSuccessCount(succ);
-    setFailCount(fail);
-    setIsSending(false);
-    setIsFinished(true);
-    setCountdown(null);
-    queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
   };
 
   return (
@@ -128,77 +144,103 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
               </div>
               <div>
                 <h3 className="text-lg font-bold font-outfit text-foreground flex items-center gap-2">
-                  Kirim Pengingat WA Massal Anti-Spam
+                  Pengiriman WA Massal Server-Side
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Diproses otomatis melalui WhatsApp Gateway terhubung dengan jeda waktu aman dan bervariasi agar terhindar dari pemblokiran.
+                  Dikelola mandiri oleh background worker server HafalanKu. Kebal tutup halaman & drop sementara.
                 </p>
               </div>
             </div>
 
-            {!isSending && (
-              <button
-                onClick={onClose}
-                className="p-2 rounded-xl text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            )}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
+              title="Tutup Modal (Antrean tetap berjalan di server)"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          {/* Info Banner & Selected Count */}
-          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span>Total Santri Terpilih: <strong>{selectedGroups.length} Murid</strong></span>
+          {/* Persistent Server Execution Highlight Banner */}
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-3 text-xs text-emerald-800 dark:text-emerald-300">
+            <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+            <div className="space-y-1 leading-relaxed">
+              <span className="font-bold">Keamanan & Keandalan Pengiriman Terjamin:</span>
+              <p className="text-[11px] text-muted-foreground">
+                Antrean diproses langsung oleh server secara sekuensial dengan jeda anti-banned. Anda dapat menutup browser atau mematikan perangkat kapan saja tanpa menghentikan pengiriman.
+              </p>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 px-2.5 py-1 rounded-md">
-              {delayStrategy === 'random' ? 'Anti-Spam: Acak (10s/15s/20s)' : `Anti-Spam: ${delayStrategy.split('-')[1]}s`}
-            </span>
           </div>
+
+          {submitError && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{submitError}</span>
+            </div>
+          )}
 
           {/* Progress Bar Section (When sending or finished) */}
-          {(isSending || isFinished) && (
-            <div className="space-y-2 p-4 rounded-2xl bg-muted/40 border border-border">
+          {(isSending || isFinished || batchStatus) && (
+            <div className="space-y-2.5 p-4 rounded-2xl bg-muted/40 border border-border">
               <div className="flex items-center justify-between text-xs font-bold text-foreground">
-                <span>
-                  {isFinished 
-                    ? `🎉 Selesai! (Berhasil: ${successCount}, Gagal: ${failCount})` 
-                    : `Proses Pengiriman: ${currentIndex} / ${total}`
-                  }
-                </span>
+                <div className="flex items-center gap-2">
+                  <span>
+                    {isFinished
+                      ? batchStatus?.status === 'CANCELLED'
+                        ? '🛑 Antrean Dibatalkan'
+                        : `🎉 Selesai! (Terkirim: ${sentCount}, Gagal: ${failCount})`
+                      : `Status Server: ${sentCount + failCount} / ${total} Diproses`}
+                  </span>
+                  {isSending && (
+                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Aktif di Background
+                    </span>
+                  )}
+                </div>
                 <span>{progressPercent}%</span>
               </div>
+
               <div className="w-full h-3 bg-muted rounded-full overflow-hidden border border-border/50">
                 <motion.div
                   className={`h-full rounded-full transition-all ${
-                    failCount > 0 && isFinished 
-                      ? 'bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-500' 
+                    failCount > 0 && isFinished
+                      ? 'bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-500'
                       : 'bg-gradient-to-r from-emerald-600 to-teal-500'
                   }`}
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.4 }}
                 />
               </div>
-              {isSending && (
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 pt-1">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  {countdown !== null ? (
-                    <span>Menunggu jeda aman {countdown} detik sebelum mengirim pesan berikutnya...</span>
-                  ) : (
-                    <span className="animate-pulse">Mengirimkan pesan ke nomor WhatsApp Wali Murid...</span>
-                  )}
-                </p>
-              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground pt-1">
+                <div className="flex items-center gap-3">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                    ✓ Berhasil: {sentCount}
+                  </span>
+                  <span className="text-rose-500 font-bold">✗ Gagal: {failCount}</span>
+                  <span className="text-amber-500 font-bold">⏳ Sisa: {pendingCount}</span>
+                </div>
+                {isSending && (
+                  <button
+                    onClick={handleCancelBatch}
+                    disabled={cancelBatchMutation.isPending}
+                    className="inline-flex items-center gap-1 text-[11px] text-rose-500 hover:text-rose-600 hover:underline cursor-pointer"
+                  >
+                    <Ban className="w-3 h-3" />
+                    <span>Batalkan Sisa Antrean</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Settings Section (Before Sending) */}
-          {!isSending && !isFinished && (
+          {/* Settings Section (Before Submitting) */}
+          {!isSending && !isFinished && !batchStatus && (
             <div className="p-4 rounded-2xl bg-muted/40 border border-border space-y-2">
               <label className="text-xs font-extrabold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
-                ⚙️ Pengaturan Jeda Pengiriman (Anti-Spam)
+                ⚙️ Pengaturan Jeda Pengiriman (Anti-Spam WhatsApp)
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                 <select
@@ -206,82 +248,151 @@ export function WhatsAppBatchModal({ isOpen, onClose, selectedGroups }: WhatsApp
                   onChange={(e) => setDelayStrategy(e.target.value as any)}
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-foreground text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all cursor-pointer shadow-sm"
                 >
-                  <option value="random">🔄 Jeda Acak (10s, 15s, 20s) - Rekomendasi</option>
-                  <option value="fixed-5">⏱️ Jeda Tetap 5 Detik (Minimal)</option>
+                  <option value="random">🔄 Jeda Acak (10s, 15s, 20s) - Sangat Aman</option>
+                  <option value="fixed-5">⏱️ Jeda Tetap 5 Detik (Cepat)</option>
                   <option value="fixed-10">⏱️ Jeda Tetap 10 Detik</option>
                   <option value="fixed-15">⏱️ Jeda Tetap 15 Detik</option>
                   <option value="fixed-20">⏱️ Jeda Tetap 20 Detik</option>
                 </select>
                 <div className="text-[11px] text-muted-foreground leading-relaxed">
-                  {delayStrategy === 'random' 
-                    ? 'Variasi jeda acak (10, 15, atau 20 detik) untuk mengamankan pengiriman dan meminimalkan resiko banned WhatsApp.'
-                    : `Mengirim pesan dengan jeda waktu tetap ${delayStrategy.split('-')[1]} detik antar pesan.`
-                  }
+                  {delayStrategy === 'random'
+                    ? 'Variasi jeda acak (10–20 detik) otomatis untuk mengamankan nomor dari deteksi spam WhatsApp.'
+                    : `Mengirim pesan dengan jeda interval pasti ${
+                        delayStrategy.split('-')[1]
+                      } detik antar santri.`}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Markdown Message Sample Preview */}
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-            <label className="text-xs font-bold text-foreground block">
-              Contoh Format Pesan WhatsApp (Daftar Surah Berurutan):
-            </label>
-            {selectedGroups.length > 0 && (
-              <div className="p-4 rounded-2xl bg-background/80 border border-border text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto text-foreground">
-                {generateMarkdownMessage(selectedGroups[0])}
-              </div>
-            )}
-
-            {/* Real-time Transmission Logs */}
-            {logs.length > 0 && (
-              <div className="space-y-1 pt-2">
-                <label className="text-xs font-bold text-foreground block">Status Log Pengiriman Server:</label>
-                <div className="p-3 rounded-xl bg-black/80 text-emerald-400 text-[11px] font-mono space-y-1 max-h-36 overflow-y-auto border border-emerald-500/20">
-                  {logs.map((log, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <span className={log.startsWith('[GAGAL]') ? 'text-rose-400' : log.startsWith('[OK]') ? 'text-emerald-300' : 'text-amber-300'}>
-                        {log}
-                      </span>
+          {/* Detailed Server Jobs List (If batch has started) */}
+          {batchStatus?.jobs && batchStatus.jobs.length > 0 ? (
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              <label className="text-xs font-bold text-foreground block">
+                Daftar Pengiriman Santri:
+              </label>
+              <div className="divide-y divide-border border border-border rounded-2xl overflow-hidden bg-background max-h-44 overflow-y-auto">
+                {batchStatus.jobs.map((job) => (
+                  <div
+                    key={job.id}
+                    className="p-2.5 px-3 flex items-center justify-between text-xs hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-foreground truncate">
+                        {job.santriName}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        Wali: {job.parentName} ({job.parentPhone})
+                      </div>
+                      {job.errorMessage && (
+                        <div className="text-[10px] text-rose-500 truncate">
+                          {job.errorMessage}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
+                    <div className="shrink-0 ml-2">
+                      {job.status === 'SENT' && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                          <Check className="w-3 h-3" /> Terkirim
+                        </span>
+                      )}
+                      {job.status === 'PROCESSING' && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Mengirim...
+                        </span>
+                      )}
+                      {job.status === 'PENDING' && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">
+                          <Clock className="w-3 h-3" /> Antrean
+                        </span>
+                      )}
+                      {job.status === 'FAILED' && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md">
+                          <AlertTriangle className="w-3 h-3" /> Gagal
+                        </span>
+                      )}
+                      {job.status === 'CANCELLED' && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                          Batal
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            /* Markdown Message Sample Preview Before Sending */
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              <label className="text-xs font-bold text-foreground block">
+                Pratinjau Format Pesan WhatsApp:
+              </label>
+              {selectedGroups.length > 0 && (
+                <div className="p-3.5 rounded-2xl bg-background/80 border border-border text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto text-foreground">
+                  {generateMarkdownMessage(selectedGroups[0])}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Action Footer */}
-          <div className="pt-3 border-t border-border flex items-center justify-end gap-3">
-            {!isSending && !isFinished && (
-              <>
+          <div className="pt-3 border-t border-border flex items-center justify-between gap-3">
+            <div>
+              {isSending && (
+                <span className="text-[11px] text-muted-foreground italic flex items-center gap-1">
+                  <ExternalLink className="w-3 h-3" /> Aman untuk menutup modal ini
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {!isSending && !isFinished && !batchStatus && (
+                <>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2.5 rounded-xl border border-input text-xs font-medium hover:bg-secondary transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStartBatchSend}
+                    disabled={sendBatchMutation.isPending || selectedGroups.length === 0}
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {sendBatchMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    <span>Kirim Pengingat ({selectedGroups.length} WA)</span>
+                  </button>
+                </>
+              )}
+
+              {isSending && (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl border border-input text-xs font-medium hover:bg-secondary transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  Batal
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Jalankan di Background & Tutup</span>
                 </button>
+              )}
+
+              {isFinished && (
                 <button
                   type="button"
-                  onClick={handleStartBatchSend}
+                  onClick={onClose}
                   className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>Kirim Pengingat ({selectedGroups.length} WA)</span>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Selesai & Tutup</span>
                 </button>
-              </>
-            )}
-
-            {isFinished && (
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Selesai & Tutup</span>
-              </button>
-            )}
+              )}
+            </div>
           </div>
         </motion.div>
       </div>

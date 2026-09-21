@@ -56,18 +56,35 @@ export interface SendWhatsAppResponse {
 }
 
 export interface SendBatchWhatsAppResponse {
+  batchId: string;
   total: number;
-  successful: number;
+  status: string;
+  message?: string;
+}
+
+export interface BatchJobItem {
+  id: string;
+  santriId: string;
+  santriName: string;
+  parentName: string;
+  parentPhone: string;
+  status: 'PENDING' | 'PROCESSING' | 'SENT' | 'FAILED' | 'CANCELLED';
+  errorMessage?: string | null;
+  completedAt?: string | null;
+}
+
+export interface BatchSummaryStatus {
+  batchId: string;
+  total: number;
+  sent: number;
   failed: number;
-  details: Array<{
-    santriId: string;
-    success: boolean;
-    recipientPhone?: string;
-    parentName?: string;
-    santriName?: string;
-    status: string;
-    error?: string | null;
-  }>;
+  pending: number;
+  status: 'QUEUED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  delayStrategy: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+  jobs: BatchJobItem[];
 }
 
 export function useMurajaahList(params: { santriId?: string; kelasId?: string } | string = {}) {
@@ -247,14 +264,63 @@ export function useSendBatchWhatsAppMurajaah() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (santriIds: string[]): Promise<SendBatchWhatsAppResponse> => {
-      const res = await api.post<SendBatchWhatsAppResponse>('/murajaah/send-batch', { santriIds });
+    mutationFn: async ({
+      santriIds,
+      delayStrategy,
+    }: {
+      santriIds: string[];
+      delayStrategy?: string;
+    }): Promise<SendBatchWhatsAppResponse> => {
+      const res = await api.post<SendBatchWhatsAppResponse>('/murajaah/send-batch', {
+        santriIds,
+        delayStrategy: delayStrategy || 'random',
+      });
       if (!res.success || !res.data) {
         throw new Error(res.message || 'Gagal memproses pengiriman massal WhatsApp');
       }
       return res.data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['murajaah-batch-status'] });
+      queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
+    },
+  });
+}
+
+export function useMurajaahBatchStatus(batchId?: string) {
+  return useQuery<BatchSummaryStatus | null>({
+    queryKey: ['murajaah-batch-status', batchId],
+    queryFn: async () => {
+      const url = batchId ? `/murajaah/batch-status/${batchId}` : '/murajaah/batch-status';
+      const res = await api.get<BatchSummaryStatus | null>(url);
+      if (res.success && res.data) {
+        return res.data;
+      }
+      return null;
+    },
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data && (data.status === 'QUEUED' || data.status === 'IN_PROGRESS')) {
+        return 3000; // Poll setiap 3 detik jika ada batch aktif
+      }
+      return false;
+    },
+  });
+}
+
+export function useCancelMurajaahBatch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (batchId: string) => {
+      const res = await api.post(`/murajaah/batch-cancel/${batchId}`);
+      if (!res.success) {
+        throw new Error(res.message || 'Gagal membatalkan antrean batch');
+      }
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['murajaah-batch-status'] });
       queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
     },
   });

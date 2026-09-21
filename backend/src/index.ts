@@ -30,6 +30,7 @@ import { startAutoBackupJob } from './jobs/autoBackup';
 import { startSubscriptionNotifierJob } from './jobs/subscriptionNotifier';
 import { startTrialCleanerJob } from './jobs/trialCleaner';
 import { startMurajaahCleanerJob } from './jobs/murajaahCleaner';
+import { waQueueWorker } from './workers/whatsapp.queue.worker';
 import './workers/whatsapp.worker';
 
 const fastify = Fastify({
@@ -93,6 +94,9 @@ async function main() {
     const { WhatsAppService } = require('./modules/whatsapp/whatsapp.service');
     const waService = new WhatsAppService();
     waService.autoRestoreSessions().catch((e: any) => console.error('[WA Boot] Error restoring sessions:', e));
+
+    // Start Persistent WhatsApp Background Queue Worker & Auto-Recovery
+    waQueueWorker.start();
 
     // Start Auto Backup Cron Job
     startAutoBackupJob();

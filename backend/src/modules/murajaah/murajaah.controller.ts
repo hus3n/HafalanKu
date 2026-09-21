@@ -79,7 +79,7 @@ export class MurajaahController {
 
   static async sendBatchWhatsApp(req: FastifyRequest, reply: FastifyReply) {
     const userId = req.user!.userId;
-    const { santriIds } = req.body as { santriIds: string[] };
+    const { santriIds, delayStrategy } = req.body as { santriIds: string[]; delayStrategy?: string };
 
     if (!santriIds || !Array.isArray(santriIds) || santriIds.length === 0) {
       return reply.status(400).send({
@@ -88,12 +88,38 @@ export class MurajaahController {
       });
     }
 
-    const result = await murajaahService.sendBatchScheduleToWhatsApp(userId, santriIds);
+    const result = await murajaahService.sendBatchScheduleToWhatsApp(userId, santriIds, delayStrategy || 'random');
 
     return reply.send({
       success: true,
-      message: `Proses pengiriman selesai. Berhasil: ${result.successful}, Gagal: ${result.failed}`,
+      message: result.message,
       data: result,
+    });
+  }
+
+  static async getBatchStatus(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user!.userId;
+    const { batchId } = (req.params || {}) as { batchId?: string };
+
+    const status = await murajaahService.getBatchStatus(userId, batchId);
+
+    return reply.send({
+      success: true,
+      data: status,
+    });
+  }
+
+  static async cancelBatch(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user!.userId;
+    const { batchId } = req.params as { batchId: string };
+
+    const cancelled = await murajaahService.cancelBatch(userId, batchId);
+
+    return reply.send({
+      success: cancelled,
+      message: cancelled
+        ? 'Antrean batch berhasil dibatalkan.'
+        : 'Batch tidak ditemukan atau sudah selesai diproses.',
     });
   }
 

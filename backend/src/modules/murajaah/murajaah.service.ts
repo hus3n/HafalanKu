@@ -4,6 +4,7 @@ import { AppError } from '../../utils/AppError';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { NotificationLog } from '../notification/notification.model';
 import { whatsappQueue } from '../../config/queue';
+import { waQueueWorker } from '../../workers/whatsapp.queue.worker';
 
 const whatsappService = new WhatsAppService();
 
@@ -500,31 +501,124 @@ export class MurajaahService {
     };
   }
 
-  async sendBatchScheduleToWhatsApp(userId: string, santriIds: string[]) {
-    // Memasukkan seluruh permintaan ke antrean (Queue) agar tidak memblokir HTTP Response
-    const jobs = santriIds.map((santriId) => ({
-      name: 'send-whatsapp',
-      data: { userId, santriId },
-      opts: {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 5000 },
-      }
-    }));
-    
-    await whatsappQueue.addBulk(jobs);
+  async sendBatchScheduleToWhatsApp(userId: string, santriIds: string[], delayStrategy: string = 'random') {
+    const userRole = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, organizationId: true },
+    });
 
-    // Mengembalikan response "QUEUED" seketika
+    const santriAccessWhere = userRole?.role === 'SUPERADMIN'
+      ? {}
+      : userRole?.organizationId
+      ? { organizationId: userRole.organizationId }
+      : { userId };
+
+    const santriList = await prisma.santri.findMany({
+      where: {
+        id: { in: santriIds },
+        ...santriAccessWhere,
+      },
+      include: {
+        kelas: true,
+        hafalan: {
+          where: { isHafalanAwal: false },
+          orderBy: { date: 'desc' },
+          take: 5,
+        },
+      },
+    });
+
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const todayStr = formatter.format(new Date());
+
+    const jobsData: Array<{
+      santriId: string;
+      santriName: string;
+      parentName: string;
+      parentPhone: string;
+      kelasName: string;
+      message: string;
+    }> = [];
+
+    for (const santri of santriList) {
+      let parentPhone = santri.parentPhone;
+      try {
+        parentPhone = decrypt(parentPhone);
+      } catch (e) {
+        // fallback
+      }
+
+      if (!parentPhone) continue;
+
+      const todayHafalan = santri.hafalan.filter((h) => {
+        if (!h.date) return false;
+        const dStr = formatter.format(new Date(h.date));
+        return dStr === todayStr;
+      });
+
+      let hafalanText = '';
+      if (todayHafalan.length > 0) {
+        hafalanText = todayHafalan
+          .map((h) => `- Surah #${h.surahNumber} ${h.surahName} (Ayat ${h.ayatStart}-${h.ayatEnd})`)
+          .join('\n');
+      } else if (santri.hafalan.length > 0) {
+        const latest = santri.hafalan[0];
+        hafalanText = `- Surah #${latest.surahNumber} ${latest.surahName} (Ayat ${latest.ayatStart}-${latest.ayatEnd}) *(Setoran Terakhir)*`;
+      } else {
+        hafalanText = '- Belum ada catatan setoran baru';
+      }
+
+      const selectedSchedule = await prisma.murajaahSchedule.findFirst({
+        where: { santriId: santri.id },
+        orderBy: { priorityScore: 'desc' },
+      });
+
+      const surahNameText = selectedSchedule
+        ? `Surah #${selectedSchedule.surahNumber} ${selectedSchedule.surahName}${
+            selectedSchedule.ayatRange ? ` (Ayat ${selectedSchedule.ayatRange})` : ''
+          }`
+        : 'Surah Pilihan';
+
+      const messageText = `*Assalamu’alaikum Warahmatullahi Wabarakatuh*\n\nYth. Bpk/Ibu *${santri.parentName}* (Wali dari Ananda *${santri.name}* - ${santri.kelas?.name || 'Kelompok Ustadz'})\n\nBerikut adalah laporan capaian hafalan dan jadwal murajaah ananda hari ini:\n\n📜 *Setoran Hafalan Hari Ini:*\n${hafalanText}\n\n📖 *Target Murajaah di Rumah:*\n*${surahNameText}*\n\n--------------------------------------------------\n💬 *PENGINGAT PENTING UNTUK WALI SANTRI:*\nMohon bimbing dan dampingi ananda mengulang murajaah di rumah. Setelah ananda selesai murajaah, *MOHON WAJIB MEMBALAS PESAN WHATSAPP INI DENGAN MENGETIK KATA: "sudah"* agar status murajaah ananda di sistem kami otomatis ter-update menjadi Selesai (🟢 Sudah Dimurajaah).\n\nTerima kasih atas perhatian dan kerja samanya.\n_HafalanKu Automatic Gateway_`;
+
+      jobsData.push({
+        santriId: santri.id,
+        santriName: santri.name,
+        parentName: santri.parentName,
+        parentPhone,
+        kelasName: santri.kelas?.name || '',
+        message: messageText,
+      });
+    }
+
+    if (jobsData.length === 0) {
+      throw new AppError('Tidak ada santri dengan nomor WhatsApp yang valid untuk dikirim.', 400);
+    }
+
+    const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+    // Daftarkan ke persistent queue worker
+    const batchResult = await waQueueWorker.enqueueBatch(userId, batchId, jobsData, delayStrategy);
+
     return {
-      total: santriIds.length,
-      successful: 0, // Akan di-update via Job Completion (optional)
-      failed: 0,
-      details: santriIds.map(santriId => ({
-        santriId,
-        success: true,
-        status: 'QUEUED',
-        error: null
-      })),
+      batchId: batchResult.batchId,
+      total: batchResult.total,
+      status: batchResult.status,
+      message: `Antrean pengiriman batch berhasil didaftarkan ke server (${batchResult.total} santri). Pesan akan dikirim berurutan di latar belakang.`,
     };
+  }
+
+  async getBatchStatus(userId: string, batchId?: string) {
+    return await waQueueWorker.getBatchStatus(userId, batchId);
+  }
+
+  async cancelBatch(userId: string, batchId: string) {
+    return await waQueueWorker.cancelBatch(userId, batchId);
   }
 
   async simulateParentReply(userId: string, santriId: string, message: string = 'sudah') {
