@@ -50,14 +50,14 @@ export function RegisterForm() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       accountType: 'personal',
-      subscriptionPlan: 'TRIAL_14_DAYS',
+      subscriptionPlan: 'TRIAL_30_DAYS',
     },
   });
 
   const accountType = watch('accountType');
   const organizationName = watch('organizationName');
   const phone = watch('phone');
-  const selectedPlan = watch('subscriptionPlan') || 'TRIAL_14_DAYS';
+  const selectedPlan = watch('subscriptionPlan') || 'TRIAL_30_DAYS';
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterInput) => {
@@ -96,7 +96,7 @@ export function RegisterForm() {
     if (pendingRegistrationData) {
       const waNumber = '6285229925593';
       const isOrg = pendingRegistrationData.accountType === 'organization';
-      let planText = 'Trial Gratis (14 Hari)';
+      let planText = 'Trial Gratis (30 Hari)';
       if (pendingRegistrationData.subscriptionPlan === '1_MONTH') {
         planText = isOrg ? 'Paket Organisasi 1 Bulan (Rp 55.000)' : 'Paket Pribadi 1 Bulan (Rp 15.000)';
       } else if (pendingRegistrationData.subscriptionPlan === '6_MONTHS') {
@@ -353,19 +353,19 @@ export function RegisterForm() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setValue('subscriptionPlan', 'TRIAL_14_DAYS')}
+                onClick={() => setValue('subscriptionPlan', 'TRIAL_30_DAYS')}
                 className={cn(
                   'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
-                  selectedPlan === 'TRIAL_14_DAYS'
+                  selectedPlan === 'TRIAL_30_DAYS' || selectedPlan === 'TRIAL_14_DAYS'
                     ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
                     : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
                 )}
               >
                 <div className="flex items-center justify-between mb-0.5">
                   <span className="text-xs font-bold text-foreground">🎁 Trial Gratis</span>
-                  {selectedPlan === 'TRIAL_14_DAYS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                  {(selectedPlan === 'TRIAL_30_DAYS' || selectedPlan === 'TRIAL_14_DAYS') && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
                 </div>
-                <p className="text-[10px] text-muted-foreground">14 Hari Penuh Fitur</p>
+                <p className="text-[10px] text-muted-foreground">30 Hari Penuh Fitur</p>
               </button>
 
               <button

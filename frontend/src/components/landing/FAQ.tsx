@@ -18,7 +18,7 @@ export function FAQ() {
     },
     {
       q: 'Apakah HafalanKu bisa digunakan untuk ustadz perorangan?',
-      a: 'Tentu. Kami menyediakan Paket Pribadi/Perorangan mulai dari Rp 15rb/bulan (dengan pilihan hemat 6 bulan & 1 tahun) khusus untuk ustadz perorangan atau guru ngaji privat dengan kuota hingga 20 santri, serta uji coba (Trial) gratis 14 hari.',
+      a: 'Tentu. Kami menyediakan Paket Pribadi/Perorangan mulai dari Rp 15rb/bulan (dengan pilihan hemat 6 bulan & 1 tahun) khusus untuk ustadz perorangan atau guru ngaji privat dengan kuota hingga 20 santri, serta uji coba (Trial) gratis 30 hari.',
     },
     {
       q: 'Bagaimana jika perangkat HP ustadz berganti?',

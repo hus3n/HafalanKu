@@ -63,17 +63,21 @@ export class AuthService {
     let activeUntil: Date | null = null;
     let isTrial = false;
 
-    const plan = (input as any).subscriptionPlan || (input as any).trialPeriod || 'TRIAL_14_DAYS';
+    const plan = (input as any).subscriptionPlan || (input as any).trialPeriod || 'TRIAL_30_DAYS';
     const now = new Date();
     if (plan === '7_DAYS') {
       now.setDate(now.getDate() + 7);
       activeUntil = now;
       isTrial = true;
-    } else if (plan === '14_DAYS' || plan === 'TRIAL_14_DAYS' || plan === 'TRIAL') {
+    } else if (plan === '14_DAYS') {
       now.setDate(now.getDate() + 14);
       activeUntil = now;
       isTrial = true;
-    } else if (plan === '30_DAYS' || plan === '1_MONTH') {
+    } else if (plan === 'TRIAL_30_DAYS' || plan === 'TRIAL_14_DAYS' || plan === 'TRIAL' || plan === '30_DAYS') {
+      now.setDate(now.getDate() + 30);
+      activeUntil = now;
+      isTrial = true;
+    } else if (plan === '1_MONTH') {
       now.setMonth(now.getMonth() + 1);
       activeUntil = now;
       isTrial = false;
@@ -94,7 +98,7 @@ export class AuthService {
       activeUntil = now;
       isTrial = false;
     } else {
-      now.setDate(now.getDate() + 14);
+      now.setDate(now.getDate() + 30);
       activeUntil = now;
       isTrial = true;
     }
@@ -365,7 +369,7 @@ export class AuthService {
       const randomPassword = `Ggl_${Math.random().toString(36).slice(-10)}_${Date.now()}`;
       const passwordHash = await bcrypt.hash(randomPassword, BCRYPT_SALT_ROUNDS);
 
-      const plan = input.subscriptionPlan || 'TRIAL_14_DAYS';
+      const plan = input.subscriptionPlan || 'TRIAL_30_DAYS';
       const now = new Date();
       let activeUntil: Date | null = null;
       let isTrial = false;
@@ -391,8 +395,8 @@ export class AuthService {
         activeUntil = now;
         isTrial = false;
       } else {
-        // Default Trial 14 Hari
-        now.setDate(now.getDate() + 14);
+        // Default Trial 30 Hari
+        now.setDate(now.getDate() + 30);
         activeUntil = now;
         isTrial = true;
       }

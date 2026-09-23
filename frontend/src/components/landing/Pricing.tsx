@@ -46,7 +46,7 @@ export function Pricing() {
         'Fitur Penjadwalan Murajaah Cerdas',
         'Export Laporan PDF & Excel',
         'Akses Web Mobile & Desktop',
-        'Uji Coba Gratis 14 Hari',
+        'Uji Coba Gratis 30 Hari',
       ],
       buttonText: 'Mulai Uji Coba Gratis',
       buttonVariant: 'outline',
@@ -195,6 +195,24 @@ export function Pricing() {
                 </span>
               </button>
             </div>
+          </div>
+
+          {/* Tombol Coba Free 30 Hari */}
+          <div className="flex flex-col items-center justify-center pt-2">
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              type="button"
+              onClick={() => openAuth('register')}
+              className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#0E8991] to-[#12a4ae] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#0E8991]/25 hover:shadow-lg hover:shadow-[#0E8991]/40 transition-all cursor-pointer group"
+            >
+              <Sparkles className="w-4 h-4 text-[#EAA27C] animate-pulse" />
+              <span>Coba Free 30 Hari</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </motion.button>
+            <p className="text-[11px] text-muted-foreground mt-2 font-medium">
+              🎁 Tanpa biaya di awal • Akses penuh semua fitur gratis selama 30 hari
+            </p>
           </div>
         </motion.div>
 

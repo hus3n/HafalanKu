@@ -30,7 +30,7 @@ export function GoogleAuthButton({
   accountType = 'personal',
   organizationName = '',
   phone = '',
-  subscriptionPlan = 'TRIAL_14_DAYS',
+  subscriptionPlan = 'TRIAL_30_DAYS',
   onError,
   onSuccessMessage,
 }: GoogleAuthButtonProps) {
@@ -43,7 +43,7 @@ export function GoogleAuthButton({
   const [pendingGoogleToken, setPendingGoogleToken] = useState<string | null>(null);
   const [inputPhone, setInputPhone] = useState(phone || '');
   const [inputOrgName, setInputOrgName] = useState(organizationName || '');
-  const [inputPlan, setInputPlan] = useState(subscriptionPlan || 'TRIAL_14_DAYS');
+  const [inputPlan, setInputPlan] = useState(subscriptionPlan || 'TRIAL_30_DAYS');
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
@@ -61,7 +61,7 @@ export function GoogleAuthButton({
         accountType,
         organizationName: orgNameToSubmit || undefined,
         phone: phoneToSubmit || undefined,
-        subscriptionPlan: planToSubmit || 'TRIAL_14_DAYS',
+        subscriptionPlan: planToSubmit || 'TRIAL_30_DAYS',
       });
 
       if (res.success && res.data) {
@@ -80,7 +80,7 @@ export function GoogleAuthButton({
           if (phoneToSubmit) {
             const waNumber = '6285229925593';
             const isOrg = accountType === 'organization';
-            let planName = 'Trial Gratis (14 Hari)';
+            let planName = 'Trial Gratis (30 Hari)';
             if (planToSubmit === '1_MONTH') {
               planName = isOrg ? 'Paket Organisasi 1 Bulan (Rp 55.000)' : 'Paket Pribadi 1 Bulan (Rp 15.000)';
             } else if (planToSubmit === '6_MONTHS') {
@@ -333,19 +333,19 @@ export function GoogleAuthButton({
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => setInputPlan('TRIAL_14_DAYS')}
+                        onClick={() => setInputPlan('TRIAL_30_DAYS')}
                         className={cn(
                           'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
-                          inputPlan === 'TRIAL_14_DAYS'
+                          inputPlan === 'TRIAL_30_DAYS' || inputPlan === 'TRIAL_14_DAYS'
                             ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
                             : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
                         )}
                       >
                         <div className="flex items-center justify-between mb-0.5">
                           <span className="text-xs font-bold text-foreground">🎁 Trial Gratis</span>
-                          {inputPlan === 'TRIAL_14_DAYS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                          {(inputPlan === 'TRIAL_30_DAYS' || inputPlan === 'TRIAL_14_DAYS') && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
                         </div>
-                        <p className="text-[10px] text-muted-foreground">14 Hari Penuh Fitur</p>
+                        <p className="text-[10px] text-muted-foreground">30 Hari Penuh Fitur</p>
                       </button>
 
                       <button

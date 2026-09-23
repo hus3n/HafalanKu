@@ -1,4 +1,5 @@
 export type SubscriptionPlanId = 
+  | 'TRIAL_30_DAYS'
   | 'TRIAL_14_DAYS'
   | '1_MONTH'
   | '6_MONTHS'
@@ -15,9 +16,14 @@ export interface PlanPricingDetail {
 
 export const SUBSCRIPTION_PRICING = {
   personal: {
+    TRIAL_30_DAYS: {
+      priceText: 'Gratis',
+      billingText: '30 Hari Uji Coba',
+      nominalRp: 0,
+    },
     TRIAL_14_DAYS: {
       priceText: 'Gratis',
-      billingText: '14 Hari Uji Coba',
+      billingText: '30 Hari Uji Coba',
       nominalRp: 0,
     },
     '1_MONTH': {
@@ -44,9 +50,14 @@ export const SUBSCRIPTION_PRICING = {
     },
   },
   organization: {
+    TRIAL_30_DAYS: {
+      priceText: 'Gratis',
+      billingText: '30 Hari Uji Coba',
+      nominalRp: 0,
+    },
     TRIAL_14_DAYS: {
       priceText: 'Gratis',
-      billingText: '14 Hari Uji Coba',
+      billingText: '30 Hari Uji Coba',
       nominalRp: 0,
     },
     '1_MONTH': {
@@ -80,8 +91,8 @@ export const SUBSCRIPTION_PRICING = {
 } as const;
 
 export function formatSubscriptionPlanText(plan?: string | null, isOrg = false): string {
-  if (!plan || plan === 'TRIAL_14_DAYS' || plan === 'TRIAL') {
-    return '🎁 Trial Gratis (14 Hari Percobaan Bebas Fitur)';
+  if (!plan || plan === 'TRIAL_30_DAYS' || plan === 'TRIAL_14_DAYS' || plan === 'TRIAL' || plan === '30_DAYS' || plan === '14_DAYS') {
+    return '🎁 Trial Gratis (30 Hari Percobaan Bebas Fitur)';
   }
   if (plan === '1_MONTH') {
     return isOrg
