@@ -85,7 +85,7 @@ export default async function Image() {
               lineHeight: 1.4,
             }}
           >
-            Platform Manajemen Hafalan Al-Qur'an modern dengan integrasi notifikasi WhatsApp otomatis.
+            Platform Manajemen Hafalan Al-Qur&apos;an modern dengan integrasi notifikasi WhatsApp otomatis.
           </p>
         </div>
       </div>

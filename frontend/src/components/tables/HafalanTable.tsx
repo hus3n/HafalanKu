@@ -4,7 +4,6 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HafalanItem } from '../../hooks/useHafalan';
 import { Calendar, Trash2, BookOpen, User, Edit3 } from 'lucide-react';
-import { cn } from '../../lib/utils';
 
 interface HafalanTableProps {
   items: HafalanItem[];

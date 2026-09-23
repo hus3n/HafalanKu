@@ -79,7 +79,7 @@ export function LoginForm() {
     loginMutation.mutate(data);
   };
 
-  const handleOtpSuccess = (data: any) => {
+  const handleOtpSuccess = () => {
     setShowOtpModal(false);
     setSuccessMsg('Email Anda berhasil diverifikasi! Silakan tunggu konfirmasi aktivasi dari Admin.');
   };

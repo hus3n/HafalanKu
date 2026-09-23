@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { 
   UploadCloud, 
   FileSpreadsheet, 
@@ -35,8 +35,6 @@ interface BulkImportModalProps {
 
 export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalProps) {
   const [step, setStep] = useState<'upload' | 'preview' | 'success'>('upload');
-  const [file, setFile] = useState<File | null>(null);
-  const [fileBase64, setFileBase64] = useState<string | null>(null);
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [previewData, setPreviewData] = useState<BulkImportPreviewResult | null>(null);
   const [executionResult, setExecutionResult] = useState<BulkImportExecutionStats | null>(null);
@@ -53,8 +51,6 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
 
   const handleReset = () => {
     setStep('upload');
-    setFile(null);
-    setFileBase64(null);
     setPreviewData(null);
     setExecutionResult(null);
     setImportMode('MERGE');
@@ -73,11 +69,9 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
       return;
     }
 
-    setFile(selectedFile);
     const reader = new FileReader();
     reader.onload = async (e) => {
       const base64 = (e.target?.result as string).split(',')[1];
-      setFileBase64(base64);
 
       try {
         const res = await previewMutation.mutateAsync(base64);

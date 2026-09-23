@@ -228,7 +228,7 @@ export function QuickActionGrid() {
 
       {/* Responsive Compact Grid - 2 cols on mobile, 3 on tablet, 6 on desktop */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3.5">
-        {actions.map((item, idx) => (
+        {actions.map((item) => (
           <Link key={item.href} href={item.href} className="block group">
             <motion.div
               whileHover={{ y: -3, scale: 1.01 }}

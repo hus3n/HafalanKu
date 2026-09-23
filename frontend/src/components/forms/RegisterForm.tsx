@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { RegisterInput, registerSchema } from 'shared';
 import { api } from '../../lib/api';
-import { useAuth } from '../../hooks/useAuth';
 import { useLandingAuth } from '../../contexts/LandingAuthContext';
 import Link from 'next/link';
 import { User } from 'shared';
@@ -30,7 +29,6 @@ import { GoogleAuthButton } from '../shared/GoogleAuthButton';
 
 export function RegisterForm() {
   const router = useRouter();
-  const { setAuth } = useAuth();
   const { authMode, setAuthMode } = useLandingAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -91,24 +89,32 @@ export function RegisterForm() {
     registerMutation.mutate(data);
   };
 
-  const handleOtpSuccess = (data: any) => {
+  const handleOtpSuccess = () => {
     setShowOtpModal(false);
     setIsSuccess(true);
 
     if (pendingRegistrationData) {
       const waNumber = '6285229925593';
+      const isOrg = pendingRegistrationData.accountType === 'organization';
       let planText = 'Trial Gratis (14 Hari)';
-      if (pendingRegistrationData.subscriptionPlan === '1_MONTH') planText = 'Paket 1 Bulan';
-      else if (pendingRegistrationData.subscriptionPlan === '6_MONTHS') planText = 'Paket 6 Bulan';
-      else if (pendingRegistrationData.subscriptionPlan === '12_MONTHS') planText = 'Paket 1 Tahun (12 Bulan)';
-      else if (pendingRegistrationData.subscriptionPlan === 'LIFETIME') planText = 'Paket Lifetime / Permanen';
+      if (pendingRegistrationData.subscriptionPlan === '1_MONTH') {
+        planText = isOrg ? 'Paket Organisasi 1 Bulan (Rp 55.000)' : 'Paket Pribadi 1 Bulan (Rp 15.000)';
+      } else if (pendingRegistrationData.subscriptionPlan === '6_MONTHS') {
+        planText = isOrg ? 'Paket Organisasi 6 Bulan (Rp 300.000)' : 'Paket Pribadi 6 Bulan (Rp 85.000)';
+      } else if (pendingRegistrationData.subscriptionPlan === '12_MONTHS' || pendingRegistrationData.subscriptionPlan === '1_YEAR') {
+        planText = isOrg ? 'Paket Organisasi 1 Tahun (Rp 550.000)' : 'Paket Pribadi 1 Tahun (Rp 165.000)';
+      } else if (pendingRegistrationData.subscriptionPlan === 'ENTERPRISE') {
+        planText = 'Paket Enterprise (Rp 500.000 / bulan)';
+      } else if (pendingRegistrationData.subscriptionPlan === 'LIFETIME') {
+        planText = 'Paket Lifetime / Permanen';
+      }
 
-      const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar dan memverifikasi email akun HafalanKu saya:\n\nNama: ${pendingRegistrationData.name}\nEmail: ${pendingRegistrationData.email}\nNo. WhatsApp: ${pendingRegistrationData.phone}\nTipe Akun: ${pendingRegistrationData.accountType === 'organization' ? 'Admin Organisasi' : 'Pengajar/User'}\nPilihan Paket: ${planText}\n\nMohon untuk segera diaktifkan. Terima kasih.`;
+      const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar dan memverifikasi email akun HafalanKu saya:\n\nNama: ${pendingRegistrationData.name}\nEmail: ${pendingRegistrationData.email}\nNo. WhatsApp: ${pendingRegistrationData.phone}\nTipe Akun: ${isOrg ? 'Admin Organisasi' : 'Pengajar/User'}\nPilihan Paket: ${planText}\n\nMohon untuk segera diaktifkan. Terima kasih.`;
       const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
 
       try {
         window.open(waUrl, '_blank');
-      } catch (e) {}
+      } catch {}
     }
 
     setTimeout(() => {
@@ -376,7 +382,28 @@ export function RegisterForm() {
                   <span className="text-xs font-bold text-foreground">💎 1 Bulan</span>
                   {selectedPlan === '1_MONTH' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
                 </div>
-                <p className="text-[10px] text-muted-foreground">Langganan Berbayar</p>
+                <p className="text-[10px] font-semibold text-foreground/80">
+                  {accountType === 'organization' ? 'Rp 55k / bulan' : 'Rp 15k / bulan'}
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setValue('subscriptionPlan', '6_MONTHS')}
+                className={cn(
+                  'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                  selectedPlan === '6_MONTHS'
+                    ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                    : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                )}
+              >
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-xs font-bold text-foreground">💎 6 Bulan</span>
+                  {selectedPlan === '6_MONTHS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                </div>
+                <p className="text-[10px] text-[#EAA27C] font-semibold">
+                  {accountType === 'organization' ? 'Rp 300k (Hemat)' : 'Rp 85k (Hemat)'}
+                </p>
               </button>
 
               <button
@@ -393,26 +420,32 @@ export function RegisterForm() {
                   <span className="text-xs font-bold text-foreground">💎 1 Tahun</span>
                   {selectedPlan === '12_MONTHS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
                 </div>
-                <p className="text-[10px] text-[#EAA27C] font-medium">12 Bulan (Populer)</p>
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                  {accountType === 'organization' ? 'Rp 550k (Paling Hemat)' : 'Rp 165k (Paling Hemat)'}
+                </p>
               </button>
+            </div>
 
+            {accountType === 'organization' && (
               <button
                 type="button"
-                onClick={() => setValue('subscriptionPlan', 'LIFETIME')}
+                onClick={() => setValue('subscriptionPlan', 'ENTERPRISE')}
                 className={cn(
-                  'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
-                  selectedPlan === 'LIFETIME'
+                  'w-full p-2.5 mt-2 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden flex items-center justify-between',
+                  selectedPlan === 'ENTERPRISE'
                     ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
                     : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
                 )}
               >
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs font-bold text-foreground">👑 Lifetime</span>
-                  {selectedPlan === 'LIFETIME' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-foreground">🏢 Enterprise Multi-Cabang</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">Akses Selamanya</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#EAA27C]">Rp 500k<span className="text-[10px] font-normal text-muted-foreground">/bln</span></span>
+                  {selectedPlan === 'ENTERPRISE' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                </div>
               </button>
-            </div>
+            )}
           </motion.div>
 
           <motion.div

@@ -1,40 +1,65 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, Sparkles, ArrowRight } from 'lucide-react';
 
 import { useLandingAuth } from '../../contexts/LandingAuthContext';
 
+export type BillingCycle = '1_month' | '6_months' | '1_year';
+
+interface PlanPricing {
+  price: string;
+  period: string;
+  note?: string;
+}
+
+interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  pricing: Record<BillingCycle, PlanPricing>;
+  popular: boolean;
+  features: string[];
+  buttonText: string;
+  buttonVariant: 'primary' | 'outline';
+}
+
 export function Pricing() {
   const { openAuth } = useLandingAuth();
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('1_year');
 
-  const plans = [
+  const plans: Plan[] = [
     {
-      name: 'Mandiri / Perorangan',
-      description: 'Ideal untuk ustadz perorangan atau guru ngaji private.',
-      priceMonthly: 'Rp 15000',
-      priceAnnual: 'Rp 15000',
-      period: 'Per Bulan',
+      id: 'personal',
+      name: 'Pribadi / Perorangan',
+      description: 'Ideal untuk ustadz perorangan atau guru ngaji privat mandiri.',
+      pricing: {
+        '1_month': { price: 'Rp 15k', period: 'bulan', note: 'Ditagih per bulan' },
+        '6_months': { price: 'Rp 85k', period: '6 bulan', note: 'Hemat! Setara ~Rp 14.1k/bulan' },
+        '1_year': { price: 'Rp 165k', period: 'tahun', note: 'Paling Hemat! Setara ~Rp 13.7k/bulan' },
+      },
       popular: false,
       features: [
         'Maksimal 20 Data Santri',
         'Catat Setoran Hafalan 114 Surat',
-        'Fitur Penjadwalan Murajaah',
-        'Export Laporan PDF/Excel',
+        'Fitur Penjadwalan Murajaah Cerdas',
+        'Export Laporan PDF & Excel',
         'Akses Web Mobile & Desktop',
+        'Uji Coba Gratis 14 Hari',
       ],
       buttonText: 'Mulai Uji Coba Gratis',
       buttonVariant: 'outline',
     },
     {
-      name: 'Lembaga / Pesantren',
-      description: 'Solusi lengkap untuk Rumah Tahfidz, Sekolah, & Pesantren.',
-      priceMonthly: 'Rp 99k',
-      priceAnnual: 'Rp 79k',
-      period: 'per bulan',
+      id: 'organization',
+      name: 'Organisasi',
+      description: 'Solusi lengkap untuk TPQ, Rumah Tahfidz, Sekolah & Pesantren.',
+      pricing: {
+        '1_month': { price: 'Rp 55k', period: 'bulan', note: 'Ditagih per bulan' },
+        '6_months': { price: 'Rp 300k', period: '6 bulan', note: 'Hemat! Setara Rp 50k/bulan' },
+        '1_year': { price: 'Rp 550k', period: 'tahun', note: 'Paling Hemat! Setara ~Rp 45.8k/bulan' },
+      },
       popular: true,
       features: [
         'Santri & Kelas Tanpa Batas',
@@ -44,24 +69,28 @@ export function Pricing() {
         'Laporan Rekapitulasi XLSX Lengkap',
         'Dukungan Prioritas 24/7',
       ],
-      buttonText: 'Pilih Paket Lembaga',
+      buttonText: 'Pilih Paket Organisasi',
       buttonVariant: 'primary',
     },
     {
-      name: 'Enterprise Multi-Cabang',
-      description: 'Kustomisasi untuk yayasan besar dengan banyak cabang.',
-      priceMonthly: 'Kontak',
-      priceAnnual: 'Kontak',
-      period: 'kustomisasi khusus',
+      id: 'enterprise',
+      name: 'Enterprise',
+      description: 'Kustomisasi untuk yayasan besar dengan banyak cabang atau institusi.',
+      pricing: {
+        '1_month': { price: 'Rp 500k', period: 'bulan', note: 'Kapasitas & performa dedicated' },
+        '6_months': { price: 'Rp 500k', period: 'bulan', note: 'Kapasitas & performa dedicated' },
+        '1_year': { price: 'Rp 500k', period: 'bulan', note: 'Kapasitas & performa dedicated' },
+      },
       popular: false,
       features: [
-        'Semua Fitur Paket Lembaga',
+        'Semua Fitur Paket Organisasi',
         'Dukungan Multi-Cabang Yayasan',
         'Server Dedicated & SLA 99.9%',
         'Kustomisasi Domain (White-label)',
         'Pelatihan Penggunaan untuk Staf',
+        'Dukungan Teknis Prioritas Khusus',
       ],
-      buttonText: 'Konsultasi Sekarang',
+      buttonText: 'Pilih Paket Enterprise',
       buttonVariant: 'outline',
     },
   ];
@@ -89,31 +118,83 @@ export function Pricing() {
           </p>
 
           {/* Animated Toggle */}
-          <div className="flex items-center justify-center gap-4 pt-4">
-            <span className={`text-sm font-semibold transition-colors ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
-              Bayar Bulanan
-            </span>
-            <button
-              onClick={() => setIsAnnual(!isAnnual)}
-              className="w-16 h-8 rounded-full bg-muted border border-border p-1 relative flex items-center focus:outline-none shadow-inner"
-            >
-              <motion.div
-                layout
-                className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#0E8991] to-[#12a4ae] shadow-md"
-                animate={{ x: isAnnual ? 32 : 0 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            </button>
-            <span className={`text-sm font-semibold flex items-center gap-2 transition-colors ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
-              Bayar Tahunan
-              <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-[10px] bg-[#EAA27C]/20 border border-[#EAA27C]/30 text-[#EAA27C] font-bold px-2.5 py-0.5 rounded-full"
+          <div className="flex items-center justify-center pt-4">
+            <div className="inline-flex items-center p-1.5 rounded-2xl bg-muted/80 border border-border backdrop-blur-md shadow-inner gap-1">
+              <button
+                type="button"
+                onClick={() => setBillingCycle('1_month')}
+                className={`relative px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
+                  billingCycle === '1_month'
+                    ? 'text-white shadow-md'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                Hemat 20%
-              </motion.span>
-            </span>
+                {billingCycle === '1_month' && (
+                  <motion.div
+                    layoutId="pricingTabIndicator"
+                    className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#0E8991] to-[#12a4ae]"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">1 Bulan</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setBillingCycle('6_months')}
+                className={`relative px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                  billingCycle === '6_months'
+                    ? 'text-white shadow-md'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {billingCycle === '6_months' && (
+                  <motion.div
+                    layoutId="pricingTabIndicator"
+                    className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#0E8991] to-[#12a4ae]"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">6 Bulan</span>
+                <span
+                  className={`relative z-10 text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors ${
+                    billingCycle === '6_months'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-[#EAA27C]/20 border border-[#EAA27C]/40 text-[#EAA27C]'
+                  }`}
+                >
+                  Hemat
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setBillingCycle('1_year')}
+                className={`relative px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                  billingCycle === '1_year'
+                    ? 'text-white shadow-md'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {billingCycle === '1_year' && (
+                  <motion.div
+                    layoutId="pricingTabIndicator"
+                    className="absolute inset-0 rounded-xl bg-gradient-to-tr from-[#0E8991] to-[#12a4ae]"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">1 Tahun</span>
+                <span
+                  className={`relative z-10 text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors ${
+                    billingCycle === '1_year'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                  }`}
+                >
+                  Paling Hemat
+                </span>
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -154,18 +235,23 @@ export function Pricing() {
                   <div className="flex items-baseline gap-2">
                     <AnimatePresence mode="wait">
                       <motion.span
-                        key={isAnnual ? plan.priceAnnual : plan.priceMonthly}
+                        key={plan.pricing[billingCycle].price}
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
                         transition={{ duration: 0.2 }}
                         className="text-4xl md:text-5xl font-extrabold font-outfit text-foreground tracking-tight"
                       >
-                        {isAnnual ? plan.priceAnnual : plan.priceMonthly}
+                        {plan.pricing[billingCycle].price}
                       </motion.span>
                     </AnimatePresence>
-                    <span className="text-sm text-muted-foreground font-medium">/ {plan.period}</span>
+                    <span className="text-sm text-muted-foreground font-medium">/ {plan.pricing[billingCycle].period}</span>
                   </div>
+                  {plan.pricing[billingCycle].note && (
+                    <p className="text-xs text-[#0E8991] dark:text-[#1bb2bd] font-medium mt-2">
+                      {plan.pricing[billingCycle].note}
+                    </p>
+                  )}
                 </div>
 
                 <ul className="space-y-4 text-sm text-muted-foreground pt-4">

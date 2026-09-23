@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useAuth } from '../../hooks/useAuth';
-import { Sparkles, Calendar, BookOpen, Clock } from 'lucide-react';
+import { Sparkles, Calendar, Clock } from 'lucide-react';
 
 export function WelcomeCard() {
   const { user } = useAuth();
@@ -44,7 +44,7 @@ export function WelcomeCard() {
       default:
         return (
           <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#0E8991]/15 text-[#0E8991] dark:text-[#1bb2bd] border border-[#0E8991]/30">
-            Pengajar Al-Qur'an
+            Pengajar Al-Qur&apos;an
           </span>
         );
     }

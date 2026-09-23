@@ -120,7 +120,7 @@ export default function PrivacyPage() {
           <div className="p-6 rounded-2xl bg-muted/30 border border-border/60 space-y-3 text-sm text-muted-foreground leading-relaxed">
             <p>Kami menggunakan data yang dikumpulkan untuk tujuan operasional berikut:</p>
             <ul className="space-y-2 list-disc list-inside text-xs sm:text-sm">
-              <li>Menyediakan layanan pencatatan, rekapitulasi, dan pelaporan perkembangan hafalan Al-Qur'an santri.</li>
+              <li>Menyediakan layanan pencatatan, rekapitulasi, dan pelaporan perkembangan hafalan Al-Qur&apos;an santri.</li>
               <li>Menghasilkan dan mengelola jadwal murajaah terstruktur secara otomatis.</li>
               <li>Mengirimkan pesan pemberitahuan setoran dan pengingat murajaah ke nomor WhatsApp wali murid secara real-time.</li>
               <li>Memproses autentikasi, verifikasi akun, dan pemulihan kata sandi pengguna.</li>

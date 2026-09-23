@@ -3,17 +3,9 @@
 import React, { useState } from 'react';
 import { surahList } from 'shared';
 import { useSantriList } from '../../hooks/useSantri';
-import { motion, AnimatePresence } from 'motion/react';
-import { User, BookOpen, Award, Calendar, FileText, Loader2, Sparkles, Trash2, Plus } from 'lucide-react';
+import { User, BookOpen, Award, Calendar, FileText, Loader2, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { MultiSelectSurah } from './MultiSelectSurah';
-
-interface MurajaahRecordData {
-  surahNumber: number;
-  ayatStart: number;
-  ayatEnd: number;
-  type: string;
-}
 
 interface MurajaahSubmitData {
   santriId: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -51,21 +51,21 @@ export function WhatsAppBatchModal({
   const cancelBatchMutation = useCancelMurajaahBatch();
 
   const [activeBatchId, setActiveBatchId] = useState<string | null>(existingBatchId || null);
+  const [prevExistingBatchId, setPrevExistingBatchId] = useState<string | null>(existingBatchId || null);
   const [delayStrategy, setDelayStrategy] = useState<
     'random' | 'fixed-5' | 'fixed-10' | 'fixed-15' | 'fixed-20'
   >('random');
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  if (existingBatchId !== prevExistingBatchId) {
+    setPrevExistingBatchId(existingBatchId || null);
+    setActiveBatchId(existingBatchId || null);
+  }
+
   // Poll batch status from server
-  const { data: batchStatus, isLoading: isLoadingStatus } = useMurajaahBatchStatus(
+  const { data: batchStatus } = useMurajaahBatchStatus(
     activeBatchId || undefined
   );
-
-  useEffect(() => {
-    if (existingBatchId) {
-      setActiveBatchId(existingBatchId);
-    }
-  }, [existingBatchId]);
 
   if (!isOpen) return null;
 
@@ -111,8 +111,9 @@ export function WhatsAppBatchModal({
         setActiveBatchId(res.batchId);
       }
       queryClient.invalidateQueries({ queryKey: ['murajaah-list'] });
-    } catch (err: any) {
-      setSubmitError(err.message || 'Gagal mendaftarkan antrean pengiriman massal ke server');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal mendaftarkan antrean pengiriman massal ke server';
+      setSubmitError(msg);
     }
   };
 
@@ -121,8 +122,9 @@ export function WhatsAppBatchModal({
     if (window.confirm('Apakah Anda yakin ingin membatalkan sisa antrean pengiriman WhatsApp ini?')) {
       try {
         await cancelBatchMutation.mutateAsync(activeBatchId);
-      } catch (err: any) {
-        alert(err.message || 'Gagal membatalkan batch');
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Gagal membatalkan batch';
+        alert(msg);
       }
     }
   };
@@ -245,7 +247,7 @@ export function WhatsAppBatchModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                 <select
                   value={delayStrategy}
-                  onChange={(e) => setDelayStrategy(e.target.value as any)}
+                  onChange={(e) => setDelayStrategy(e.target.value as 'random' | 'fixed-5' | 'fixed-10' | 'fixed-15' | 'fixed-20')}
                   className="w-full h-10 px-3 rounded-xl border border-input bg-background text-foreground text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all cursor-pointer shadow-sm"
                 >
                   <option value="random">🔄 Jeda Acak (10s, 15s, 20s) - Sangat Aman</option>

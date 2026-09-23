@@ -8,7 +8,7 @@ import { useUsers } from '../../../hooks/useUsers';
 import { useAuth } from '../../../hooks/useAuth';
 import { ReportTable } from '../../../components/tables/ReportTable';
 import { motion } from 'motion/react';
-import { Download, Filter, BookOpen, Award, Loader2, FileSpreadsheet, UserCheck, Calendar } from 'lucide-react';
+import { Loader2, FileSpreadsheet } from 'lucide-react';
 
 export default function LaporanPage() {
   const { user: currentUser } = useAuth();

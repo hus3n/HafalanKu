@@ -18,9 +18,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         // Endpoint /auth/me mengembalikan user object di response.data
-        const response = await api.get<any>('/auth/me');
+        const response = await api.get<{ user?: User } & Partial<User>>('/auth/me');
         if (response.success && response.data) {
-          const userData = response.data.user || response.data;
+          const userData = (response.data.user || response.data) as User;
           setAuth(userData, token);
         } else {
           clearAuth();
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initializeAuth();
-  }, []); // Only run once on mount
+  }, [clearAuth, setAuth, token]);
 
   // Optionally return a full-screen loading spinner while initializing auth
   if (isInitializing) {

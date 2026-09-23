@@ -18,11 +18,11 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { useLandingStats } from '../../hooks/useLandingStats';
-import { useLatestReviews, ReviewItem } from '../../hooks/useReviews';
+import { useLatestReviews } from '../../hooks/useReviews';
 
 export function Testimonials() {
   const { data: stats } = useLandingStats();
-  const { data: latestReviews, isLoading: isLoadingReviews } = useLatestReviews();
+  const { data: latestReviews } = useLatestReviews();
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -164,7 +164,7 @@ export function Testimonials() {
                 {/* Review Body */}
                 <div className="space-y-4 flex-1">
                   <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed italic">
-                    "{rev.comment}"
+                    &ldquo;{rev.comment}&rdquo;
                   </p>
 
                   {/* Attached Image if exists */}

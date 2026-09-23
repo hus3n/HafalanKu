@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, Suspense } from 'react';
+import React, { createContext, useContext, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, usePathname } from 'next/navigation';
 
 export type AuthMode = 'login' | 'register' | null;
@@ -19,17 +19,23 @@ function LandingAuthProviderInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const [authMode, setAuthModeState] = useState<AuthMode>(null);
+  const authQuery = searchParams.get('auth');
+  const urlMode: AuthMode = 
+    authQuery === 'login' || authQuery === 'register' 
+      ? authQuery 
+      : pathname === '/' 
+        ? null 
+        : null;
 
-  // Sync state with URL query param on mount or URL change
-  useEffect(() => {
-    const authQuery = searchParams.get('auth');
-    if (authQuery === 'login' || authQuery === 'register') {
-      setAuthModeState(authQuery);
-    } else if (!authQuery && pathname === '/') {
-      setAuthModeState(null);
-    }
-  }, [searchParams, pathname]);
+  const [overrideMode, setOverrideMode] = useState<AuthMode | undefined>(undefined);
+  const [prevUrlMode, setPrevUrlMode] = useState(urlMode);
+
+  if (urlMode !== prevUrlMode) {
+    setPrevUrlMode(urlMode);
+    setOverrideMode(undefined);
+  }
+
+  const authMode = overrideMode !== undefined ? overrideMode : urlMode;
 
   const updateUrl = useCallback((mode: AuthMode) => {
     if (typeof window === 'undefined') return;
@@ -43,25 +49,26 @@ function LandingAuthProviderInner({ children }: { children: React.ReactNode }) {
   }, []);
 
   const openAuth = useCallback((mode: 'login' | 'register') => {
-    setAuthModeState(mode);
+    setOverrideMode(mode);
     updateUrl(mode);
   }, [updateUrl]);
 
   const closeAuth = useCallback(() => {
-    setAuthModeState(null);
+    setOverrideMode(null);
     updateUrl(null);
   }, [updateUrl]);
 
   const toggleMode = useCallback(() => {
-    setAuthModeState((prev) => {
-      const nextMode = prev === 'login' ? 'register' : 'login';
+    setOverrideMode((prev) => {
+      const current = prev !== undefined ? prev : urlMode;
+      const nextMode = current === 'login' ? 'register' : 'login';
       updateUrl(nextMode);
       return nextMode;
     });
-  }, [updateUrl]);
+  }, [updateUrl, urlMode]);
 
   const setAuthMode = useCallback((mode: AuthMode) => {
-    setAuthModeState(mode);
+    setOverrideMode(mode);
     updateUrl(mode);
   }, [updateUrl]);
 
@@ -93,10 +100,10 @@ export function useLandingAuth() {
   if (!context) {
     return {
       authMode: null as AuthMode,
-      openAuth: (_mode: 'login' | 'register') => {},
+      openAuth: () => {},
       closeAuth: () => {},
       toggleMode: () => {},
-      setAuthMode: (_mode: AuthMode) => {},
+      setAuthMode: () => {},
     };
   }
   return context;

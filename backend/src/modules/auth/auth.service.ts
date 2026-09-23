@@ -5,11 +5,9 @@ import { generateAccessToken, generateRefreshToken, verifyToken } from '../../ut
 import { AuditTrail } from '../audit/audit.model';
 import { ChangePasswordInput, GoogleAuthInput, LoginInput, RegisterInput } from './auth.schema';
 import { Role } from '@prisma/client';
-import { WhatsAppService } from '../whatsapp/whatsapp.service';
-import { WhatsAppSession } from '../whatsapp/whatsapp.model';
-import { getTelegramBot, getTelegramChatId } from '../../config/telegram';
 import { emailService } from '../email/email.service';
 import { env } from '../../config/env';
+import { notifySuperadminNewRegistration } from './auth.notification';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -85,6 +83,10 @@ export class AuthService {
       isTrial = false;
     } else if (plan === '1_YEAR' || plan === '12_MONTHS') {
       now.setFullYear(now.getFullYear() + 1);
+      activeUntil = now;
+      isTrial = false;
+    } else if (plan === 'ENTERPRISE' || plan === 'ENTERPRISE_1_MONTH') {
+      now.setMonth(now.getMonth() + 1);
       activeUntil = now;
       isTrial = false;
     } else if (plan === 'LIFETIME') {
@@ -378,6 +380,10 @@ export class AuthService {
         isTrial = false;
       } else if (plan === '12_MONTHS' || plan === '1_YEAR') {
         now.setFullYear(now.getFullYear() + 1);
+        activeUntil = now;
+        isTrial = false;
+      } else if (plan === 'ENTERPRISE' || plan === 'ENTERPRISE_1_MONTH') {
+        now.setMonth(now.getMonth() + 1);
         activeUntil = now;
         isTrial = false;
       } else if (plan === 'LIFETIME') {
@@ -770,9 +776,6 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  /**
-   * Mengirimkan notifikasi pendaftaran pengguna baru ke WhatsApp dan Telegram Superadmin
-   */
   private async notifySuperadminNewRegistration(data: {
     name: string;
     email: string;
@@ -783,73 +786,7 @@ export class AuthService {
     isTrial?: boolean;
     createdAt: Date;
   }) {
-    const timeStr = new Date(data.createdAt).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    
-    // Format teks pilihan paket langganan
-    let planText = '🎁 Trial Gratis (14 Hari Percobaan Bebas Fitur)';
-    if (data.subscriptionPlan === '1_MONTH') {
-      planText = '💎 Langganan Berbayar: Paket 1 Bulan';
-    } else if (data.subscriptionPlan === '6_MONTHS') {
-      planText = '💎 Langganan Berbayar: Paket 6 Bulan (Hemat)';
-    } else if (data.subscriptionPlan === '12_MONTHS' || data.subscriptionPlan === '1_YEAR') {
-      planText = '💎 Langganan Berbayar: Paket 1 Tahun / 12 Bulan (Populer)';
-    } else if (data.subscriptionPlan === 'LIFETIME') {
-      planText = '👑 Langganan Berbayar: Paket Lifetime / Permanen';
-    } else if (data.subscriptionPlan && data.subscriptionPlan !== 'TRIAL_14_DAYS') {
-      planText = data.subscriptionPlan;
-    } else if (data.isTrial === false) {
-      planText = '💎 Langganan Berbayar (Paket Standar)';
-    }
-
-    // 1. Kirim via WhatsApp ke Superadmin
-    try {
-      const waMessage = 
-        `📢 *NOTIFIKASI PENDAFTARAN BARU HAFALANKU*\n\n` +
-        `Ada pengguna baru yang baru saja mendaftar & terverifikasi:\n\n` +
-        `👤 *Nama:* ${data.name}\n` +
-        `📧 *Email:* ${data.email}\n` +
-        `📱 *WhatsApp:* ${data.phone}\n` +
-        `🔑 *Role:* ${data.role}\n` +
-        `🏢 *Lembaga/TPQ:* ${data.organizationName || 'Perorangan'}\n` +
-        `⏳ *Pilihan Masa Aktif:* ${planText}\n` +
-        `🕒 *Waktu Daftar:* ${timeStr} WIB\n\n` +
-        `Silakan login ke *Dashboard Superadmin* (Menu Pengguna Platform) untuk mengaktifkan akun pengguna tersebut.\n\n` +
-        `_Pesan otomatis dikirim oleh Sistem HafalanKu._`;
-
-      const activeSession = await WhatsAppSession.findOne({ status: 'CONNECTED' });
-      const senderId = activeSession?.userId;
-      const superAdminPhone = env.SUPERADMIN_PHONE || '085229925593';
-      
-      if (senderId && superAdminPhone) {
-        const whatsappService = new WhatsAppService();
-        await whatsappService.sendMessage(senderId, superAdminPhone, waMessage);
-      }
-    } catch (waErr: any) {
-      console.warn('[AuthService] WhatsApp notification to Superadmin skipped/failed:', waErr?.message || waErr);
-    }
-
-    // 2. Kirim via Telegram Bot ke Superadmin
-    try {
-      const bot = getTelegramBot();
-      const chatId = getTelegramChatId();
-      if (bot && chatId) {
-        const tgMessage =
-          `📢 *PENDAFTARAN PENGGUNA BARU (TERVERIFIKASI)*\n\n` +
-          `Pengguna baru telah mendaftar & memverifikasi email:\n\n` +
-          `👤 *Nama:* \`${data.name}\`\n` +
-          `📧 *Email:* \`${data.email}\`\n` +
-          `📱 *No. HP:* \`${data.phone}\`\n` +
-          `🔑 *Role:* \`${data.role}\`\n` +
-          `🏢 *Lembaga:* ${data.organizationName || 'Perorangan'}\n` +
-          `⏳ *Paket Dipilih:* ${planText}\n` +
-          `🕒 *Waktu:* ${timeStr} WIB\n\n` +
-          `_Buka menu Superadmin untuk mengaktifkan akun ini._`;
-
-        await bot.sendMessage(chatId, tgMessage, { parse_mode: 'Markdown' });
-      }
-    } catch (tgErr: any) {
-      console.warn('[AuthService] Telegram notification to Superadmin skipped/failed:', tgErr?.message || tgErr);
-    }
+    return notifySuperadminNewRegistration(data);
   }
 }
 

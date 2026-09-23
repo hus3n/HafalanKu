@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowRight, Play, ShieldCheck, Smartphone, Users, BookOpen, Bell, Building2 } from 'lucide-react';
+import { ArrowRight, Play, ShieldCheck, Smartphone, Users, BookOpen, Bell } from 'lucide-react';
 
 import { useLandingAuth } from '../../contexts/LandingAuthContext';
 import { useLandingStats } from '../../hooks/useLandingStats';
@@ -225,7 +225,7 @@ export function Hero() {
                       <span>Notifikasi Terkirim</span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-[#0E8991]/10 border border-[#0E8991]/20 text-[11px] text-foreground leading-snug">
-                      💬 "Assalamu’alaikum Wali Santri Ahmad Zaki, setoran Surah Al-Mulk ayat 1-15 hari ini mendapat predikat <strong className="text-[#0E8991] dark:text-[#1bb2bd]">Mumtaz</strong>."
+                      💬 &quot;Assalamu’alaikum Wali Santri Ahmad Zaki, setoran Surah Al-Mulk ayat 1-15 hari ini mendapat predikat <strong className="text-[#0E8991] dark:text-[#1bb2bd]">Mumtaz</strong>.&quot;
                     </div>
                   </div>
                 </div>

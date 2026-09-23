@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
@@ -38,12 +38,24 @@ interface QuickTemplate {
 }
 
 export function SendWhatsAppModal({ user, isOpen, onClose }: SendWhatsAppModalProps) {
-  const { data: waStatus, isLoading: isLoadingStatus } = useWhatsAppStatus();
+  const { data: waStatus } = useWhatsAppStatus();
   const sendMutation = useSendWhatsAppMessage();
 
   const [message, setMessage] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('custom');
   const [copied, setCopied] = useState(false);
+  const [prevUserId, setPrevUserId] = useState<string | null>(null);
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
+
+  // Synchronize state when modal opens or target user changes
+  if (isOpen && (!prevIsOpen || prevUserId !== user?.id)) {
+    setPrevIsOpen(true);
+    setPrevUserId(user?.id || null);
+    setSelectedTemplateId('custom');
+    setMessage(user ? `Assalamu'alaikum Wr. Wb. Yth. Bapak/Ibu ${user.name},\n\n` : '');
+  } else if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
 
   const templates: QuickTemplate[] = [
     {
@@ -96,21 +108,6 @@ export function SendWhatsAppModal({ user, isOpen, onClose }: SendWhatsAppModalPr
     },
   ];
 
-  useEffect(() => {
-    if (user && isOpen) {
-      if (selectedTemplateId === 'custom') {
-        if (!message) {
-          setMessage(`Assalamu'alaikum Wr. Wb. Yth. Bapak/Ibu ${user.name},\n\n`);
-        }
-      } else {
-        const found = templates.find((t) => t.id === selectedTemplateId);
-        if (found) {
-          setMessage(found.generateText(user));
-        }
-      }
-    }
-  }, [user, isOpen, selectedTemplateId]);
-
   if (!isOpen || !user) return null;
 
   // Format phone number
@@ -154,8 +151,9 @@ export function SendWhatsAppModal({ user, isOpen, onClose }: SendWhatsAppModalPr
       });
       toast.success(`Pesan berhasil dikirim ke WhatsApp ${user.name}`);
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal mengirim pesan via gateway');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Gagal mengirim pesan via gateway';
+      toast.error(errorMsg);
     }
   };
 

@@ -89,8 +89,18 @@ export function UserForm({ initialData, onSubmitCreate, onSubmitUpdate, isPendin
     else if (data.trialOption === '3') { isTrial = true; trialDays = 3; }
     else if (data.trialOption === '7') { isTrial = true; trialDays = 7; }
 
-    const { trialOption, ...submitData } = data;
-    onSubmitCreate?.({ ...submitData, isTrial, trialDays });
+    const submitData: CreateUserInput = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      role: data.role,
+      phone: data.phone,
+      organizationName: data.organizationName,
+      organizationId: data.organizationId,
+      isTrial,
+      trialDays,
+    };
+    onSubmitCreate?.(submitData);
   });
 
   const handleUpdateSubmit = updateForm.handleSubmit((data) => {

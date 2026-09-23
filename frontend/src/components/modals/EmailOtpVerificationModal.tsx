@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, CheckCircle2, AlertCircle, RefreshCw, X, ArrowRight, Loader2, ShieldCheck, Info } from 'lucide-react';
+import { Mail, CheckCircle2, AlertCircle, RefreshCw, X, ArrowRight, Loader2, Info } from 'lucide-react';
 import { api } from '../../lib/api';
 
 interface EmailOtpVerificationModalProps {
   isOpen: boolean;
   email: string;
   onClose: () => void;
-  onSuccess: (data: any) => void;
+  onSuccess: (data: unknown) => void;
 }
 
 export function EmailOtpVerificationModal({
@@ -19,6 +19,7 @@ export function EmailOtpVerificationModal({
   onSuccess,
 }: EmailOtpVerificationModalProps) {
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -26,6 +27,16 @@ export function EmailOtpVerificationModal({
   const [timer, setTimer] = useState(60);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  if (isOpen && !prevIsOpen) {
+    setPrevIsOpen(true);
+    setOtp(['', '', '', '', '', '']);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setTimer(60);
+  } else if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
 
   // Countdown timer for resend
   useEffect(() => {
@@ -41,13 +52,10 @@ export function EmailOtpVerificationModal({
   // Focus first input on open
   useEffect(() => {
     if (isOpen) {
-      setOtp(['', '', '', '', '', '']);
-      setErrorMessage(null);
-      setSuccessMessage(null);
-      setTimer(60);
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         inputRefs.current[0]?.focus();
       }, 150);
+      return () => clearTimeout(timerId);
     }
   }, [isOpen]);
 
@@ -111,7 +119,7 @@ export function EmailOtpVerificationModal({
     setErrorMessage(null);
 
     try {
-      const res = await api.post<any>('/auth/verify-email', {
+      const res = await api.post<unknown>('/auth/verify-email', {
         email,
         otp: fullOtp,
       });
@@ -124,8 +132,9 @@ export function EmailOtpVerificationModal({
       } else {
         setErrorMessage(res.message || 'Kode verifikasi tidak valid.');
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Gagal memverifikasi kode OTP. Silakan coba lagi.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal memverifikasi kode OTP. Silakan coba lagi.';
+      setErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -139,15 +148,16 @@ export function EmailOtpVerificationModal({
     setSuccessMessage(null);
 
     try {
-      const res = await api.post<any>('/auth/resend-otp', { email });
+      const res = await api.post<unknown>('/auth/resend-otp', { email });
       if (res.success) {
         setSuccessMessage('Kode verifikasi baru telah dikirim ke email Anda.');
         setTimer(60);
       } else {
         setErrorMessage(res.message || 'Gagal mengirim ulang kode OTP.');
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Terjadi kesalahan saat mengirim ulang kode.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Terjadi kesalahan saat mengirim ulang kode.';
+      setErrorMessage(msg);
     } finally {
       setIsResending(false);
     }

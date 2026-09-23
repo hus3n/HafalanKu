@@ -7,7 +7,7 @@ import { useSantriList } from '../../../hooks/useSantri';
 import { HafalanTable } from '../../../components/tables/HafalanTable';
 import { surahList } from 'shared';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Filter, ChevronLeft, ChevronRight, AlertTriangle, Loader2, X } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, AlertTriangle, Loader2, X } from 'lucide-react';
 import { HafalanForm } from '../../../components/forms/HafalanForm';
 
 export default function HafalanHistoryPage() {
@@ -47,7 +47,7 @@ export default function HafalanHistoryPage() {
             Riwayat Setoran Hafalan
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Histori catatan hafalan Al-Qur'an santri dan evaluasi pengajar.
+            Histori catatan hafalan Al-Qur&apos;an santri dan evaluasi pengajar.
           </p>
         </div>
 

@@ -1,47 +1,33 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { 
+  History, 
+  Send, 
+  Building2, 
+  Lock, 
+  Info, 
+  Loader2 
+} from 'lucide-react';
 import { 
   useMurajaahList,
   useMurajaahHistory,
-  useCreateMurajaah,
   useChangeSurahMurajaah,
   useSimulateWaReply,
-  useMarkNotificationSent,
   useDeleteMurajaah,
   useSendWhatsAppMurajaah,
   useMurajaahBatchStatus,
   MurajaahItem, 
-  MurajaahStatusType 
 } from '../../../hooks/useMurajaah';
 import { useSantriList } from '../../../hooks/useSantri';
 import { useKelasList } from '../../../hooks/useKelas';
-import { useHafalanList } from '../../../hooks/useHafalan';
 import { useAuth } from '../../../hooks/useAuth';
 import { WhatsAppBatchModal } from '../../../components/murajaah/WhatsAppBatchModal';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  History, 
-  Send, 
-  Users, 
-  Building2, 
-  CheckCircle2, 
-  Clock, 
-  XCircle,
-  BookOpen,
-  Search,
-  MessageSquare,
-  CheckSquare,
-  Square,
-  Lock,
-  Filter,
-  Calendar,
-  Smartphone,
-  Info,
-  Plus,
-  Trash2,
-  Loader2
-} from 'lucide-react';
+import { MurajaahManualForm } from '../../../components/murajaah/MurajaahManualForm';
+import { MurajaahFilterBar } from '../../../components/murajaah/MurajaahFilterBar';
+import { MurajaahScheduleTable } from '../../../components/murajaah/MurajaahScheduleTable';
+import { MurajaahHistoryTable } from '../../../components/murajaah/MurajaahHistoryTable';
 
 export default function MurajaahPage() {
   const { user: currentUser } = useAuth();
@@ -53,27 +39,21 @@ export default function MurajaahPage() {
   const [selectedSantriIds, setSelectedSantriIds] = useState<string[]>([]);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [modalBatchId, setModalBatchId] = useState<string | null>(null);
+  const [sendingSantriId, setSendingSantriId] = useState<string | null>(null);
 
   // Queries
   const { data: activeBatch } = useMurajaahBatchStatus();
-
-  // Form State
-  const [formSantriId, setFormSantriId] = useState('');
-  const [formSurahNumber, setFormSurahNumber] = useState('');
-  const [formAyatRange, setFormAyatRange] = useState('');
-
-  // Queries
   const { data: allKelasList = [] } = useKelasList();
   const { data: santriData } = useSantriList({ limit: 100 });
-  const allSantri = santriData?.santri || [];
 
   // Filter santri belonging to selected class (or all santri if no class is selected)
   const allowedSantri = useMemo(() => {
+    const allSantri = santriData?.santri || [];
     if (!selectedKelasId) {
       return allSantri;
     }
     return allSantri.filter(s => s.kelasId === selectedKelasId || s.kelas?.id === selectedKelasId);
-  }, [allSantri, selectedKelasId]);
+  }, [santriData?.santri, selectedKelasId]);
 
   // Fetch murajaah items
   const { data: schedules = [], isLoading: isLoadingSchedules } = useMurajaahList({
@@ -86,24 +66,10 @@ export default function MurajaahPage() {
     santriId: selectedSantriId || undefined,
   });
 
-  // Fetch hafalan for the manual form dropdown
-  const { data: formHafalanData } = useHafalanList(formSantriId ? { santriId: formSantriId, limit: 114 } : { santriId: 'none' });
-  const formSurahOptions = useMemo(() => {
-    if (!formHafalanData?.hafalan) return [];
-    const map = new Map();
-    for (const h of formHafalanData.hafalan) {
-      if (!map.has(h.surahNumber)) map.set(h.surahNumber, h);
-    }
-    return Array.from(map.values()).sort((a,b) => a.surahNumber - b.surahNumber);
-  }, [formHafalanData]);
-
   const changeSurahMutation = useChangeSurahMurajaah();
   const simulateWaReplyMutation = useSimulateWaReply();
-  const markNotificationSentMutation = useMarkNotificationSent();
-  const createMurajaahMutation = useCreateMurajaah();
   const deleteMurajaahMutation = useDeleteMurajaah();
   const sendWhatsAppMutation = useSendWhatsAppMurajaah();
-  const [sendingSantriId, setSendingSantriId] = useState<string | null>(null);
 
   // Filtered schedules by search query
   const filteredSchedules = useMemo(() => {
@@ -126,7 +92,8 @@ export default function MurajaahPage() {
       const q = searchQuery.toLowerCase();
       return (
         item.santriName.toLowerCase().includes(q) ||
-        item.surahName.toLowerCase().includes(q) ||
+        (item.surahName && item.surahName.toLowerCase().includes(q)) ||
+        (item.selectedSurahName && item.selectedSurahName.toLowerCase().includes(q)) ||
         item.kelasName.toLowerCase().includes(q)
       );
     });
@@ -184,6 +151,17 @@ export default function MurajaahPage() {
     }
   };
 
+  const handleAyatRangeChange = (item: MurajaahItem, ayatRange: string) => {
+    if (ayatRange !== (item.ayatRange || '')) {
+      changeSurahMutation.mutate({
+        id: item.id,
+        surahNumber: item.selectedSurahNumber,
+        surahName: item.selectedSurahName,
+        ayatRange,
+      });
+    }
+  };
+
   const handleSendSingleWa = async (item: MurajaahItem) => {
     setSendingSantriId(item.santriId);
     try {
@@ -202,9 +180,10 @@ export default function MurajaahPage() {
           window.open(waUrl, '_blank');
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMessage = err instanceof Error ? err.message : 'WhatsApp belum terhubung';
       const proceedFallback = window.confirm(
-        `Pengiriman otomatis gagal (${err.message || 'WhatsApp belum terhubung'}).\n\nApakah Anda ingin membuka WhatsApp Web / Aplikasi untuk mengirimkan pesan secara manual?`
+        `Pengiriman otomatis gagal (${errMessage}).\n\nApakah Anda ingin membuka WhatsApp Web / Aplikasi untuk mengirimkan pesan secara manual?`
       );
       if (proceedFallback) {
         const surahText = `📖 Target Murajaah Hari Ini: *Surah #${item.selectedSurahNumber} ${item.selectedSurahName}* ${item.ayatRange ? `(${item.ayatRange})` : ''}`;
@@ -215,28 +194,6 @@ export default function MurajaahPage() {
       }
     } finally {
       setSendingSantriId(null);
-    }
-  };
-
-  const handleCreateSchedule = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formSantriId || !formSurahNumber) return;
-    
-    const selectedSurah = formSurahOptions.find(s => s.surahNumber.toString() === formSurahNumber);
-    if (!selectedSurah) return;
-
-    try {
-      await createMurajaahMutation.mutateAsync({
-        santriId: formSantriId,
-        surahNumber: selectedSurah.surahNumber,
-        surahName: selectedSurah.surahName,
-        ayatRange: formAyatRange || undefined,
-      });
-      setFormSantriId('');
-      setFormSurahNumber('');
-      setFormAyatRange('');
-    } catch (err: any) {
-      alert(err.message || 'Gagal menambahkan jadwal.');
     }
   };
 
@@ -363,469 +320,62 @@ export default function MurajaahPage() {
       )}
 
       {/* Manual Input Form */}
-      <div className="p-5 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 shadow-md">
-        <div className="flex items-center gap-2 text-sm font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-4">
-          <Plus className="w-5 h-5" />
-          <span>Tambah Jadwal Murajaah Hari Ini</span>
-        </div>
-        
-        <form onSubmit={handleCreateSchedule} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">Pilih Santri</label>
-            <select
-              value={formSantriId}
-              onChange={(e) => {
-                setFormSantriId(e.target.value);
-                setFormSurahNumber('');
-              }}
-              required
-              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all cursor-pointer font-medium"
-            >
-              <option value="">-- Pilih Santri --</option>
-              {allowedSantri.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} {s.kelas?.name ? `(${s.kelas.name})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">Pilih Surah (Dari Hafalan Santri)</label>
-            <select
-              value={formSurahNumber}
-              onChange={(e) => setFormSurahNumber(e.target.value)}
-              required
-              disabled={!formSantriId}
-              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all cursor-pointer font-medium disabled:opacity-50"
-            >
-              <option value="">-- Pilih Surah --</option>
-              {formSurahOptions.map((s) => (
-                <option key={s.surahNumber} value={s.surahNumber}>
-                  #{s.surahNumber} {s.surahName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">Rentang Ayat (Opsional)</label>
-            <input
-              type="text"
-              placeholder="Contoh: 1-155"
-              value={formAyatRange}
-              onChange={(e) => setFormAyatRange(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all font-medium"
-            />
-          </div>
-
-          <div>
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={createMurajaahMutation.isPending || !formSantriId || !formSurahNumber}
-              className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {createMurajaahMutation.isPending ? 'Menambahkan...' : 'Tambah ke Jadwal'}
-            </motion.button>
-          </div>
-        </form>
-      </div>
+      <MurajaahManualForm allowedSantri={allowedSantri} />
 
       {/* Info Banner Rules */}
       <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-indigo-900 dark:text-indigo-200">
         <div className="flex items-center gap-2.5">
           <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
           <span>
-            <strong>Aturan Otomatisasi WA:</strong> Pengingat membalas pesan terkirim di WA. Status murajaah diperbarui menjadi 🟢 <strong>Sudah</strong> saat wali murid membalas kata kunci <em>"sudah"</em> ke nomor WA Ustadz. Setelah 24 jam, jadwal akan pindah secara otomatis ke Riwayat Murajaah.
+            <strong>Aturan Otomatisasi WA:</strong> Pengingat membalas pesan terkirim di WA. Status murajaah diperbarui menjadi 🟢 <strong>Sudah</strong> saat wali murid membalas kata kunci <em>&quot;sudah&quot;</em> ke nomor WA Ustadz. Setelah 24 jam, jadwal akan pindah secara otomatis ke Riwayat Murajaah.
           </span>
         </div>
       </div>
 
       {/* Filter Kelompok Ustadz & Pilih Santri */}
-      <div className="p-5 rounded-3xl border border-border bg-card shadow-md space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase tracking-wider">
-            <Filter className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Filter Tampilan Jadwal & Riwayat:</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Kelompok / Kelas Filter */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Kelompok Bimbingan
-            </label>
-            <select
-              value={selectedKelasId}
-              onChange={(e) => {
-                setSelectedKelasId(e.target.value);
-                setSelectedSantriId('');
-                setSelectedSantriIds([]);
-              }}
-              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all cursor-pointer font-medium"
-            >
-              <option value="">-- Semua Kelompok ({allKelasList.length} Kelas) --</option>
-              {allKelasList.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.name} {k.description ? `(${k.description})` : ''} {k.totalSantri !== undefined ? `• ${k.totalSantri} Santri` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Santri Filter */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Pilih Santri
-            </label>
-            <select
-              value={selectedSantriId}
-              onChange={(e) => setSelectedSantriId(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all cursor-pointer font-medium"
-            >
-              <option value="">-- Semua Santri ({allowedSantri.length} Santri) --</option>
-              {allowedSantri.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} {s.kelas?.name ? `(${s.kelas.name})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Surah Quick Search & Bulk Selection Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-muted-foreground pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Cari berdasarkan nama santri atau surah hafalan..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-11 pl-10 pr-4 rounded-xl border border-input bg-background text-foreground text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all placeholder:text-muted-foreground/60"
-          />
-        </div>
-        {filteredSchedules.length > 0 && (
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleSelectAllSantri}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-card text-xs font-bold text-foreground hover:bg-muted transition-all cursor-pointer shadow-sm"
-            >
-              {selectedSantriIds.length === filteredSchedules.length ? (
-                <>
-                  <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Batal Pilih Semua</span>
-                </>
-              ) : (
-                <>
-                  <Square className="w-4 h-4 text-muted-foreground" />
-                  <span>Tandai Semua ({filteredSchedules.length} Santri)</span>
-                </>
-              )}
-            </button>
-          </div>
-        )}
-      </div>
+      <MurajaahFilterBar
+        allKelasList={allKelasList}
+        allowedSantri={allowedSantri}
+        selectedKelasId={selectedKelasId}
+        selectedSantriId={selectedSantriId}
+        searchQuery={searchQuery}
+        onSelectKelas={(kelasId) => {
+          setSelectedKelasId(kelasId);
+          setSelectedSantriId('');
+          setSelectedSantriIds([]);
+        }}
+        onSelectSantri={(santriId) => setSelectedSantriId(santriId)}
+        onSearchChange={(q) => setSearchQuery(q)}
+        totalSchedules={filteredSchedules.length}
+        selectedSantriCount={selectedSantriIds.length}
+        onSelectAllSantri={handleSelectAllSantri}
+      />
 
       {/* TABLE 1: JADWAL HARI INI */}
-      <div className="rounded-3xl border border-emerald-500/20 bg-card overflow-hidden shadow-xl mb-8">
-        <div className="p-4 border-b border-border bg-emerald-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h2 className="text-base font-bold font-outfit text-emerald-900 dark:text-emerald-100">
-              Jadwal Murajaah Hari Ini (Aktif)
-            </h2>
-          </div>
-          <span className="text-xs text-muted-foreground font-semibold">
-            Terdapat <strong className="text-foreground">{filteredSchedules.length} Jadwal</strong>
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-border bg-muted/30 font-bold text-foreground uppercase tracking-wider text-[11px]">
-                <th className="py-3.5 px-3 w-10 text-center">Pilih</th>
-                <th className="py-3.5 px-4 min-w-[140px]">Waktu Dibuat</th>
-                <th className="py-3.5 px-4 min-w-[160px]">Nama Santri</th>
-                <th className="py-3.5 px-4 min-w-[220px]">Surat Target Murajaah</th>
-                <th className="py-3.5 px-4 min-w-[140px]">Status Murajaah</th>
-                <th className="py-3.5 px-4 min-w-[130px]">Status Notif WA</th>
-                <th className="py-3.5 px-4 min-w-[230px] text-right">Aksi & WA</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60 text-foreground font-medium">
-              {isLoadingSchedules ? (
-                Array.from({ length: 2 }).map((_, idx) => (
-                  <tr key={idx} className="animate-pulse">
-                    <td className="py-3 px-3"><div className="h-4 w-4 bg-muted rounded mx-auto" /></td>
-                    <td className="py-3 px-4"><div className="h-4 w-24 bg-muted rounded" /></td>
-                    <td className="py-3 px-4"><div className="h-4 w-32 bg-muted rounded" /></td>
-                    <td className="py-3 px-4"><div className="h-9 w-44 bg-muted rounded-xl" /></td>
-                    <td className="py-3 px-4"><div className="h-6 w-28 bg-muted rounded-full" /></td>
-                    <td className="py-3 px-4"><div className="h-6 w-24 bg-muted rounded-full" /></td>
-                    <td className="py-3 px-4"><div className="h-8 w-32 bg-muted rounded-xl ml-auto" /></td>
-                  </tr>
-                ))
-              ) : filteredSchedules.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <History className="w-10 h-10 text-muted-foreground opacity-50" />
-                      <p className="text-sm font-bold text-foreground">Tidak ada jadwal hari ini</p>
-                      <p className="text-xs text-muted-foreground">
-                        Tambahkan jadwal secara manual melalui form di atas.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <AnimatePresence mode="popLayout">
-                  {filteredSchedules.map((item) => {
-                    const isSantriChecked = selectedSantriIds.includes(item.santriId);
-                    const effectiveStatus = item.murajaahStatus;
-
-                    return (
-                      <motion.tr
-                        key={item.id}
-                        initial={{ opacity: 0, y: 3 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -3 }}
-                        className={`hover:bg-muted/40 transition-colors ${
-                          isSantriChecked ? 'bg-emerald-500/10' : ''
-                        }`}
-                      >
-                        <td className="py-3.5 px-3 text-center">
-                          <button
-                            onClick={() => handleToggleSelectSantri(item.santriId)}
-                            className="text-emerald-600 dark:text-emerald-400 hover:scale-110 transition-transform cursor-pointer"
-                          >
-                            {isSantriChecked ? (
-                              <CheckSquare className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
-                            ) : (
-                              <Square className="w-4.5 h-4.5 text-muted-foreground" />
-                            )}
-                          </button>
-                        </td>
-                        <td className="py-3.5 px-4 font-semibold text-foreground whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                            <span>{formatDateTime(item.createdAt)}</span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          <div className="font-bold text-foreground text-sm">{item.santriName}</div>
-                          <div className="text-[11px] text-muted-foreground flex items-center gap-1">
-                            <span className="px-1.5 py-0.5 rounded bg-muted text-foreground border border-border font-semibold">
-                              {item.kelasName}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <div className="flex flex-col gap-2">
-                            <select
-                              value={item.selectedSurahNumber}
-                              onChange={(e) => handleSelectMemorizedSurahChange(item, e.target.value)}
-                              className="w-full h-10 px-3 rounded-xl border border-emerald-500/40 bg-card text-foreground font-bold text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 transition-all cursor-pointer shadow-sm"
-                            >
-                              {(item.hafalanSurahs || []).map((s) => (
-                                <option key={s.surahNumber} value={s.surahNumber} className="bg-card text-foreground py-1">
-                                  #{s.surahNumber} Surah {s.surahName} {s.ayatRange ? `(${s.ayatRange})` : ''}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              type="text"
-                              placeholder="Rentang Ayat (Contoh: 1-155)"
-                              defaultValue={item.ayatRange || ''}
-                              onBlur={(e) => {
-                                if (e.target.value !== (item.ayatRange || '')) {
-                                  changeSurahMutation.mutate({
-                                    id: item.id,
-                                    surahNumber: item.selectedSurahNumber,
-                                    surahName: item.selectedSurahName,
-                                    ayatRange: e.target.value,
-                                  });
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.currentTarget.blur();
-                                }
-                              }}
-                              className="w-full h-8 px-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-foreground font-semibold text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 transition-all placeholder:text-muted-foreground/60"
-                            />
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          {effectiveStatus === 'SUDAH' && (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-sm">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> 🟢 Sudah
-                            </span>
-                          )}
-                          {effectiveStatus === 'BELUM' && (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-sm">
-                              <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /> ⏳ Belum
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          {item.notificationStatus === 'SENT' ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
-                              <Smartphone className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> 📲 Terkirim
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-muted text-muted-foreground border border-border">
-                              <Clock className="w-3.5 h-3.5" /> ⏳ Belum Dikirim
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleSendSingleWa(item)}
-                              disabled={sendingSantriId === item.santriId}
-                              className="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm disabled:opacity-50"
-                              title="Kirim notifikasi pengingat jadwal murajaah via WhatsApp Gateway ke Wali Murid"
-                            >
-                              {sendingSantriId === item.santriId ? (
-                                <>
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
-                                  <span>Mengirim...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="w-3.5 h-3.5" />
-                                  <span>{item.notificationStatus === 'SENT' ? 'Kirim Ulang WA' : 'Kirim WA'}</span>
-                                </>
-                              )}
-                            </button>
-                            <button
-                              onClick={() => simulateWaReplyMutation.mutate(item.santriId)}
-                              className="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/20 flex items-center gap-1 transition-all cursor-pointer shadow-sm"
-                              title="Deteksi balasan WA masuk dari nomor wali santri berisi kata kunci 'sudah'"
-                            >
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              <span>Terima Balasan WA: "sudah"</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (window.confirm(`Apakah Anda yakin ingin menghapus jadwal murajaah untuk ${item.santriName}?`)) {
-                                  deleteMurajaahMutation.mutate(item.id);
-                                }
-                              }}
-                              className="p-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer shadow-sm"
-                              title="Hapus Jadwal Murajaah Ini"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    );
-                  })}
-                </AnimatePresence>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <MurajaahScheduleTable
+        schedules={filteredSchedules}
+        isLoading={isLoadingSchedules}
+        selectedSantriIds={selectedSantriIds}
+        sendingSantriId={sendingSantriId}
+        onToggleSelectSantri={handleToggleSelectSantri}
+        onSelectMemorizedSurahChange={handleSelectMemorizedSurahChange}
+        onAyatRangeChange={handleAyatRangeChange}
+        onSendSingleWa={handleSendSingleWa}
+        onSimulateWaReply={(santriId) => simulateWaReplyMutation.mutate(santriId)}
+        onDeleteSchedule={(id, santriName) => {
+          if (window.confirm(`Apakah Anda yakin ingin menghapus jadwal murajaah untuk ${santriName}?`)) {
+            deleteMurajaahMutation.mutate(id);
+          }
+        }}
+        formatDateTime={formatDateTime}
+      />
 
       {/* TABLE 2: RIWAYAT MURAJAAH (History) */}
-      <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-xl opacity-90">
-        <div className="p-4 border-b border-border bg-muted/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <History className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-sm font-bold font-outfit text-muted-foreground">
-              Riwayat Murajaah (&gt; 24 Jam)
-            </h2>
-          </div>
-          <span className="text-xs text-muted-foreground font-semibold">
-            Menampilkan <strong className="text-foreground">{filteredHistories.length} Riwayat</strong>
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse opacity-80 hover:opacity-100 transition-opacity">
-            <thead>
-              <tr className="border-b border-border bg-muted/70 font-bold text-foreground uppercase tracking-wider text-[11px]">
-                <th className="py-3.5 px-4 min-w-[140px]">Tanggal Riwayat</th>
-                <th className="py-3.5 px-4 min-w-[160px]">Nama Santri</th>
-                <th className="py-3.5 px-4 min-w-[220px]">Surat Yang Dimurajaah</th>
-                <th className="py-3.5 px-4 min-w-[140px]">Status Akhir</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60 text-foreground font-medium">
-              {isLoadingHistories ? (
-                Array.from({ length: 2 }).map((_, idx) => (
-                  <tr key={idx} className="animate-pulse">
-                    <td className="py-3 px-4"><div className="h-4 w-24 bg-muted rounded" /></td>
-                    <td className="py-3 px-4"><div className="h-4 w-32 bg-muted rounded" /></td>
-                    <td className="py-3 px-4"><div className="h-4 w-44 bg-muted rounded" /></td>
-                    <td className="py-3 px-4"><div className="h-6 w-28 bg-muted rounded-full" /></td>
-                  </tr>
-                ))
-              ) : filteredHistories.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-12 text-center">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <History className="w-10 h-10 text-muted-foreground opacity-50" />
-                      <p className="text-sm font-bold text-muted-foreground">Tidak ada riwayat murajaah</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <AnimatePresence mode="popLayout">
-                  {filteredHistories.map((item) => (
-                    <motion.tr
-                      key={item.id}
-                      initial={{ opacity: 0, y: 3 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="hover:bg-muted/40 transition-colors"
-                    >
-                      <td className="py-3.5 px-4 font-semibold text-muted-foreground whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 opacity-60" />
-                          <span>{formatDate(item.date)}</span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="font-bold text-muted-foreground text-sm">{item.santriName}</div>
-                        <div className="text-[11px] opacity-70 flex items-center gap-1">
-                          <span className="px-1.5 py-0.5 rounded bg-muted border border-border font-semibold">
-                            {item.kelasName}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold text-muted-foreground">
-                          #{item.surahNumber} {item.surahName}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        {item.status === 'SUDAH' && (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/10 text-emerald-700/70 border border-emerald-500/20">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Sudah
-                          </span>
-                        )}
-                        {item.status === 'TIDAK_DIMURAJAAH' && (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-500/10 text-rose-700/70 border border-rose-500/20">
-                            <XCircle className="w-3.5 h-3.5" /> Tidak Dimurajaah
-                          </span>
-                        )}
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <MurajaahHistoryTable
+        histories={filteredHistories}
+        isLoading={isLoadingHistories}
+        formatDate={formatDate}
+      />
 
       <WhatsAppBatchModal
         isOpen={isBatchModalOpen}

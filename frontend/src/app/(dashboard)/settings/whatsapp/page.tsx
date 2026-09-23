@@ -22,10 +22,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../../../../hooks/useAuth';
 
 export default function WhatsAppSettingsPage() {
-  const { user: currentUser } = useAuth();
   const { data: statusData, isLoading: isStatusLoading, isFetching: isStatusFetching, refetch: refetchStatus } = useWhatsAppStatus();
   const initMutation = useInitWhatsAppSession();
   const disconnectMutation = useDisconnectWhatsApp();

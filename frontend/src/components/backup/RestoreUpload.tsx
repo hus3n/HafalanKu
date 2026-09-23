@@ -17,7 +17,6 @@ import {
 import { useRestoreBackup, RestoreBackupPayload } from '../../hooks/useBackup';
 
 export function RestoreUpload() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [parsedPayload, setParsedPayload] = useState<RestoreBackupPayload | null>(null);
   const [fileMeta, setFileMeta] = useState<{ filename: string; size: number; checksum: string; createdAt?: string } | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
@@ -35,7 +34,6 @@ export function RestoreUpload() {
     setParseError(null);
     setRestoreResult(null);
     resetRestoreMutation();
-    setSelectedFile(file);
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -90,8 +88,6 @@ export function RestoreUpload() {
       onSuccess: (data) => {
         setShowConfirmModal(false);
         setRestoreResult(data.totalRestored);
-        // Clear selected file after success
-        setSelectedFile(null);
         setParsedPayload(null);
         setFileMeta(null);
       },
@@ -202,7 +198,6 @@ export function RestoreUpload() {
             <button
               onClick={() => {
                 setParseError(null);
-                setSelectedFile(null);
               }}
               className="text-rose-600 dark:text-rose-400 hover:opacity-80"
             >
@@ -233,7 +228,6 @@ export function RestoreUpload() {
             </div>
             <button
               onClick={() => {
-                setSelectedFile(null);
                 setParsedPayload(null);
                 setFileMeta(null);
                 setParseError(null);
@@ -260,7 +254,6 @@ export function RestoreUpload() {
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => {
-                setSelectedFile(null);
                 setParsedPayload(null);
                 setFileMeta(null);
               }}

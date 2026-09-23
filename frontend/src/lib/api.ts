@@ -62,7 +62,7 @@ async function fetchWrapper<T>(endpoint: string, options: RequestInit = {}): Pro
   let data: any;
   try {
     data = await response.json();
-  } catch (error) {
+  } catch {
     // Handling non-JSON responses
     data = null;
   }

@@ -4,7 +4,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import * as idb from 'idb-keyval';
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useSyncExternalStore } from 'react';
+
+const emptySubscribe = () => () => {};
+
+const clientPersister = typeof window !== 'undefined'
+  ? createAsyncStoragePersister({
+      storage: {
+        getItem: async (key) => await idb.get(key),
+        setItem: async (key, value) => await idb.set(key, value),
+        removeItem: async (key) => await idb.del(key),
+      },
+    })
+  : null;
 
 export default function QueryProvider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -24,20 +36,11 @@ export default function QueryProvider({ children }: { children: ReactNode }) {
       })
   );
 
-  const [persister, setPersister] = useState<any>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const asyncStoragePersister = createAsyncStoragePersister({
-        storage: {
-          getItem: async (key) => await idb.get(key),
-          setItem: async (key, value) => await idb.set(key, value),
-          removeItem: async (key) => await idb.del(key),
-        },
-      });
-      setPersister(asyncStoragePersister);
-    }
-  }, []);
+  const persister = useSyncExternalStore(
+    emptySubscribe,
+    () => clientPersister,
+    () => null
+  );
 
   if (!persister) {
     return (

@@ -6,7 +6,6 @@ import {
   UserCheck, 
   Scale, 
   AlertOctagon, 
-  HelpCircle, 
   ChevronRight, 
   ArrowLeft,
   Calendar,

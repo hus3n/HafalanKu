@@ -21,7 +21,6 @@ import {
   AlertTriangle, 
   Loader2, 
   UploadCloud, 
-  Download,
   FileSpreadsheet
 } from 'lucide-react';
 

@@ -19,7 +19,6 @@ import {
   X, 
   CheckCircle2, 
   Award, 
-  Sparkles, 
   UploadCloud, 
   FileSpreadsheet 
 } from 'lucide-react';

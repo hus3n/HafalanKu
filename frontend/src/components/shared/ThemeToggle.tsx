@@ -5,11 +5,15 @@ import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
 import { motion } from 'motion/react';
 
+const emptySubscribe = () => () => {};
+
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => setMounted(true), []);
+  const mounted = React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   if (!mounted) {
     return <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/10" />;

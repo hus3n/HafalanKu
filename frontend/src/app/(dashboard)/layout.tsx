@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useSyncExternalStore } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { Sidebar } from '../../components/layout/Sidebar';
@@ -10,16 +10,18 @@ import { Loader2 } from 'lucide-react';
 import { AnimatedBackground } from '../../components/shared/AnimatedBackground';
 import { useSidebarStore } from '../../stores/sidebarStore';
 
+const emptySubscribe = () => () => {};
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { isCollapsed } = useSidebarStore();
-  const [isMounted, setIsMounted] = React.useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
     if (isMounted && !isAuthenticated) {

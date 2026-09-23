@@ -14,7 +14,6 @@ import {
   Bot, 
   Send, 
   CheckCircle2, 
-  AlertCircle, 
   HelpCircle, 
   ExternalLink, 
   RefreshCw, 

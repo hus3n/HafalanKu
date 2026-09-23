@@ -79,17 +79,25 @@ export function GoogleAuthButton({
           // Susun link WhatsApp konfirmasi ke Superadmin
           if (phoneToSubmit) {
             const waNumber = '6285229925593';
+            const isOrg = accountType === 'organization';
             let planName = 'Trial Gratis (14 Hari)';
-            if (planToSubmit === '1_MONTH') planName = 'Paket 1 Bulan';
-            else if (planToSubmit === '6_MONTHS') planName = 'Paket 6 Bulan';
-            else if (planToSubmit === '12_MONTHS') planName = 'Paket 1 Tahun (12 Bulan)';
-            else if (planToSubmit === 'LIFETIME') planName = 'Paket Lifetime / Permanen';
+            if (planToSubmit === '1_MONTH') {
+              planName = isOrg ? 'Paket Organisasi 1 Bulan (Rp 55.000)' : 'Paket Pribadi 1 Bulan (Rp 15.000)';
+            } else if (planToSubmit === '6_MONTHS') {
+              planName = isOrg ? 'Paket Organisasi 6 Bulan (Rp 300.000)' : 'Paket Pribadi 6 Bulan (Rp 85.000)';
+            } else if (planToSubmit === '12_MONTHS' || planToSubmit === '1_YEAR') {
+              planName = isOrg ? 'Paket Organisasi 1 Tahun (Rp 550.000)' : 'Paket Pribadi 1 Tahun (Rp 165.000)';
+            } else if (planToSubmit === 'ENTERPRISE') {
+              planName = 'Paket Enterprise (Rp 500.000 / bulan)';
+            } else if (planToSubmit === 'LIFETIME') {
+              planName = 'Paket Lifetime / Permanen';
+            }
 
-            const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar akun HafalanKu via Google:\n\nEmail: ${res.data?.user?.email || '-'}\nNama: ${res.data?.user?.name || '-'}\nWhatsApp: ${phoneToSubmit}\nTipe Akun: ${accountType === 'organization' ? 'Admin Organisasi' : 'Pengajar/User'}\nPilihan Paket: ${planName}\n\nMohon untuk diaktifkan. Terima kasih.`;
+            const waText = `Assalamu'alaikum Admin,\n\nSaya telah mendaftar akun HafalanKu via Google:\n\nEmail: ${res.data?.user?.email || '-'}\nNama: ${res.data?.user?.name || '-'}\nWhatsApp: ${phoneToSubmit}\nTipe Akun: ${isOrg ? 'Admin Organisasi' : 'Pengajar/User'}\nPilihan Paket: ${planName}\n\nMohon untuk diaktifkan. Terima kasih.`;
             const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`;
             try {
               window.open(waUrl, '_blank');
-            } catch (e) {}
+            } catch {}
           }
 
           setTimeout(() => {
@@ -354,7 +362,28 @@ export function GoogleAuthButton({
                           <span className="text-xs font-bold text-foreground">💎 1 Bulan</span>
                           {inputPlan === '1_MONTH' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
                         </div>
-                        <p className="text-[10px] text-muted-foreground">Langganan Berbayar</p>
+                        <p className="text-[10px] font-semibold text-foreground/80">
+                          {accountType === 'organization' ? 'Rp 55k / bulan' : 'Rp 15k / bulan'}
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setInputPlan('6_MONTHS')}
+                        className={cn(
+                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
+                          inputPlan === '6_MONTHS'
+                            ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
+                            : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-bold text-foreground">💎 6 Bulan</span>
+                          {inputPlan === '6_MONTHS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                        </div>
+                        <p className="text-[10px] text-[#EAA27C] font-semibold">
+                          {accountType === 'organization' ? 'Rp 300k (Hemat)' : 'Rp 85k (Hemat)'}
+                        </p>
                       </button>
 
                       <button
@@ -371,26 +400,32 @@ export function GoogleAuthButton({
                           <span className="text-xs font-bold text-foreground">💎 1 Tahun</span>
                           {inputPlan === '12_MONTHS' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
                         </div>
-                        <p className="text-[10px] text-[#EAA27C] font-medium">12 Bulan (Populer)</p>
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                          {accountType === 'organization' ? 'Rp 550k (Paling Hemat)' : 'Rp 165k (Paling Hemat)'}
+                        </p>
                       </button>
+                    </div>
 
+                    {accountType === 'organization' && (
                       <button
                         type="button"
-                        onClick={() => setInputPlan('LIFETIME')}
+                        onClick={() => setInputPlan('ENTERPRISE')}
                         className={cn(
-                          'p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden',
-                          inputPlan === 'LIFETIME'
+                          'w-full p-2.5 mt-2 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden flex items-center justify-between',
+                          inputPlan === 'ENTERPRISE'
                             ? 'border-[#0E8991] bg-[#0E8991]/15 text-foreground ring-1 ring-[#0E8991]'
                             : 'border-border/60 bg-background/50 text-muted-foreground hover:border-border hover:text-foreground'
                         )}
                       >
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-xs font-bold text-foreground">👑 Lifetime</span>
-                          {inputPlan === 'LIFETIME' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-foreground">🏢 Enterprise Multi-Cabang</span>
                         </div>
-                        <p className="text-[10px] text-muted-foreground">Akses Selamanya</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-[#EAA27C]">Rp 500k<span className="text-[10px] font-normal text-muted-foreground">/bln</span></span>
+                          {inputPlan === 'ENTERPRISE' && <CheckCircle2 className="w-3.5 h-3.5 text-[#0E8991]" />}
+                        </div>
                       </button>
-                    </div>
+                    )}
                   </div>
 
                   <div className="pt-2">

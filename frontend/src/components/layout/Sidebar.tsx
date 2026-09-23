@@ -8,11 +8,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SidebarMenu } from './SidebarMenu';
 import { useSidebarStore } from '../../stores/sidebarStore';
 
-interface SidebarProps {
-  isOpen?: boolean;
-}
-
-export function Sidebar({ isOpen = true }: SidebarProps) {
+export function Sidebar() {
   const { isCollapsed, toggleCollapsed } = useSidebarStore();
 
   return (

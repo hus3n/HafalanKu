@@ -9,11 +9,8 @@ import {
   Smartphone, 
   Apple, 
   ExternalLink, 
-  CheckCircle2, 
   ShieldCheck, 
-  Sparkles,
-  Layers,
-  HelpCircle
+  Sparkles
 } from 'lucide-react';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
@@ -23,7 +20,7 @@ interface InstallAppModalProps {
 }
 
 export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
-  const { deferredPrompt, isStandalone, triggerInstall, openStandaloneWindow } = usePWAInstall();
+  const { deferredPrompt, triggerInstall, openStandaloneWindow } = usePWAInstall();
   const [activeTab, setActiveTab] = useState<'DESKTOP' | 'ANDROID' | 'IOS'>('DESKTOP');
   const [isInstalling, setIsInstalling] = useState(false);
 
@@ -172,7 +169,7 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
                   <ol className="list-decimal list-inside space-y-1.5 text-muted-foreground">
                     <li>Perhatikan ujung kanan <strong>Address Bar (kolom URL)</strong> browser Anda.</li>
                     <li>Klik ikon <strong>Install / Pasang Aplikasi (📥)</strong> atau ikon monitor komputer.</li>
-                    <li>Atau klik menu titik tiga <strong>(⋮)</strong> &rarr; <strong>Simpan dan Bagikan / Aplikasi</strong> &rarr; Pilih <strong>"Install HafalanKu"</strong>.</li>
+                    <li>Atau klik menu titik tiga <strong>(⋮)</strong> &rarr; <strong>Simpan dan Bagikan / Aplikasi</strong> &rarr; Pilih <strong>&quot;Install HafalanKu&quot;</strong>.</li>
                     <li>Aplikasi akan otomatis muncul di Desktop & Taskbar tanpa bilah tab browser!</li>
                   </ol>
                 </div>
@@ -183,7 +180,7 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
                   <p className="font-bold text-foreground">Di Google Chrome Android:</p>
                   <ol className="list-decimal list-inside space-y-1.5 text-muted-foreground">
                     <li>Buka menu titik tiga <strong>(⋮)</strong> di pojok kanan atas browser.</li>
-                    <li>Pilih menu <strong>"Tambahkan ke Layar Utama" (Add to Home screen)</strong> atau <strong>"Install Aplikasi"</strong>.</li>
+                    <li>Pilih menu <strong>&quot;Tambahkan ke Layar Utama&quot; (Add to Home screen)</strong> atau <strong>&quot;Install Aplikasi&quot;</strong>.</li>
                     <li>Tekan <strong>Install / Tambah</strong>. Ikon HafalanKu akan terpasang di menu HP Anda layaknya aplikasi asli Play Store.</li>
                   </ol>
                 </div>
@@ -195,7 +192,7 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
                   <ol className="list-decimal list-inside space-y-1.5 text-muted-foreground">
                     <li>Buka website ini menggunakan browser <strong>Safari</strong>.</li>
                     <li>Tekan tombol <strong>Bagikan / Share (ikon kotak dengan panah ke atas ⬆️)</strong> di bar bagian bawah.</li>
-                    <li>Gulir menu ke bawah dan pilih <strong>"Tambah ke Layar Utama" (Add to Home Screen ➕)</strong>.</li>
+                    <li>Gulir menu ke bawah dan pilih <strong>&quot;Tambah ke Layar Utama&quot; (Add to Home Screen ➕)</strong>.</li>
                     <li>Tekan <strong>Tambah (Add)</strong> di pojok kanan atas. Buka dari Home Screen untuk tampilan layar penuh tanpa tab.</li>
                   </ol>
                 </div>

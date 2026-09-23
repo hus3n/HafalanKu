@@ -5,11 +5,9 @@ import { WelcomeCard } from '../../../components/dashboard/WelcomeCard';
 import { StatCard, StatCardSkeleton } from '../../../components/dashboard/StatCard';
 import { QuickActionGrid } from '../../../components/dashboard/QuickActionGrid';
 import { useDashboardStats } from '../../../hooks/useDashboard';
-import { useAuth } from '../../../hooks/useAuth';
 
 export default function DashboardPage() {
   const { data, isLoading, isError } = useDashboardStats();
-  const { user } = useAuth();
 
   return (
     <div className="space-y-6 sm:space-y-7 pb-6">

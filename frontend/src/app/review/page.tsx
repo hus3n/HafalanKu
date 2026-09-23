@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -17,10 +17,9 @@ import {
   MessageSquare,
   Building2,
   User,
-  Heart,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useCreateReview, useAllReviews, ReviewItem } from '../../hooks/useReviews';
+import { useCreateReview, useAllReviews } from '../../hooks/useReviews';
 
 const RATING_LABELS: Record<number, { text: string; color: string; desc: string }> = {
   1: { text: 'Sangat Kurang', color: 'text-rose-500', desc: 'Banyak kendala yang dialami' },
@@ -38,22 +37,22 @@ export default function ReviewPage() {
 
   const [rating, setRating] = useState<number>(5);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
-  const [name, setName] = useState<string>('');
+  const [name, setName] = useState<string>(() => user?.name || '');
   const [roleOrTitle, setRoleOrTitle] = useState<string>('');
   const [comment, setComment] = useState<string>('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [selectedReviewImage, setSelectedReviewImage] = useState<string | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [prevUserName, setPrevUserName] = useState<string | undefined>(user?.name);
 
   // Auto-populate name if logged in
-  useEffect(() => {
-    if (user?.name && !name) {
-      setName(user.name);
-    }
-  }, [user, name]);
+  if (user?.name && !name && user.name !== prevUserName) {
+    setPrevUserName(user.name);
+    setName(user.name);
+  }
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const activeRating = hoveredRating !== null ? hoveredRating : rating;
 
@@ -168,7 +167,7 @@ export default function ReviewPage() {
             Bagikan Ulasan & Pengalaman Anda
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground font-light leading-relaxed">
-            Masukan dan pengalaman Anda sangat berharga untuk terus memajukan layanan dan ekosistem pencatatan hafalan Al-Qur'an.
+            Masukan dan pengalaman Anda sangat berharga untuk terus memajukan layanan dan ekosistem pencatatan hafalan Al-Qur&apos;an.
           </p>
         </div>
 
@@ -396,7 +395,7 @@ export default function ReviewPage() {
               {/* Submit Error Feedback */}
               {createReviewMutation.isError && (
                 <div className="p-3.5 rounded-xl bg-destructive/15 border border-destructive/30 text-destructive text-xs font-medium">
-                  {(createReviewMutation.error as any)?.message || 'Gagal mengirim ulasan. Silakan periksa koneksi Anda.'}
+                  {createReviewMutation.error?.message || 'Gagal mengirim ulasan. Silakan periksa koneksi Anda.'}
                 </div>
               )}
 
@@ -480,7 +479,7 @@ export default function ReviewPage() {
 
                   {/* Comment */}
                   <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed italic">
-                    "{rev.comment}"
+                    &ldquo;{rev.comment}&rdquo;
                   </p>
 
                   {/* Attached Image Thumbnail */}

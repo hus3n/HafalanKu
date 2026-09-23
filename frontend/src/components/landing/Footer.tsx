@@ -41,7 +41,7 @@ export function Footer() {
             </Link>
 
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Platform managemen hafalan Al-Qur'an modern berbasis web dengan integrasi WhatsApp otomatis, penjadwalan murajaah cerdas, dan keamanan data berlapis.
+              Platform managemen hafalan Al-Qur&apos;an modern berbasis web dengan integrasi WhatsApp otomatis, penjadwalan murajaah cerdas, dan keamanan data berlapis.
             </p>
 
             {/* Hadith Quote Card - Solid Deep Dark with Ocean Teal Accent */}

@@ -1,30 +1,30 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, LogOut, ShieldCheck, User } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
 import { SidebarMenu } from './SidebarMenu';
 import { useAuth } from '../../hooks/useAuth';
 
+const emptySubscribe = () => () => {};
+
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
   const router = useRouter();
   const { user, logout } = useAuth();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Close nav automatically whenever pathname changes
-  useEffect(() => {
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setIsOpen(false);
-  }, [pathname]);
+  }
 
   // Lock body scroll when mobile drawer is open
   useEffect(() => {

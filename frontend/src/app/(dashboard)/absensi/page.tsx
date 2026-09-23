@@ -1,16 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAbsensiList, useBulkUpdateAbsensi } from '../../../hooks/useAbsensi';
-import { useSantriList } from '../../../hooks/useSantri';
-import { useKelasList } from '../../../hooks/useKelas';
-import { Calendar, Save, Loader2, CheckCircle2, UserCheck } from 'lucide-react';
+import { useSantriList, SantriItem } from '../../../hooks/useSantri';
+import { useKelasList, KelasItem } from '../../../hooks/useKelas';
+import { Calendar, Save, Loader2, UserCheck } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../../hooks/useAuth';
 
 export default function AbsensiPage() {
-  const { user } = useAuth();
   const todayStr = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(todayStr);
   const [kelasId, setKelasId] = useState('');
@@ -22,49 +20,42 @@ export default function AbsensiPage() {
   const { data: absensiData, isLoading: isLoadingAbsensi } = useAbsensiList(date, kelasId);
   const bulkUpdateMutation = useBulkUpdateAbsensi();
 
-  const [records, setRecords] = useState<Record<string, { status: 'HADIR' | 'IZIN' | 'SAKIT' | 'ALPA', notes?: string }>>({});
+  const [editedRecords, setEditedRecords] = useState<Record<string, { status?: 'HADIR' | 'IZIN' | 'SAKIT' | 'ALPA', notes?: string }>>({});
+  const [prevScope, setPrevScope] = useState(`${todayStr}_`);
 
-  useEffect(() => {
-    // Populate records state based on santriData and absensiData
-    if (santriData?.santri) {
-      const filteredSantri = kelasId 
-        ? santriData.santri.filter((s:any) => s.kelasId === kelasId)
-        : santriData.santri;
-
-      const newRecords: any = {};
-
-      filteredSantri.forEach((s: any) => {
-        const existingRecord = absensiData?.find(a => a.santriId === s.id);
-        newRecords[s.id] = {
-          status: existingRecord ? existingRecord.status : 'HADIR',
-          notes: existingRecord?.notes || ''
-        };
-      });
-
-      setRecords(newRecords);
-    }
-  }, [santriData, absensiData, kelasId]);
+  const currentScope = `${date}_${kelasId}`;
+  if (prevScope !== currentScope) {
+    setPrevScope(currentScope);
+    setEditedRecords({});
+  }
 
   const handleStatusChange = (santriId: string, status: 'HADIR' | 'IZIN' | 'SAKIT' | 'ALPA') => {
-    setRecords(prev => ({
+    setEditedRecords(prev => ({
       ...prev,
       [santriId]: { ...prev[santriId], status }
     }));
   };
 
   const handleNotesChange = (santriId: string, notes: string) => {
-    setRecords(prev => ({
+    setEditedRecords(prev => ({
       ...prev,
       [santriId]: { ...prev[santriId], notes }
     }));
   };
 
+  const filteredSantriList: SantriItem[] = (santriData?.santri || []).filter((s: SantriItem) => 
+    kelasId ? s.kelasId === kelasId : true
+  );
+
   const handleSave = async () => {
-    const payloadRecords = Object.keys(records).map(santriId => ({
-      santriId,
-      status: records[santriId].status,
-      notes: records[santriId].notes
-    }));
+    const payloadRecords = filteredSantriList.map((s: SantriItem) => {
+      const existingRecord = absensiData?.find(a => a.santriId === s.id);
+      return {
+        santriId: s.id,
+        status: editedRecords[s.id]?.status ?? existingRecord?.status ?? 'HADIR',
+        notes: editedRecords[s.id]?.notes ?? existingRecord?.notes ?? ''
+      };
+    });
 
     if (payloadRecords.length === 0) {
       toast.error('Tidak ada data santri untuk disimpan.');
@@ -74,12 +65,12 @@ export default function AbsensiPage() {
     try {
       await bulkUpdateMutation.mutateAsync({ date, records: payloadRecords });
       toast.success('Berhasil menyimpan absensi!');
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan absensi');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Gagal menyimpan absensi';
+      toast.error(errorMsg);
     }
   };
 
-  const filteredSantriList = santriData?.santri?.filter((s:any) => kelasId ? s.kelasId === kelasId : true) || [];
   const isLoading = isLoadingKelas || isLoadingSantri || isLoadingAbsensi;
 
   const STATUS_COLORS = {
@@ -137,7 +128,7 @@ export default function AbsensiPage() {
             className="w-full px-4 py-2 bg-background border border-input rounded-xl text-sm"
           >
             <option value="">-- Semua Kelas --</option>
-            {kelasiData?.map((k: any) => (
+            {kelasiData?.map((k: KelasItem) => (
               <option key={k.id} value={k.id}>{k.name}</option>
             ))}
           </select>
@@ -166,8 +157,11 @@ export default function AbsensiPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredSantriList.map((s: any) => {
-                  const r = records[s.id] || { status: 'HADIR', notes: '' };
+                {filteredSantriList.map((s: SantriItem) => {
+                  const existingRecord = absensiData?.find(a => a.santriId === s.id);
+                  const status = editedRecords[s.id]?.status ?? existingRecord?.status ?? 'HADIR';
+                  const notes = editedRecords[s.id]?.notes ?? existingRecord?.notes ?? '';
+
                   return (
                     <tr key={s.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-6 py-4 font-semibold">{s.name}</td>
@@ -178,16 +172,16 @@ export default function AbsensiPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl w-fit border border-border/50">
-                          {(['HADIR', 'IZIN', 'SAKIT', 'ALPA'] as const).map(status => (
+                          {(['HADIR', 'IZIN', 'SAKIT', 'ALPA'] as const).map((itemStatus) => (
                             <button
-                              key={status}
-                              onClick={() => handleStatusChange(s.id, status)}
+                              key={itemStatus}
+                              onClick={() => handleStatusChange(s.id, itemStatus)}
                               className={cn(
                                 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border',
-                                r.status === status ? STATUS_ACTIVE_COLORS[status] : STATUS_COLORS[status]
+                                status === itemStatus ? STATUS_ACTIVE_COLORS[itemStatus] : STATUS_COLORS[itemStatus]
                               )}
                             >
-                              {status === 'HADIR' ? 'H' : status === 'IZIN' ? 'I' : status === 'SAKIT' ? 'S' : 'A'}
+                              {itemStatus === 'HADIR' ? 'H' : itemStatus === 'IZIN' ? 'I' : itemStatus === 'SAKIT' ? 'S' : 'A'}
                             </button>
                           ))}
                         </div>
@@ -196,7 +190,7 @@ export default function AbsensiPage() {
                         <input 
                           type="text" 
                           placeholder="Keterangan..."
-                          value={r.notes || ''}
+                          value={notes}
                           onChange={(e) => handleNotesChange(s.id, e.target.value)}
                           className="w-full text-xs bg-background border border-input px-3 py-2 rounded-lg"
                         />
