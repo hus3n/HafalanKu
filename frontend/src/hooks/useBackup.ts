@@ -31,9 +31,15 @@ export interface RestoreBackupResponse {
   success: boolean;
   message: string;
   totalRestored: {
+    users?: number;
+    organizations?: number;
     santri: number;
     kelas: number;
     hafalan: number;
+    murajaah?: number;
+    absensi?: number;
+    reviews?: number;
+    whatsappSessions?: number;
   };
 }
 
@@ -43,7 +49,7 @@ export interface RestoreBackupResponse {
 export function downloadBackupFile(data: CreateBackupResponse) {
   const fileContent = JSON.stringify({
     app: 'HafalanKu',
-    version: '1.0',
+    version: '2.0',
     filename: data.filename,
     checksum: data.checksum,
     sizeBytes: data.sizeBytes,

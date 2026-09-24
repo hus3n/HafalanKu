@@ -5,9 +5,13 @@ const backupService = new BackupService();
 
 export class BackupController {
   static async create(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
 
-    const result = await backupService.createBackup(userId);
+    const result = await backupService.createBackup({
+      userId: user.userId,
+      role: user.role,
+      orgId: user.orgId,
+    });
 
     return reply.status(201).send({
       success: true,
@@ -17,7 +21,7 @@ export class BackupController {
   }
 
   static async restore(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
     const { encryptedData, checksum } = req.body as { encryptedData: string; checksum?: string };
 
     if (!encryptedData) {
@@ -27,15 +31,23 @@ export class BackupController {
       });
     }
 
-    const result = await backupService.restoreBackup(userId, encryptedData, checksum);
+    const result = await backupService.restoreBackup(
+      {
+        userId: user.userId,
+        role: user.role,
+        orgId: user.orgId,
+      },
+      encryptedData,
+      checksum
+    );
 
     return reply.send(result);
   }
 
   static async getHistory(req: FastifyRequest, reply: FastifyReply) {
-    const userId = req.user!.userId;
+    const user = req.user!;
 
-    const logs = await backupService.getBackupHistory(userId);
+    const logs = await backupService.getBackupHistory(user.userId, user.role);
 
     return reply.send({
       success: true,
@@ -43,3 +55,4 @@ export class BackupController {
     });
   }
 }
+

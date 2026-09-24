@@ -22,9 +22,15 @@ export function RestoreUpload() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [restoreResult, setRestoreResult] = useState<{
-    santri: number;
-    kelas: number;
-    hafalan: number;
+    users?: number;
+    organizations?: number;
+    santri?: number;
+    kelas?: number;
+    hafalan?: number;
+    murajaah?: number;
+    absensi?: number;
+    reviews?: number;
+    whatsappSessions?: number;
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -173,16 +179,46 @@ export function RestoreUpload() {
               <p className="text-xs text-emerald-600/90 dark:text-emerald-300/90">
                 Seluruh data telah berhasil dipulihkan. Backup otomatis data sebelumnya juga telah diamankan di sistem.
               </p>
-              <div className="pt-2 flex flex-wrap gap-4 text-xs font-mono">
+              <div className="pt-2 flex flex-wrap gap-2.5 text-xs font-mono">
+                {(restoreResult.users !== undefined && restoreResult.users > 0) && (
+                  <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    👥 Pengguna: <strong>{restoreResult.users}</strong>
+                  </span>
+                )}
+                {(restoreResult.organizations !== undefined && restoreResult.organizations > 0) && (
+                  <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    🏢 Lembaga: <strong>{restoreResult.organizations}</strong>
+                  </span>
+                )}
                 <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
-                  👥 Santri: <strong>{restoreResult.santri}</strong>
+                  👥 Santri: <strong>{restoreResult.santri ?? 0}</strong>
                 </span>
                 <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
-                  🏫 Kelas: <strong>{restoreResult.kelas}</strong>
+                  🏫 Kelas: <strong>{restoreResult.kelas ?? 0}</strong>
                 </span>
                 <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
-                  📖 Hafalan: <strong>{restoreResult.hafalan}</strong>
+                  📖 Hafalan: <strong>{restoreResult.hafalan ?? 0}</strong>
                 </span>
+                {(restoreResult.murajaah !== undefined && restoreResult.murajaah > 0) && (
+                  <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    🔄 Muraja&apos;ah: <strong>{restoreResult.murajaah}</strong>
+                  </span>
+                )}
+                {(restoreResult.absensi !== undefined && restoreResult.absensi > 0) && (
+                  <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    📅 Absensi: <strong>{restoreResult.absensi}</strong>
+                  </span>
+                )}
+                {(restoreResult.reviews !== undefined && restoreResult.reviews > 0) && (
+                  <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    ⭐ Review: <strong>{restoreResult.reviews}</strong>
+                  </span>
+                )}
+                {(restoreResult.whatsappSessions !== undefined && restoreResult.whatsappSessions > 0) && (
+                  <span className="bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                    💬 Sesi WA: <strong>{restoreResult.whatsappSessions}</strong>
+                  </span>
+                )}
               </div>
             </div>
             <button
