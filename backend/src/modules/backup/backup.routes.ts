@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 const restoreBodySchema = z.object({
   encryptedData: z.string().min(1, 'File backup terenkripsi wajib diisi'),
-  checksum: z.string().length(64, 'Format SHA-256 checksum harus 64 karakter hex'),
+  checksum: z.string().length(64, 'Format SHA-256 checksum harus 64 karakter hex').optional(),
 });
 
 export async function backupRoutes(fastify: FastifyInstance) {

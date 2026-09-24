@@ -43,9 +43,20 @@ export class BackupService {
     const chatId = getTelegramChatId();
     let telegramSent = false;
 
+    // Standardized file content envelope (.hfk)
+    const filePayload = JSON.stringify({
+      app: 'HafalanKu',
+      version: '1.0',
+      filename,
+      checksum,
+      sizeBytes,
+      createdAt: new Date().toISOString(),
+      encryptedData,
+    }, null, 2);
+
     if (bot && chatId) {
       try {
-        const buffer = Buffer.from(encryptedData, 'utf-8');
+        const buffer = Buffer.from(filePayload, 'utf-8');
         await bot.sendDocument(chatId, buffer, {
           caption: `📦 Backup HafalanKu\n📅 ${new Date().toLocaleString('id-ID')}\n📁 ${filename}\n🔒 Checksum: ${checksum.substring(0, 16)}...`,
         }, { filename, contentType: 'application/octet-stream' });
@@ -75,30 +86,39 @@ export class BackupService {
     };
   }
 
-  async restoreBackup(userId: string, encryptedData: string, providedChecksum: string) {
+  async restoreBackup(userId: string, encryptedData: string, providedChecksum?: string) {
     // 1. Auto-backup current state first (Safety Criterion)
     await this.createBackup(userId);
 
-    // 2. Decrypt Payload
+    // 2. Clean encrypted data (strip whitespace / newlines)
+    const cleanEncryptedData = (encryptedData || '').trim();
+
+    // 3. Decrypt Payload
     let decryptedJson: string;
     try {
-      decryptedJson = decrypt(encryptedData);
+      decryptedJson = decrypt(cleanEncryptedData);
     } catch (err) {
       throw new AppError('File backup tidak valid atau gagal didekripsi (AES-256 error)', 400);
     }
 
-    // 3. Verify SHA-256 Checksum Integrity
+    // 4. Verify SHA-256 Checksum Integrity if provided
     const computedChecksum = this.calculateSha256(decryptedJson);
-    if (computedChecksum !== providedChecksum) {
+    if (providedChecksum && providedChecksum.trim() && computedChecksum.toLowerCase() !== providedChecksum.trim().toLowerCase()) {
       throw new AppError('Integritas file backup rusak (SHA-256 Checksum mismatch)', 400);
     }
 
-    const payload = JSON.parse(decryptedJson);
-    if (!payload.data) {
-      throw new AppError('Format struktur file backup tidak sesuai', 400);
+    let payload: any;
+    try {
+      payload = JSON.parse(decryptedJson);
+    } catch (err) {
+      throw new AppError('Format JSON internal berkas backup rusak', 400);
     }
 
-    // 4. Restore tables
+    if (!payload || !payload.data) {
+      throw new AppError('Format struktur file backup tidak sesuai (data tidak ditemukan)', 400);
+    }
+
+    // 5. Restore tables
     const { santris, kelases, hafalans, murajaahs } = payload.data;
 
     await prisma.$transaction(async (tx: any) => {
@@ -130,7 +150,7 @@ export class BackupService {
             parentName: s.parentName,
             parentPhone: s.parentPhone,
             kelasId: s.kelasId,
-            isActive: s.isActive,
+            isActive: s.isActive ?? true,
             userId,
             createdAt: new Date(s.createdAt),
             deletedAt: s.deletedAt ? new Date(s.deletedAt) : null,
@@ -149,6 +169,8 @@ export class BackupService {
             ayatStart: h.ayatStart,
             ayatEnd: h.ayatEnd,
             predikat: h.predikat,
+            type: h.type || 'ZIYADAH',
+            isHafalanAwal: h.isHafalanAwal ?? false,
             date: new Date(h.date),
             notes: h.notes,
             userId,
@@ -165,9 +187,10 @@ export class BackupService {
             santriId: m.santriId,
             surahNumber: m.surahNumber,
             surahName: m.surahName,
-            isSelected: m.isSelected,
+            ayatRange: m.ayatRange || null,
+            isSelected: m.isSelected ?? true,
             lastReviewDate: m.lastReviewDate ? new Date(m.lastReviewDate) : null,
-            priorityScore: m.priorityScore,
+            priorityScore: m.priorityScore ?? 0,
             userId,
             createdAt: new Date(m.createdAt),
           })),
@@ -179,8 +202,8 @@ export class BackupService {
     await BackupLog.create({
       userId,
       filename: `restore_from_${Date.now()}.hfk`,
-      checksum: providedChecksum,
-      sizeBytes: Buffer.byteLength(encryptedData, 'utf8'),
+      checksum: providedChecksum || computedChecksum,
+      sizeBytes: Buffer.byteLength(cleanEncryptedData, 'utf8'),
       status: 'RESTORED',
       telegramSent: false,
     });

@@ -24,7 +24,7 @@ export interface CreateBackupResponse {
 
 export interface RestoreBackupPayload {
   encryptedData: string;
-  checksum: string;
+  checksum?: string;
 }
 
 export interface RestoreBackupResponse {

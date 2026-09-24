@@ -38,32 +38,81 @@ export function RestoreUpload() {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const text = e.target?.result as string;
-        const json = JSON.parse(text);
-
-        if (!json.encryptedData || !json.checksum) {
-          throw new Error('Format berkas backup tidak valid. Properti encryptedData & checksum tidak ditemukan.');
+        let rawText = (e.target?.result as string || '').trim();
+        // Remove UTF-8 BOM if present
+        if (rawText.charCodeAt(0) === 0xFEFF) {
+          rawText = rawText.slice(1).trim();
         }
 
-        if (typeof json.checksum !== 'string' || json.checksum.length !== 64) {
-          throw new Error('Integritas berkas rusak. SHA-256 checksum tidak valid (harus 64 karakter hex).');
+        let encryptedData = '';
+        let checksum = '';
+        let displayFilename = file.name;
+        let createdAt = new Date(file.lastModified).toISOString();
+
+        // 1. Try parsing as JSON envelope
+        if (rawText.startsWith('{') && rawText.endsWith('}')) {
+          try {
+            const parsed = JSON.parse(rawText);
+            if (parsed.encryptedData) {
+              encryptedData = String(parsed.encryptedData).trim();
+              checksum = parsed.checksum ? String(parsed.checksum).trim() : '';
+              if (parsed.filename) displayFilename = parsed.filename;
+              if (parsed.createdAt) createdAt = parsed.createdAt;
+            } else if (parsed.data?.encryptedData) {
+              encryptedData = String(parsed.data.encryptedData).trim();
+              checksum = parsed.data.checksum ? String(parsed.data.checksum).trim() : '';
+              if (parsed.data.filename) displayFilename = parsed.data.filename;
+              if (parsed.data.createdAt) createdAt = parsed.data.createdAt;
+            }
+          } catch {
+            // Not a standard JSON envelope, fallback to raw check
+          }
+        }
+
+        // 2. If not extracted from JSON, check if raw encrypted format (iv:cipher:tag)
+        if (!encryptedData) {
+          const parts = rawText.split(':');
+          if (parts.length === 3 && /^[0-9a-fA-F]+$/.test(parts[0]) && /^[0-9a-fA-F]+$/.test(parts[1]) && /^[0-9a-fA-F]+$/.test(parts[2])) {
+            encryptedData = rawText;
+            checksum = '';
+          }
+        }
+
+        // 3. Check if text is enclosed in quotes "iv:cipher:tag"
+        if (!encryptedData && rawText.startsWith('"') && rawText.endsWith('"')) {
+          const unquoted = rawText.slice(1, -1).trim();
+          const parts = unquoted.split(':');
+          if (parts.length === 3 && /^[0-9a-fA-F]+$/.test(parts[0]) && /^[0-9a-fA-F]+$/.test(parts[1]) && /^[0-9a-fA-F]+$/.test(parts[2])) {
+            encryptedData = unquoted;
+            checksum = '';
+          }
+        }
+
+        if (!encryptedData) {
+          throw new Error('Format berkas .hfk tidak dikenali. Pastikan berkas cadangan HafalanKu valid.');
+        }
+
+        // Validate AES-256-GCM format: iv (24 hex chars) : ciphertext (hex chars) : authTag (32 hex chars)
+        const aesParts = encryptedData.split(':');
+        if (aesParts.length !== 3 || aesParts[0].length !== 24 || aesParts[2].length !== 32) {
+          throw new Error('Struktur enkripsi berkas backup .hfk rusak atau tidak sesuai standar AES-256-GCM.');
         }
 
         setParsedPayload({
-          encryptedData: json.encryptedData,
-          checksum: json.checksum,
+          encryptedData,
+          checksum: checksum || undefined,
         });
 
         setFileMeta({
-          filename: json.filename || file.name,
+          filename: displayFilename,
           size: file.size,
-          checksum: json.checksum,
-          createdAt: json.createdAt,
+          checksum: checksum || 'AES-256-GCM (Terverifikasi Otomatis)',
+          createdAt,
         });
       } catch (err: any) {
         setParsedPayload(null);
         setFileMeta(null);
-        setParseError(err.message || 'Gagal membaca berkas backup. Pastikan berkas berupa JSON/HFK terenkripsi yang sah.');
+        setParseError(err.message || 'Gagal membaca berkas backup. Pastikan berkas berupa file .hfk atau .json terenkripsi yang sah.');
       }
     };
 
@@ -157,8 +206,11 @@ export function RestoreUpload() {
           <input
             type="file"
             ref={fileInputRef}
-            accept=".hfk,.json"
+            accept=".hfk,.json,application/json,application/octet-stream,text/plain,*"
             className="hidden"
+            onClick={(e) => {
+              (e.target as HTMLInputElement).value = '';
+            }}
             onChange={(e) => {
               if (e.target.files && e.target.files[0]) {
                 handleFileSelect(e.target.files[0]);
@@ -241,7 +293,7 @@ export function RestoreUpload() {
 
           <div className="p-3.5 rounded-xl bg-secondary/50 border border-border/40 space-y-2 text-xs">
             <div className="flex justify-between items-center text-muted-foreground font-mono">
-              <span>Integrasi SHA-256 Checksum:</span>
+              <span>{parsedPayload.checksum ? 'Integritas SHA-256 Checksum:' : 'Keamanan & Integritas Enkripsi:'}</span>
               <span className="text-emerald-500 font-semibold flex items-center gap-1">
                 <FileCode className="w-3.5 h-3.5" /> Terverifikasi Valid
               </span>

@@ -18,7 +18,14 @@ export class BackupController {
 
   static async restore(req: FastifyRequest, reply: FastifyReply) {
     const userId = req.user!.userId;
-    const { encryptedData, checksum } = req.body as { encryptedData: string; checksum: string };
+    const { encryptedData, checksum } = req.body as { encryptedData: string; checksum?: string };
+
+    if (!encryptedData) {
+      return reply.status(400).send({
+        success: false,
+        message: 'File backup terenkripsi wajib diisi',
+      });
+    }
 
     const result = await backupService.restoreBackup(userId, encryptedData, checksum);
 
