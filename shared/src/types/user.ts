@@ -8,6 +8,8 @@ export interface User {
   phone?: string | null;
   avatarUrl?: string | null;
   isActive: boolean;
+  isEmailVerified: boolean;
+  isTrial: boolean;
   organizationId?: string | null;
   organization?: {
     id: string;

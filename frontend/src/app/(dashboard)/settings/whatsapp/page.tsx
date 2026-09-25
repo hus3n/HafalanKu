@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../../../hooks/useAuth';
 import { 
   useWhatsAppStatus, 
   useInitWhatsAppSession, 
@@ -24,7 +26,17 @@ import {
 import { useForm } from 'react-hook-form';
 
 export default function WhatsAppSettingsPage() {
+  const router = useRouter();
+  const { user: currentUser } = useAuth();
+
+  useEffect(() => {
+    if (currentUser && !currentUser.isActive) {
+      router.push('/dashboard');
+    }
+  }, [currentUser, router]);
+
   const { data: statusData, isLoading: isStatusLoading, isFetching: isStatusFetching, refetch: refetchStatus } = useWhatsAppStatus();
+
   const initMutation = useInitWhatsAppSession();
   const disconnectMutation = useDisconnectWhatsApp();
   const sendMutation = useSendWhatsAppMessage();
@@ -40,6 +52,10 @@ export default function WhatsAppSettingsPage() {
       message: 'Assalamu\'alaikum Bapak/Ibu,\nIni adalah pesan uji coba dari sistem HafalanKu untuk memastikan koneksi WhatsApp Anda berjalan lancar.\n\nTerima kasih.'
     }
   });
+
+  if (currentUser && !currentUser.isActive) {
+    return null;
+  }
 
   const handleApplyTemplate = () => {
     setMsgType('template');

@@ -1,19 +1,21 @@
 'use client';
 
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { Sidebar } from '../../components/layout/Sidebar';
 import { Topbar } from '../../components/layout/Topbar';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
 import { AnimatedBackground } from '../../components/shared/AnimatedBackground';
 import { useSidebarStore } from '../../stores/sidebarStore';
+import { EmailOtpVerificationModal } from '../../components/modals/EmailOtpVerificationModal';
 
 const emptySubscribe = () => () => {};
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { isCollapsed } = useSidebarStore();
@@ -52,6 +54,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <Topbar />
         
+        {user && !user.isEmailVerified && (
+          <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-600 dark:text-amber-400 p-3 md:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm shrink-0">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p>Email Anda belum diverifikasi. Silakan verifikasi untuk mengamankan akun Anda.</p>
+            </div>
+            <button
+              onClick={() => setIsOtpModalOpen(true)}
+              className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold text-xs transition-colors shrink-0 whitespace-nowrap cursor-pointer shadow-sm"
+            >
+              Verifikasi Email
+            </button>
+          </div>
+        )}
+
+        {user && !user.isActive && !user.isTrial && (
+          <div className="bg-rose-500/10 border-b border-rose-500/20 text-rose-600 dark:text-rose-400 p-3 md:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm shrink-0">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 shrink-0" />
+              <p>Akun/Paket Anda belum aktif. Halaman pencatatan dan WA diblokir. Silakan selesaikan pembayaran.</p>
+            </div>
+            <a
+              href="https://wa.me/6285229925593"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-semibold text-xs transition-colors shrink-0 whitespace-nowrap cursor-pointer shadow-sm"
+            >
+              Hubungi Admin
+            </a>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 pb-16 md:pb-8 no-scrollbar scroll-smooth relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
@@ -66,6 +100,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </motion.div>
           </AnimatePresence>
         </div>
+        
+        <EmailOtpVerificationModal 
+          isOpen={isOtpModalOpen} 
+          email={user?.email || ''}
+          onClose={() => setIsOtpModalOpen(false)} 
+          onSuccess={() => {
+            setIsOtpModalOpen(false);
+          }} 
+        />
       </main>
     </div>
   );

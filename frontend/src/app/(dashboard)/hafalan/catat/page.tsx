@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCreateHafalan, useCreateBulkAdvancedHafalan } from '../../../../hooks/useHafalan';
 import { HafalanForm } from '../../../../components/forms/HafalanForm';
@@ -16,12 +16,22 @@ export default function CatatHafalanPage() {
   const { user: currentUser } = useAuth();
   const isAuthorized = currentUser?.role === 'USER';
   const router = useRouter();
-  
+
+  useEffect(() => {
+    if (currentUser && !currentUser.isActive) {
+      router.push('/dashboard');
+    }
+  }, [currentUser, router]);
+
   const createZiyadah = useCreateHafalan();
   const createMurajaahBulk = useCreateBulkAdvancedHafalan();
   
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [mode, setMode] = useState<'ZIYADAH' | 'MURAJAAH'>('ZIYADAH');
+
+  if (currentUser && !currentUser.isActive) {
+    return null;
+  }
 
   const handleZiyadahSubmit = async (data: CreateHafalanInput) => {
     try {

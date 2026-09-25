@@ -30,6 +30,7 @@ import { startAutoBackupJob } from './jobs/autoBackup';
 import { startSubscriptionNotifierJob } from './jobs/subscriptionNotifier';
 import { startTrialCleanerJob } from './jobs/trialCleaner';
 import { startMurajaahCleanerJob } from './jobs/murajaahCleaner';
+import { startUnverifiedCleanerJob } from './jobs/unverifiedCleaner';
 import { waQueueWorker } from './workers/whatsapp.queue.worker';
 import './workers/whatsapp.worker';
 
@@ -106,6 +107,8 @@ async function main() {
 
     // Start Trial Cleaner Cron Job
     startTrialCleanerJob();
+
+    startUnverifiedCleanerJob();
 
     // Start Daily Murajaah Rollover Cron Job
     startMurajaahCleanerJob();

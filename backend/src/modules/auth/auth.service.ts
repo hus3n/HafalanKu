@@ -117,7 +117,7 @@ export class AuthService {
           phone: input.phone,
           activeUntil,
           isTrial,
-          isActive: false, // User is pending activation by superadmin
+          isActive: isTrial ? true : false,
           isEmailVerified: false, // Must verify OTP first
           emailOtp: otp,
           emailOtpExpires: otpExpires,
@@ -279,6 +279,10 @@ export class AuthService {
       throw new AppError('Email Anda sudah terverifikasi sebelumnya. Anda dapat langsung masuk.', 400);
     }
 
+    if (user.otpRequestCount >= 3) {
+      throw new AppError('Batas pengiriman OTP telah habis. Silakan coba lagi besok atau hubungi admin.', 403);
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -287,6 +291,7 @@ export class AuthService {
       data: {
         emailOtp: otp,
         emailOtpExpires: otpExpires,
+        otpRequestCount: { increment: 1 },
       },
     });
 
@@ -412,7 +417,7 @@ export class AuthService {
             avatarUrl: payload.picture || null,
             googleId: payload.sub,
             isEmailVerified: true, // Google accounts are pre-verified
-            isActive: false, // Pending Superadmin approval
+            isActive: isTrial ? true : false,
             isTrial,
             activeUntil,
           },
@@ -558,31 +563,6 @@ export class AuthService {
 
     if (!user) {
       throw new AppError('Email atau password salah', 401);
-    }
-
-    // Verifikasi status verifikasi email
-    if (!user.isEmailVerified && !user.googleId) {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpExpires = new Date(Date.now() + 15 * 60 * 1000);
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          emailOtp: otp,
-          emailOtpExpires: otpExpires,
-        },
-      });
-
-      emailService.sendOtpVerification(user.email, user.name, otp).catch(() => {});
-
-      throw new AppError(
-        'Email Anda belum diverifikasi. Kode OTP baru telah dikirim ke email Anda. Silakan verifikasi terlebih dahulu.',
-        403
-      );
-    }
-
-    if (!user.isActive) {
-      throw new AppError('Akun Anda sedang diverifikasi / belum diaktifkan oleh Superadmin.', 403);
     }
 
     // Checking active period:

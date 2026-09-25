@@ -29,7 +29,7 @@ model User {
   name            String
   passwordHash    String    @map("password_hash")
   role            Role      @default(USER)
-  phone           String?   
+  phone           String?
   avatarUrl       String?   @map("avatar_url")
   isActive        Boolean   @default(true) @map("is_active")
   organizationId  String?   @map("organization_id")
@@ -40,12 +40,13 @@ model User {
   isEmailVerified Boolean   @default(true) @map("is_email_verified")
   emailOtp        String?   @map("email_otp")
   emailOtpExpires DateTime? @map("email_otp_expires")
+  otpRequestCount Int       @default(0) @map("otp_request_count")
   googleId        String?   @unique @map("google_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  organization    Organization? @relation("OrgMembers", fields: [organizationId], references: [id])
-  ownedOrg        Organization? @relation("OrgAdmin")
+  organization    Organization?      @relation("OrgMembers", fields: [organizationId], references: [id])
+  ownedOrg        Organization?      @relation("OrgAdmin")
   santri          Santri[]
   kelas           Kelas[]
   hafalan         Hafalan[]
@@ -74,24 +75,24 @@ model Santri {
   id          String    @id @default(uuid())
   name        String
   parentName  String    @map("parent_name")
-  parentPhone String    @map("parent_phone") 
+  parentPhone String    @map("parent_phone")
   kelasId     String?   @map("kelas_id")
   userId      String    @map("user_id")
   isActive    Boolean   @default(true) @map("is_active")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at") 
+  deletedAt   DateTime? @map("deleted_at")
 
-  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  kelas    Kelas?            @relation(fields: [kelasId], references: [id])
-  hafalan  Hafalan[]
-  murajaah MurajaahSchedule[]
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kelas           Kelas?             @relation(fields: [kelasId], references: [id])
+  hafalan         Hafalan[]
+  murajaah        MurajaahSchedule[]
   murajaahHistory MurajaahHistory[]
-  absensi  Absensi[]
+  absensi         Absensi[]
 
   @@index([userId])
   @@index([kelasId])
-  @@index([deletedAt]) 
+  @@index([deletedAt])
   @@map("santri")
 }
 
@@ -110,19 +111,19 @@ model Kelas {
 }
 
 model Hafalan {
-  id          String   @id @default(uuid())
-  santriId    String   @map("santri_id")
-  surahNumber Int      @map("surah_number") 
-  surahName   String   @map("surah_name")   
-  ayatStart   Int      @map("ayat_start")
-  ayatEnd     Int      @map("ayat_end")
-  predikat    Predikat
-  type        String   @default("ZIYADAH")
-  date        DateTime
-  notes       String?
+  id            String   @id @default(uuid())
+  santriId      String   @map("santri_id")
+  surahNumber   Int      @map("surah_number")
+  surahName     String   @map("surah_name")
+  ayatStart     Int      @map("ayat_start")
+  ayatEnd       Int      @map("ayat_end")
+  predikat      Predikat
+  type          String   @default("ZIYADAH")
+  date          DateTime
+  notes         String?
   isHafalanAwal Boolean  @default(false) @map("is_hafalan_awal")
-  userId      String   @map("user_id") 
-  createdAt   DateTime @default(now()) @map("created_at")
+  userId        String   @map("user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -137,17 +138,17 @@ model Hafalan {
 }
 
 model MurajaahSchedule {
-  id             String   @id @default(uuid())
-  santriId       String   @map("santri_id")
-  surahNumber    Int      @map("surah_number")
-  surahName      String   @map("surah_name")
-  ayatRange      String?  @map("ayat_range")
-  isSelected     Boolean  @default(true) @map("is_selected")
+  id             String    @id @default(uuid())
+  santriId       String    @map("santri_id")
+  surahNumber    Int       @map("surah_number")
+  surahName      String    @map("surah_name")
+  ayatRange      String?   @map("ayat_range")
+  isSelected     Boolean   @default(true) @map("is_selected")
   lastReviewDate DateTime? @map("last_review_date")
-  priorityScore  Float    @default(0) @map("priority_score") 
-  userId         String   @map("user_id")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  priorityScore  Float     @default(0) @map("priority_score")
+  userId         String    @map("user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -159,16 +160,16 @@ model MurajaahSchedule {
 }
 
 model MurajaahHistory {
-  id             String   @id @default(uuid())
-  santriId       String   @map("santri_id")
-  surahNumber    Int      @map("surah_number")
-  surahName      String   @map("surah_name")
-  ayatRange      String?  @map("ayat_range")
-  status         String   @default("BELUM") 
-  date           DateTime @default(now())
-  userId         String   @map("user_id")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  santriId    String   @map("santri_id")
+  surahNumber Int      @map("surah_number")
+  surahName   String   @map("surah_name")
+  ayatRange   String?  @map("ayat_range")
+  status      String   @default("BELUM")
+  date        DateTime @default(now())
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -199,39 +200,39 @@ enum AbsensiStatus {
 }
 
 model Absensi {
-  id        String   @id @default(uuid())
-  santriId  String   @map("santri_id")
-  date      DateTime @db.Date
+  id        String        @id @default(uuid())
+  santriId  String        @map("santri_id")
+  date      DateTime      @db.Date
   status    AbsensiStatus
   notes     String?
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  userId    String        @map("user_id")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
 
   santri Santri @relation(fields: [santriId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([santriId, date])
   @@index([santriId])
   @@index([userId])
   @@index([date])
-  @@unique([santriId, date])
   @@map("absensi")
 }
 
 model Review {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
   name          String
-  roleOrTitle   String?   @map("role_or_title")
-  rating        Int       @default(5)
-  comment       String    @db.Text
-  imageUrl      String?   @map("image_url") @db.Text
-  userAvatarUrl String?   @map("user_avatar_url") @db.Text
-  userId        String?   @map("user_id")
-  isApproved    Boolean   @default(true) @map("is_approved")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  roleOrTitle   String?  @map("role_or_title")
+  rating        Int      @default(5)
+  comment       String   @db.Text
+  imageUrl      String?  @map("image_url") @db.Text
+  userAvatarUrl String?  @map("user_avatar_url") @db.Text
+  userId        String?  @map("user_id")
+  isApproved    Boolean  @default(true) @map("is_approved")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([isApproved])
